@@ -1,0 +1,95 @@
+{
+	"createcheck": {
+		"orderTime": "2017-09-05T15:25:36",
+		"orderSource": "0",
+		"payment": {
+			"tenderAmount": "20.45",
+			"tipAmount": "2.00",
+			"subtotalNoDiscountsPlusTaxes": "42.35",      
+			"taxTotal": "2.11",
+			"referenceNumber": "ref001",
+			"paymentCardType": "ZxtHlHLcGRGidOO1miam8g==",
+			"paymentCardNum": "nblYFLUqom60twC05jIk1A==",
+			"authorizationCode": "abc"
+		},
+		"customerInfo": {
+			"customerFirstName": "KEVIN",
+			"customerLastName": "NICKERSON",
+			"customerPhone": "9726625600"
+		},
+		"menuItems": {
+			"resposapiMenuItem": [{
+				"menuItem": {
+					"miObjectNum": "35014",
+					"miAltItemId": "20008",
+					"miMenuLevel": "1",
+					"miReference": "reference on the menu item",
+					"miPrice": "10.99",
+					"lineEntry": "0",
+					"miDiscount": {
+						"discObjectNum": "22",
+						"discAmountOrPercent": "1.00"
+					}
+				},
+				"condiments": {
+					"resposapiCondimentMenuItem": [{
+						"miObjectNum": "9110161",
+						"miMenuLevel": "1",
+						"modCodeId": 2,
+						"miDiscount": {
+							"discObjectNum": "22",
+							"discAmountOrPercent": "1.00"
+						}
+					}, {
+						"miObjectNum": "9101110",
+						"miMenuLevel": "1",
+						"modCodeId": 6,
+						"miDiscount": {
+							"discObjectNum": "22",
+							"discAmountOrPercent": "1.00"
+						}
+					}]
+				}
+			}, {
+				"menuItem": {
+					"miObjectNum": "80037",
+					"miAltItemId": "20008",
+					"miMenuLevel": "1",
+					"miReference": "reference on the menu item",
+					"miPrice": "10.99",
+					"lineEntry": "0",
+					"miDiscount": {
+						"discObjectNum": "22",
+						"discAmountOrPercent": "1.00"
+					}
+				},
+				"condiments": {
+					"resposapiCondimentMenuItem": [{
+						"miObjectNum": "9110161",
+						"miMenuLevel": "1",
+						"modCodeId": 6,
+						"miDiscount": {
+							"discObjectNum": "22",
+							"discAmountOrPercent": "1.00"
+						}
+					}, {
+						"miObjectNum": "9101110",
+						"miMenuLevel": "1",
+						"modCodeId": 4,
+						"miDiscount": {
+							"discObjectNum": "22",
+							"discAmountOrPercent": "1.00"
+						}
+					}]
+				}
+			}]
+		},
+		"orderDiscount": {
+			"discObjectNum": "3298",
+			"discAmountOrPercent": "5.00"
+		},
+		"serializedCoupon": {
+			"couponCode": "1234567890"
+		}
+	}
+}

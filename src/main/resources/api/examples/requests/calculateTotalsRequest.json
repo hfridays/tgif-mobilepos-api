@@ -1,0 +1,81 @@
+{
+	"calculatetotals": {
+		"menuItems": {
+			"resposapiMenuItem": [{
+				"menuItem": {
+					"miObjectNum": "10350",
+					"miAltItemId": "20008",
+					"miMenuLevel": "1",
+					"lineEntry": "0",
+					"miDiscount": {
+						"discObjectNum": "22",
+						"discAmountOrPercent": "1.00"
+					}
+				},
+				"condiments": {
+					"resposapiCondimentMenuItem": [{
+						"miObjectNum": "9041004",
+						"miMenuLevel": "1",
+						"modCodeId": 2,
+						"miDiscount": {
+							"discObjectNum": "22",
+							"discAmountOrPercent": "1.00"
+						}
+					}, {
+						"miObjectNum": "9041007",
+						"miMenuLevel": "1",
+						"modCodeId": 4,
+						"miDiscount": {
+							"discObjectNum": "22",
+							"discAmountOrPercent": "1.00"
+						}
+					}]
+				}
+			}, {
+				"menuItem": {
+					"miObjectNum": "50006",
+					"miAltItemId": "12345",
+					"miMenuLevel": "1",
+					"lineEntry": "0"
+				}
+			}, {
+				"menuItem": {
+					"miObjectNum": "20005",
+					"miAltItemId": "12345",
+					"miMenuLevel": "1",
+					"modCodeId": 2,
+					"lineEntry": "0",
+					"miDiscount": {
+						"discObjectNum": "22",
+						"discAmountOrPercent": "1.00"
+					}
+				},
+				"condiments": {
+					"resposapiCondimentMenuItem": [{
+						"miObjectNum": "9041004",
+						"miMenuLevel": "1",
+						"miDiscount": {
+							"discObjectNum": "22",
+							"discAmountOrPercent": "1.00"
+						}
+					}, {
+						"miObjectNum": "9041007",
+						"miMenuLevel": "1",
+						"modCodeId": 6,
+						"miDiscount": {
+							"discObjectNum": "22",
+							"discAmountOrPercent": "1.00"
+						}
+					}]
+				}
+			}]
+		},
+		"orderDiscount": {
+			"discObjectNum": "3298",
+			"discAmountOrPercent": "5.00"
+		},
+		"serializedCoupon": {
+			"couponCode": "1234567890"
+		}
+	}
+}

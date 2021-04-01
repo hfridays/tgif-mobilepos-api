@@ -1,0 +1,84 @@
+#%RAML 1.0
+title: tgif-mobilepos-papi
+description: Mobile Payment API
+/calculateTotals:
+  displayName: CalculateTotals
+  post:
+    description: Calculate Check Totals
+    queryParameters:
+      storeID:
+        type: integer    
+    body:
+      application/json:
+        type: !include  types/requests/calculateTotalsRequest.raml
+        example: !include examples/requests/calculateTotalsRequest.json
+    responses:
+      200:
+        body:
+          application/json:
+            type:  !include types/responses/calculateTotalsResponse.raml
+            example: !include examples/responses/calculateTotalsResponse.json
+/pingIPAddress:
+  displayName: Ping IPAddress
+  post:
+    description: Ping IPAddress
+    queryParameters:
+      iPAddress:
+          description: IpAddress to Ping          
+          type: string
+      port:
+          description: port number          
+          required: false
+          type: integer
+    responses:
+      200:
+        body:
+          application/json:
+            type:  !include types/responses/pingIpaddressResponse.raml
+            example: !include examples/responses/pingIpaddressResponse.json
+
+/msHeartBeat:
+  displayName: Check the mule soft heartbeat
+  get:                             
+    responses:
+      200:
+        body:
+          application/json:
+            type:  !include types/responses/msHeartBeatResponse.raml
+            example: !include examples/responses/msHeartBeatResponse.json
+
+/createCheck:
+  displayName: CreateCheck
+  post:
+    description: Create a Check
+    queryParameters:
+      storeID:
+        type: integer        
+    body:
+      application/json:
+        type: !include  types/requests/createCheckRequest.raml
+        example: !include examples/requests/createCheckRequest.json
+    responses:
+      200:
+        body:
+          application/json:
+            type:  !include types/responses/createCheckResponse.raml
+            example: !include examples/responses/createCheckResponse.json
+
+/calculateTaxAndTotal:
+  displayName: CalculateTaxAndTotals without item validation
+  put:
+    description: Calculate Check Totals and Tax without item validation
+    queryParameters:
+      StoreID:
+        type: integer    
+    body:
+      application/json:
+        type: !include  types/requests/calculateTaxAndTotalRequest.raml
+        example: !include examples/requests/calculateTaxAndTotalRequest.json
+    responses:
+      200:
+        body:
+          application/json:
+            type:  !include types/responses/calculateTaxAndTotalResponse.raml
+            example: !include examples/responses/calculateTaxAndTotalResponse.json

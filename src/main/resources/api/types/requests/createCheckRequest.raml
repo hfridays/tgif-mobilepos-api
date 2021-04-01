@@ -1,0 +1,144 @@
+#%RAML 1.0 DataType
+type: object
+properties:
+  createcheck:
+    type: object
+    required: false
+    properties:
+      customerInfo:
+        type: object
+        required: false
+        properties:
+          customerFirstName:
+            type: string
+            required: false
+          customerLastName:
+            type: string
+            required: false
+          customerPhone:
+            type: string
+            required: false
+      orderTime:
+        type: string
+        required: false
+      orderSource:
+        type: string
+        required: false
+      menuItems:
+        type: object
+        required: false
+        properties:
+          resposapiMenuItem:
+            type: array
+            required: false
+            items:
+              type: object
+              properties:
+                condiments:
+                  type: object
+                  required: false
+                  properties:
+                    resposapiCondimentMenuItem:
+                      type: array
+                      required: false
+                      items:
+                        type: object
+                        properties:
+                          miMenuLevel:
+                            type: string
+                            required: false
+                          modCodeId:
+                            type: number
+                            required: false
+                          miObjectNum:
+                            type: string
+                            required: false
+                          miDiscount:
+                            type: object
+                            required: false
+                            properties:
+                              discAmountOrPercent:
+                                type: string
+                                required: false
+                              discObjectNum:
+                                type: string
+                                required: false
+                menuItem:
+                  type: object
+                  required: false
+                  properties:
+                    miDiscount:
+                      type: object
+                      required: false
+                      properties:
+                        discAmountOrPercent:
+                          type: string
+                          required: false
+                        discObjectNum:
+                          type: string
+                          required: false
+                    miMenuLevel:
+                      type: string
+                      required: false
+                    lineEntry:
+                      type: string
+                      required: false
+                    miObjectNum:
+                      type: string
+                      required: false
+                    miAltItemId:
+                      type: string
+                      required: false
+                    miReference:
+                      type: string
+                      required: false
+                    miPrice:
+                      type: string
+                      required: false
+      payment:
+        type: object
+        required: false
+        properties:  
+          referenceNumber:
+            type: string
+            required: false
+          tenderAmount:
+            type: string
+            required: false
+          tipAmount:
+            type: string
+            required: false
+          subtotalNoDiscountsPlusTaxes:
+            type: string
+            required: false
+          taxTotal:
+            type: string
+            required: false
+          paymentCardType:
+            type: string
+            required: false
+          paymentCardNum:
+            type: string
+            required: false
+          authorizationCode:
+            type: string
+            required: false
+        
+      orderDiscount:
+        type: object
+        required: false
+        properties:
+          discAmountOrPercent:
+            type: string
+            required: false
+          discObjectNum:
+            type: string
+            required: false
+      serializedCoupon:
+        type: object
+        required: false
+        properties:
+          couponCode:
+            type: string
+            required: false
+            

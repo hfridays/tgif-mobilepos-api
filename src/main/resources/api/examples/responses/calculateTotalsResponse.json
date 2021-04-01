@@ -1,0 +1,78 @@
+{
+	"calculatetotals": {
+		"result": {
+			"status": "success",
+			"message": "success"
+		},
+		"totals": {
+			"subTotal": "9.90",
+			"taxTotal": "0.82",
+			"totalDue": "10.72"
+		},
+		"orderDiscount": {
+			"discObjectNum": "2224",
+			"discAmountOrPercent": "5.00"
+		},
+		"menuItems": [{
+			"miObjectNum": "50006",
+			"miAltItemId": "20008",
+			"menuQty": 1,
+			"menuAmount": "$10.00",
+			"lineEntry": "0",
+			"errorMessage": "Menu item or Condiment not found in POS",
+			"condiments": [{
+				"miObjectNum": "9041004",
+				"menuQty": 1,
+				"modCodeId": 2,
+				"menuAmount": "$1.49",
+				"miDiscount": {
+				"discObjectNum": "2224",
+				"discAmountOrPercent": "5.00"
+				}
+			}, {
+				"miObjectNum": "9041007",
+				"menuQty": 1,
+				"modCodeId": 3,
+				"menuAmount": "$1.00",
+				"miDiscount": {
+				"discObjectNum": "2224",
+				"discAmountOrPercent": "5.00"
+				}
+			}],
+			"miDiscount": {
+				"discObjectNum": "2224",
+				"discAmountOrPercent": "5.00"
+			}
+		}, {
+			"miObjectNum": "9230102",
+			"miAltItemId": "20008",
+			"menuQty": 1,
+			"menuAmount": "2.79",
+			"lineEntry": "0",
+			"errorMessage": "Menu item or Condiment not found in POS",
+			"condiments": [{
+				"miObjectNum": "9041004",
+				"menuQty": 1,
+				"modCodeId": 3,
+				"menuAmount": "$1.49",
+				"miDiscount": {
+				"discObjectNum": "2224",
+				"discAmountOrPercent": "5.00"
+				}
+			}, {
+				"miObjectNum": "9041007",
+				"menuQty": 1,
+				"modCodeId": 4,
+				"menuAmount": "$1.00",
+				"miDiscount": {
+				"discObjectNum": "2224",
+				"discAmountOrPercent": "5.00"
+				}
+			}],
+			"miDiscount": {
+				"discObjectNum": "3298",
+				"discAmountOrPercent": "5.00"
+			}
+		}]
+	}
+}

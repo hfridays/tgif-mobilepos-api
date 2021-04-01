@@ -1,0 +1,74 @@
+#%RAML 1.0 DataType
+type: object
+properties:
+  calculatetotals:
+    type: object
+    properties:
+      result:
+        type: object
+        properties:
+          status:
+            type: string
+          message:
+            type: string
+      totals:
+        type: object
+        properties:
+          subTotal:
+            type: string
+          taxTotal:
+            type: string
+          totalDue:
+            type: string
+      orderDiscount:
+        type: object
+        properties:
+          discObjectNum:
+            type: string
+          discAmountOrPercent:
+            type: string
+      menuItems:
+        type: array
+        items:
+          type: object
+          properties:
+            miObjectNum:
+              type: string
+            miAltItemId:
+              type: string
+            menuQty: 
+              type: integer
+            menuAmount:
+              type: string
+            lineEntry:
+              type: string
+            errorMessage:
+              type: string
+            condiments:
+              type: array
+              items:
+                type: object
+                properties:
+                  miObjectNum:
+                    type: string
+                  menuQty:
+                    type: integer
+                  modCodeId:
+                    type: integer
+                  menuAmount:
+                    type: string
+                  miDiscount:
+                    type: object
+                    properties:
+                      discObjectNum:
+                        type: string
+                      discAmountOrPercent:
+                        type: string
+            miDiscount:
+              type: object
+              properties:
+                discObjectNum:
+                  type: string
+                discAmountOrPercent:
+                  type: string
+        

@@ -1,0 +1,239 @@
+{
+	"type": "object",
+	"$schema": "http://json-schema.org/draft-03/schema",
+	"id": "http://jsonschema.net",
+	"required": false,
+	"properties": {
+		"createcheck": {
+			"type": "object",
+			"id": "http://jsonschema.net/createcheck",
+			"required": true,
+			"properties": {
+				"customerInfo": {
+					"type": "object",
+					"id": "http://jsonschema.net/createcheck/customerInfo",
+					"required": true,
+					"properties": {
+						"customerFirstName": {
+							"type": "string",
+							"id": "http://jsonschema.net/createcheck/customerInfo/customerFirstName",
+							"required": false
+						},
+						"customerLastName": {
+							"type": "string",
+							"id": "http://jsonschema.net/createcheck/customerInfo/customerLastName",
+							"required": false
+						},
+						"customerPhone": {
+							"type": "string",
+							"id": "http://jsonschema.net/createcheck/customerInfo/customerPhone",
+							"required": true
+						}
+					}
+				},
+			    "orderTime": {
+					"type": "string",
+					"id": "http://jsonschema.net/createcheck/orderTime",
+					"required": true
+				},
+				"orderSource": {
+					"type": "string",
+					"id": "http://jsonschema.net/createcheck/orderSource",
+					"required": true
+				},
+				"menuItems": {
+					"type": "object",
+					"id": "http://jsonschema.net/createcheck/menuItems",
+					"required": true,
+					"properties": {
+						"resposapiMenuItem": {
+							"type": "array",
+							"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem",
+							"required": true,
+							"items": [{
+								"type": "object",
+								"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0",
+								"required": true,
+								"properties": {
+									"condiments": {
+										"type": "object",
+										"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/condiments",
+										"required": false,
+										"properties": {
+											"resposapiCondimentMenuItem": {
+												"type": "array",
+												"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/condiments/resposapiCondimentMenuItem",
+												"required": true,
+												"items": {
+													"type": "object",
+													"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/condiments/resposapiCondimentMenuItem/0",
+													"required": true,
+													"properties": {
+														"miMenuLevel": {
+															"type": "string",
+															"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/condiments/resposapiCondimentMenuItem/0/miMenuLevel",
+															"required": true,
+															"enum": [
+																"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"
+															]
+														},
+														"modCodeId": {
+															"type": "number",
+															"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/condiments/resposapiCondimentMenuItem/0/modCodeId",
+															"required": false
+														},
+														"miObjectNum": {
+															"type": "string",
+															"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/condiments/resposapiCondimentMenuItem/0/miObjectNum",
+															"required": true,
+															"pattern": "^[a]?[0-9]*$"
+														},
+														"miDiscount": {
+															"type": "object",
+															"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/menuItem/miDiscount",
+															"required": false,
+															"properties": {
+																"discAmountOrPercent": {
+																	"type": "string",
+																	"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/menuItem/miDiscount/discAmountOrPercent",
+																	"required": true
+																},
+																"discObjectNum": {
+																	"type": "string",
+																	"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/menuItem/miDiscount/discObjectNum",
+																	"required": true
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									},
+									"menuItem": {
+										"type": "object",
+										"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/menuItem",
+										"required": true,
+										"properties": {
+											"miDiscount": {
+												"type": "object",
+												"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/menuItem/miDiscount",
+												"required": false,
+												"properties": {
+													"discAmountOrPercent": {
+														"type": "string",
+														"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/menuItem/miDiscount/discAmountOrPercent",
+														"required": true
+													},
+													"discObjectNum": {
+														"type": "string",
+														"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/menuItem/miDiscount/discObjectNum",
+														"required": true
+													}
+												}
+											},
+											"miMenuLevel": {
+												"type": "string",
+												"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/menuItem/miMenuLevel",
+												"required": true,
+												"enum": [
+													"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"
+												]
+											},
+											"miObjectNum": {
+												"type": "string",
+												"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/menuItem/miObjectNum",
+												"required": true,
+												"pattern": "^[a]?[0-9]*$"
+											},
+											"miAltItemId": {
+						                        "type": "string",
+						                        "id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/menuItem/miAltItemId",
+						                        "required": true,
+						                        "minLength": 1,
+						                        "pattern": "^[0-9]*$"
+						                    },											
+											"miReference": {
+												"type": "string",
+												"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/menuItem/miReference",
+												"required": true
+											},
+											"miPrice": {
+												"type": "string",
+												"id": "http://jsonschema.net/createcheck/menuItems/resposapiMenuItem/0/menuItem/miPrice",
+												"required": false
+											}
+										}
+									}
+								}
+							}]
+						}
+					}
+				},
+				"orderDiscount": {
+					"type": "object",
+					"id": "http://jsonschema.net/createcheck/orderDiscount",
+					"required": false,
+					"properties": {
+						"discAmountOrPercent": {
+							"type": "string",
+							"id": "http://jsonschema.net/createcheck/orderDiscount/discAmountOrPercent",
+							"required": true
+						},
+						"discObjectNum": {
+							"type": "string",
+							"id": "http://jsonschema.net/createcheck/orderDiscount/discObjectNum",
+							"required": true,
+							"minLength": 0,
+							"maxLength": 5
+						}
+					}
+				},
+				"payment": {
+					"type": "object",
+					"id": "http://jsonschema.net/createcheck/payment",
+					"required": true,
+					"properties": {
+						"referenceNumber": {
+							"type": "string",
+							"id": "http://jsonschema.net/createcheck/payment/referenceNumber",
+							"required": true
+						},
+						"tenderAmount": {
+							"type": "string",
+							"id": "http://jsonschema.net/createcheck/payment/tenderAmount",
+							"required": true
+						},
+						"tipAmount": {
+							"type": "string",
+							"id": "http://jsonschema.net/createcheck/payment/tipAmount",
+							"required": true
+						},
+						"paymentCardType": {
+							"type": "string",
+							"id": "http://jsonschema.net/createcheck/payment/paymentCardType",
+							"required": true
+						},
+						"paymentCardNum": {
+							"type": "string",
+							"id": "http://jsonschema.net/createcheck/payment/paymentCardNum",
+							"required": true
+						}
+					}
+				},
+				"serializedCoupon": {
+					"type": "object",
+					"id": "http://jsonschema.net/createcheck/serializedCoupon",
+					"required": false,
+					"properties": {
+						"couponCode": {
+							"type": "string",
+							"id": "http://jsonschema.net/createcheck/serializedCoupon/couponCode",
+							"required": true
+						}
+					}
+				}
+			}
+		}
+	}
+}

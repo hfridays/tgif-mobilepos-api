@@ -1,0 +1,112 @@
+#%RAML 1.0 DataType
+type: object
+properties:
+  createcheck:
+    type: object
+    properties: 
+      result:
+        type: object
+        properties:
+          status:
+            type: string
+          message:
+            type: string
+      dayOfBusiness:
+        type: string
+      check:
+        type: object
+        properties:
+          checkSeq:
+            type: integer
+          checkId:
+            type: string
+          tableNumber:
+            type: integer
+          employeeNumber:
+            type: integer
+          menuItems:
+            type: array
+            items:
+              type: object
+              properties:
+                miObjectNum:
+                  type: string
+                miAltItemId:
+                  type: string
+                menuQty:
+                  type: integer
+                menuAmount:
+                  type: string
+                lineEntry:
+                  type: string
+                condiments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      miObjectNum:
+                        type: string
+                      menuQty:
+                        type: integer
+                      modCodeId:
+                        type: integer
+                      menuAmount:
+                        type: string
+                      miDiscount:
+                        type: object
+                        properties:
+                          discObjectNum:
+                            type: string
+                          discAmountOrPercent:
+                            type: string
+                miDiscount:
+                  type: object
+                  properties:
+                    discObjectNum:
+                      type: string
+                    discAmountOrPercent:
+                      type: string
+          orderDiscount:
+            type: object
+            properties:
+              discObjectNum:
+                type: string
+              discAmountOrPercent:
+                type: string
+          otherDiscounts:
+            type: array
+            items:
+              type: object
+              properties:
+                discName:
+                  type: string
+                discAmount:
+                  type: string
+          payments:
+            type: object
+            properties:
+              paymentReference:
+                type: string
+              paymentAmount:
+                type: string
+          totals:
+            type: object
+            properties:
+              subTotal:
+                type: string
+              taxTotal:
+                type: string
+              tipTotal:
+                type: string
+              amtPaid:
+                type: string
+              totalDue:
+                type: string
+          checkPrintLines:
+            type: object
+            properties:
+              printLines:
+                type: array
+                items:
+                  type: string
+                  

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<sub-flow name="get-access-token" doc:id="9e17bb63-29b0-48ac-9696-21258c0576f0" >
+		<set-variable value="#[attributes.headers.ApiKey]" doc:name="reqAccessToken" doc:id="4d5d1ffb-b06c-4aa8-b520-cb9b5e9bcef5" variableName="reqAccessToken" />
+		<set-variable value="${mobilepos.token}" doc:name="accessToken" doc:id="cdeffd68-5412-4897-b94d-8b11e20b34b8" variableName="accessToken" />
+	</sub-flow>
+	<sub-flow name="insert-online-ordering-logs"
+		doc:id="bbf9f077-8524-4446-a931-9ce93476faa1">
+		<async doc:name="Async"
+			doc:id="472df618-314f-46e3-a3fe-48216a55e64a">
+			<db:stored-procedure
+				doc:name="Insert Online Ordering Logs"
+				doc:id="314a9d0d-b420-474d-8b13-3407bb99226f"
+				config-ref="Database_Config_Mule_Interface">
+				<db:sql><![CDATA[{ call dbo.prc_onlineordering_logs_insert(:method_name,:store_id,:check_number,:check_sequence,:employee_number,:table_number,:status,:message)}]]></db:sql>
+				<db:input-parameters ><![CDATA[#[{
+	method_name: vars.logData.methodName,
+	store_id: vars.logData.storeId,
+	check_number: vars.logData.checkNumber,
+	check_sequence: vars.logData.checkSequence,
+	employee_number: vars.logData.employeeNumber,
+	table_number: vars.logData.tableNumber,
+	status: vars.logData.status,
+	message: vars.logData.message
+}]]]></db:input-parameters>
+			
+</db:stored-procedure>
+		</async>
+	</sub-flow>
+</mule>

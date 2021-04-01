@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<flow name="ms-heartbeat-flow"
+		doc:id="075f2d62-90a3-4246-80e6-519f938ff54c">
+		<logger level="INFO" doc:name="INFO: Start"
+			doc:id="d006150b-3d3e-4c70-99d1-710e5840dfec"
+			message="Mulesoft Heartbeat Flow Started" />
+		<flow-ref doc:name="get-access-token"
+			doc:id="8275a8b9-d447-4637-8cd5-652c6460a3ce" name="get-access-token" />
+		<choice doc:name="Check if access token valid"
+			doc:id="e6b21586-3252-48dc-95df-0983845d48ec">
+			<when expression="#[vars.reqAccessToken == vars.accessToken]">
+				<ee:transform doc:name="Create Success Response"
+					doc:id="0fca7d5a-82cf-4925-bcb5-3834e1faf728">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	msheartbeat: {
+		result: {
+			status: "success"
+		}
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="INFO: Success"
+					doc:id="9f1e0575-c769-4d53-808b-542c2c3b6dc1"
+					message="Mulesoft Heartbeat flow completed successfully" />
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Create Failure Response"
+					doc:id="04752095-0b05-4680-a2f3-4502f3c29456">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	result: {
+		status: "failure",
+		message: "Invalid access token"
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="INFO: Failure"
+					doc:id="a625eacd-dca5-42d8-ad89-77c8913f8aa0"
+					message="Mulesoft Heartbeat flow completed unsuccessfully" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="calculate-tax-and-total-flow"
+		doc:id="506d3351-e46c-4706-b6a8-677b9bbf352a">
+		<logger level="INFO" doc:name="INFO: Start"
+			doc:id="14fff35b-14a3-4176-8cab-385d0bf235a3"
+			message="Caluclate Taxt And Total Flow Started" />
+		<flow-ref doc:name="get-access-token"
+			doc:id="76a5d86f-e805-4f54-aa4d-2e0eabb11c79" name="get-access-token" />
+		<choice doc:name="Check if access token valid"
+			doc:id="3effe04c-b008-45d5-831f-265c9d49cbae">
+			<when expression="#[vars.reqAccessToken == vars.accessToken]">
+				<set-variable value="#[payload]"
+					doc:name="initialPayload"
+					doc:id="8c4b36a9-253a-4a95-9bbc-7755fa9e40d9"
+					variableName="initialPayload" />
+				<set-variable value="#[attributes.queryParams.storeId]"
+					doc:name="storeId" doc:id="57d8c305-e445-45f3-8a92-e77d51a9ec7d"
+					variableName="storeId" />
+				<set-variable
+					value="#[{
+&#10;	methodName: 'CalculateTaxAndTotal',
+&#10;	storeId: vars.storeID,
+&#10;	checkNumber: 'Null',
+&#10;	checkSequence: 'Null',
+&#10;	employeeNumber: 'Null',
+&#10;	tableNumber: 'Null',
+&#10;	status: '1',
+&#10;	message: vars.initialPayload
+&#10;}]"
+					doc:name="logData" doc:id="8d731c8a-83ab-4c2e-a985-ec7aa780f1d0"
+					variableName="logData" />
+				<flow-ref doc:name="insert-online-ordering-logs"
+					doc:id="6c60a661-cfd8-4079-a66c-456e7ec6594f"
+					name="insert-online-ordering-logs" />
+				<json:validate-schema
+					doc:name="Validate Request schema"
+					doc:id="b00e2b82-e114-4e37-af90-50c802d32fcb"
+					schema="schema\caluclateTaxAndTotalRequest.json">
+				</json:validate-schema>
+				<set-variable
+					value="#[payload.calculateTaxAndTotal.authenticationSystem]"
+					doc:name="authSystem" doc:id="d1029a52-4d8f-48d8-abc7-20da39d1b5d6"
+					variableName="authSystem" />
+				<set-variable value="Micros" doc:name="posFlag"
+					doc:id="23ed8344-0828-4d7e-920e-bfca4a8663da"
+					variableName="posFlag" />
+				<ee:transform doc:name="tenderId"
+					doc:id="732480ca-bac7-446e-9fb5-040578e7eb09">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable resource="dwl\tenderId.dwl"
+							variableName="tenderId" />
+					</ee:variables>
+				</ee:transform>
+				<ee:transform doc:name="Create XML"
+					doc:id="76d7ad3c-4feb-4e92-83ea-2cd33f2ef50c">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable resource="dwl/inputXml.dwl"
+							variableName="inputXml" />
+					</ee:variables>
+				</ee:transform>
+				<set-variable
+					value="#[{
+&#10;	methodName: 'CalculateTaxAndTotal',
+&#10;	storeId: vars.storeID,
+&#10;	checkNumber: 'Null',
+&#10;	checkSequence: 'Null',
+&#10;	employeeNumber: 'Null',
+&#10;	tableNumber: 'Null',
+&#10;	status: '1',
+&#10;	message: payload
+&#10;}]"
+					doc:name="logData" doc:id="7fce33c6-544a-4de3-85b4-7896f0f2b345"
+					variableName="logData" />
+				<flow-ref doc:name="insert-online-ordering-logs"
+					doc:id="32c5bd3b-25de-4961-b5d5-110c68c0bb70"
+					name="insert-online-ordering-logs" />
+				<os:retrieve doc:name="Retrieve All Store Properties"
+					doc:id="cc6f0801-2cfc-4427-ae25-a9f24e405d91"
+					key="storeIpProperties" objectStore="Object_store"
+					target="storeProperties" />
+				<ee:transform doc:name="Get Store Properties"
+					doc:id="6eebbacf-826d-467a-9a1e-15393f31851d">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="storeProperties"><![CDATA[%dw 2.0
+output application/java
+---
+(payload filter ($.store_id as String == vars.storeID)) map (item, index) -> {
+	gatewayIp: item.gateway_ip,
+	printerIp: item.printer_ip,
+	serverIp: item.server_ip
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Create Failure Response"
+					doc:id="4ecd798a-9234-40d5-97b0-f86c7c621520">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	calculatetaxandtotal: {
+		result: {
+			status: "failure",
+			message: "Invalid access token"
+		}
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="INFO: Failure"
+					doc:id="c7763aa3-c153-4f09-88c0-6f341a8e5f94"
+					message="Caluclate Taxt And Total Flow flow completed unsuccessfully" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="ping-ip-addess-flow"
+		doc:id="ac4813e9-3497-409c-8210-397551f48da4">
+		<logger level="INFO" doc:name="INFO: Start"
+			doc:id="b15f5ef2-16b7-48f8-8909-c544c42cabcc"
+			message="Ping IP Addess Flow Started" />
+		<flow-ref doc:name="get-access-token"
+			doc:id="da274a5e-6c3d-481e-9a1c-883ab3676136" name="get-access-token" />
+		<choice doc:name="Check if access token valid"
+			doc:id="4ded1406-22dd-48a8-b2a3-57e16addd92e">
+			<when expression="#[vars.reqAccessToken == vars.accessToken]">
+				<ee:transform doc:name="Save Request Details"
+					doc:id="cfe623dc-1f35-4acf-9e49-4bdcfc42db7f">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="reqDetails"><![CDATA[%dw 2.0
+output application/json
+---
+{
+	ipAddess: attributes.queryParams.IPAddress,
+	port: attributes.queryParams.Port
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<logger level="INFO" doc:name="INFO: Request Details"
+					doc:id="a27b7755-33cc-406a-9024-846afa5adfe4"
+					message="Req Details #[vars.reqDetails]" />
+				<choice doc:name="Choice"
+					doc:id="67b9b672-aeff-4e09-9ab8-ce21c973ec21">
+					<when expression='#[payload == "Host is reachable"]'>
+						<ee:transform doc:name="Create Success Response"
+							doc:id="26c2924f-dcd2-4af4-994e-6bdf0f5d0e93">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	result: {
+		status: "success",
+		message: "Host is reachable"
+	}
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<logger level="INFO" doc:name="INFO: Success"
+							doc:id="477b6687-7cb5-4fdb-a6c3-afe5b1489529"
+							message="Ping IP Addess flow completed successfully" />
+					</when>
+				</choice>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Create Failure Response"
+					doc:id="631db2b0-d20a-4926-89bd-09698b010402">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	result: {
+		status: "failure",
+		message: "Invalid access token"
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="INFO: Failure"
+					doc:id="88e72d62-b9e0-4586-a938-ba75a03d2a87"
+					message="Ping IP Addess flow completed unsuccessfully" />
+			</otherwise>
+		</choice>
+
+	</flow>
+	<flow name="create-check-flow"
+		doc:id="e4418744-2ac3-4758-b54d-72de9812ef5a">
+		<logger level="INFO" doc:name="INFO: Start"
+			doc:id="ef0f8f55-50d6-4fa9-a166-3252ad1e7bba"
+			message="Create Check Flow Started" />
+		<flow-ref doc:name="get-access-token"
+			doc:id="27360d2e-5861-4b2a-bab7-d84d907e6922" name="get-access-token" />
+		<choice doc:name="Check if access token valid"
+			doc:id="6fe0cfcd-8170-47cd-b3b6-e44ff7274bb6">
+			<when expression="#[vars.reqAccessToken == vars.accessToken]">
+				<set-variable value="#[payload]"
+					doc:name="initialPayload"
+					doc:id="ce72adbb-2279-4c7b-9f99-f77322e41d5e"
+					variableName="initialPayload" />
+				<set-variable value="#[attributes.queryParams.storeId]"
+					doc:name="storeId" doc:id="c640bf56-2c67-488d-918a-d498216055db"
+					variableName="storeId" />
+				<set-variable
+					value="#[60000 ++ vars.storeId as Number]" doc:name="alohaStoreId"
+					doc:id="47abd3d1-fcc4-4c29-bc4f-bb1e58583115"
+					variableName="alohaStoreId" />
+				<set-variable
+					value="#[{&#10;	methodName: 'CreateCheck',&#10;	storeId: vars.storeID,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.initialPayload&#10;}]"
+					doc:name="logData" doc:id="212719cb-9a90-4da6-8dfa-609ccf0cbfc4"
+					variableName="logData" />
+				<flow-ref doc:name="insert-online-ordering-logs"
+					doc:id="140c0e27-ff5e-4f4d-a807-b7b25cf89fd9"
+					name="insert-online-ordering-logs" />
+				<json:validate-schema
+					doc:name="Validate Request schema"
+					doc:id="19fed3fb-1fe3-456e-ad0e-55c0f6e5fa26"
+					schema="schema\createCheck.json" />
+				<ee:transform doc:name="Payment Card"
+					doc:id="cd73378b-e0e2-45fa-b216-a01092557007">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="paymentCard"><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-variable>
+						<ee:set-variable resource="dwl/create-check/createCheckVars.dwl" variableName="createCheckVars" />
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="retrieve-tender-media-details"
+					doc:id="57841997-68fa-49fa-ac0b-27e251081b08"
+					name="retrieve-tender-media-details" />
+				<flow-ref doc:name="get-delivery-partner-orders"
+					doc:id="18998350-9f5d-45eb-a2ee-5563535f524b"
+					name="get-delivery-partner-orders" />
+
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Create Failure Response" doc:id="9bea6d18-7071-4837-bf8a-d12c5bb55b19" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	createcheck: {
+		result: {
+			status: "failure",
+			message: "Invalid access token"
+		}
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="INFO: Failure" doc:id="0099b281-f5d1-4f03-8727-cd44f17b1355" message="Create Check Flow completed unsuccessfully"/>
+			</otherwise>
+		</choice>
+		<set-variable
+			value="#[vars.initialPayload.createcheck.brandId]"
+			doc:name="brandId" doc:id="88e6496d-0314-4169-9104-7a3ed8f2c435"
+			variableName="brandId" />
+		<choice doc:name="Check BrandId"
+			doc:id="98dee45c-287c-4055-ba25-32df407cec52">
+			<when expression='#[vars.brandId != "NULL"]'>
+				<os:retrieve doc:name="Retrieve VR Details"
+					doc:id="774ab75b-1bce-445f-b786-4c4e83e2a300" key="vr_details"
+					objectStore="Object_store" target="vrDetails"/>
+				<ee:transform doc:name="Transform Message" doc:id="ee58be1c-1f24-40a3-b399-04543f9b65ac" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="vrStoreId" ><![CDATA[%dw 2.0
+output application/json
+---
+((vars.vrDetails filter ( ($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String) )).vr_store_id)[0] default "NULL"]]></ee:set-variable>
+						<ee:set-variable variableName="brandName" ><![CDATA[%dw 2.0
+output application/java
+---
+((vars.vrDetails filter (($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String))).brand_name)[0] default ""]]></ee:set-variable>
+						<ee:set-variable variableName="orderType" ><![CDATA[%dw 2.0
+output application/json
+---
+((vars.vrDetails filter ( ($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String) )).order_type_id)[0] default ""]]></ee:set-variable>
+						<ee:set-variable variableName="employeeObjectNumber" ><![CDATA[%dw 2.0
+output application/json
+---
+((vars.vrDetails filter ( ($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String) )).employee_object_number)[0] default ""]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="INFO: Default"
+					doc:id="09fd54a4-7331-46c1-9f2b-1735725a6b53"
+					message="Its a Fridays Store" />
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="tenderId"
+			doc:id="15e7acf7-25eb-40b7-a17d-4c3649a49682">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable resource="dwl/create-check/tender-id.dwl" variableName="tenderId" />
+			</ee:variables>
+		</ee:transform>
+		<set-variable
+			value='#[if(vars.empObjNum == "98008" and vars.empObjNum == "96010" and vars.empObjNum == "96011" and vars.empObjNum == "96012") "Pickup" else "Delivery"]'
+			doc:name="fullfillmentOreder"
+			doc:id="d58c5b1a-f071-43cd-a4a1-c271c305cb31"
+			variableName="fullfillmentOreder" />
+		<choice doc:name="Check Delivery Partner"
+			doc:id="d8ea47ea-d697-4167-9599-fef7e0d44b58">
+			<when expression='#[vars.tenderId.messageSubject != "Grub Hub Delivery" and vars.tenderId.messageSubject != "Uber Eats Delivery" and vars.tenderId.messageSubject != "Postmates Delivery" and vars.tenderId.messageSubject != "Door Dash Delivery"]'>
+				<db:select doc:name="Select CartId"
+					doc:id="89e8def7-a87a-48e9-ba18-1b3753b236b9" target="cartIdList"
+					config-ref="Database_Config_Mule_Interface">
+					<db:sql><![CDATA[SELECT distinct cart_id FROM [dbo].[validate_olo_duplicate_orders] with (Nolock) WHERE store_id = :storeId AND cart_id = :cartId
+AND day_of_business = :currentDate AND delivery_partner_name in ('OLO', 'PayInStore','Online Orders')]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
+	storeId: vars.storeId,
+	cartId: vars.createCheckVars.cartId,
+	currentDate: (now() >> "CST") as Date {
+		format: "MM/dd/yyyy"
+	}
+}]]]></db:input-parameters>
+				</db:select>
+				<choice doc:name="Check for duplicate olo orders"
+					doc:id="16f29ab2-b118-4d50-9a03-780f0c35fa4b">
+					<when expression="#[!(isEmpty(vars.cartIdList))]">
+						<db:select doc:name="Select"
+							doc:id="47d6a0ae-8c74-4efb-93cc-c36e69afcb87"
+							target="checkPayload" config-ref="Database_Config_Mule_Interface">
+							<db:sql><![CDATA[SELECT check_payload from [dbo].[olo_cart_id_details] with (Nolock) WHERE store_id =:storeId AND cart_id = :cartId]]></db:sql>
+							<db:input-parameters><![CDATA[#[{
+	storeId: vars.storeId,
+	cartId: vars.createCheckVars.cartId
+}]]]></db:input-parameters>
+						</db:select>
+						<choice doc:name="CheckPayload"
+							doc:id="cc032eb2-0a05-4fe9-b239-ea4f499234c5">
+							<when expression="#[!(isEmpty(vars.checkPayload))]">
+								<set-payload
+									value="#[vars.checkPayload[0].check_payload]"
+									doc:name="Set Payload"
+									doc:id="5138fc16-57e9-4712-a573-8316f7617cb5" />
+								<logger level="INFO" doc:name="INFO: Success"
+									doc:id="0d374f88-4a5c-437e-823f-eb8463814569"
+									message="#[vars.storeId]  - get duplicate olo payload from db Completed" />
+							</when>
+							<otherwise>
+								<flow-ref doc:name="create-process-sub-flow"
+									doc:id="27683f87-ea3a-467c-bad7-7d6ed034f29f"
+									name="create-process-sub-flow" />
+							</otherwise>
+						</choice>
+					</when>
+					<otherwise>
+						<set-variable
+							value="#[{&#10;	storeId: vars.storeID,&#10;	cartId: vars.createCheckVars.cartId,&#10;	orderId: vars.createCheckVars.authCode,&#10;	dayofBusiness: (now() &gt;&gt; &quot;CST&quot;) as Date {&#10;		format: &quot;MM/dd/yyyy&quot;&#10;	},&#10;	payload: 'NULL'&#10;}]"
+							doc:name="logData" doc:id="79633757-dd87-4fdf-9f55-299e8064fd01"
+							variableName="logData" />
+						<flow-ref doc:name="insert-duplicate-orders"
+							doc:id="7cbb3e4a-1c30-4906-8d3c-6a29752128e9"
+							name="insert-duplicate-orders" />
+						<flow-ref doc:name="create-process-sub-flow"
+							doc:id="05b2f653-b718-4dc7-a163-933d8c413d8d"
+							name="create-process-sub-flow" />
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise>
+				<flow-ref doc:name="create-process-sub-flow"
+					doc:id="3343a85a-9080-489c-b24f-9bda23d77bc2"
+					name="create-process-sub-flow" />
+			</otherwise>
+		</choice>
+
+	</flow>
+
+</mule>

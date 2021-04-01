@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<db:config name="Database_Config_Depot"
+		doc:name="Database Config"
+		doc:id="a22595e0-d1f0-4100-991d-f4d4f026e472">
+		<db:generic-connection
+			url="${database.depot.url}" driverClassName="${database.driver}"
+			user="${database.user}" password="${database.password}" />
+	</db:config>
+	<db:config name="Database_Config_Mule_Interface"
+		doc:name="Database Config"
+		doc:id="52dbe492-ac32-436d-a4fb-9430d2d655eb">
+		<db:generic-connection
+			url="${database.muleInterface.url}"
+			driverClassName="${database.driver}" user="${database.user}"
+			password="${database.password}" />
+	</db:config>
+	<os:object-store name="Object_store"
+		doc:name="Object store" doc:id="37e7f8a6-b58b-4952-b71e-e792750684ef" />
+</mule>

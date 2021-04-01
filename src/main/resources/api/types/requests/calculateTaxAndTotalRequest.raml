@@ -1,0 +1,99 @@
+#%RAML 1.0 DataType
+type: object
+properties:
+  calculateTaxAndTotal:
+    type: object
+    required: true
+    properties:
+      menuItems:
+        type: object
+        required: true
+        properties:
+          resposapiMenuItem:
+            type: array
+            required: true
+            items:
+              type: object
+              properties:
+                condiments:
+                  type: object
+                  required: false
+                  properties:
+                    resposapiCondimentMenuItem:
+                      type: array
+                      required: true
+                      items:
+                        type: object
+                        properties:
+                          miMenuLevel:
+                            type: string
+                            required: true
+                            enum: ["1","2","3","4","5","6","7","8","9","10"]
+                          modCodeId:
+                            type: number
+                            required: false
+                          miObjectNum:
+                            type: string
+                            pattern: ^[a]?[0-9]*$
+                          miDiscount:
+                            type: object
+                            required: false
+                            properties:
+                              discAmountOrPercent:
+                                type: string
+                                required: false
+                              discObjectNum:
+                                type: string
+                                required: true
+                menuItem:
+                  type: object
+                  required: true
+                  properties:
+                    miDiscount:
+                      type: object
+                      required: false
+                      properties:
+                        discAmountOrPercent:
+                          type: string
+                          required: false
+                        discObjectNum:
+                          type: string
+                          required: false
+                    miMenuLevel:
+                      type: string
+                      required: true
+                      enum: ["1","2","3","4","5","6","7","8","9","10"]
+                    lineEntry:
+                      type: string
+                      required: true
+                    miObjectNum:
+                      type: string
+                      pattern: ^[a]?[0-9]*$
+                      required: true
+                    miAltItemId:
+                      type: string
+                      required: true
+                      minLength: 1
+                      pattern: ^[0-9]*$
+      orderDiscount:
+        type: object
+        required: false
+        properties:
+          discAmountOrPercent:
+            type: string
+            required: true
+          discObjectNum:
+            type: string
+            required: true
+            minLength: 0
+            maxLength: 5
+      serializedCoupon:
+        type: object
+        required: false
+        properties:
+          couponCode:
+            type: string
+            required: true
+      authenticationSystem:
+        type: string
+        required: true

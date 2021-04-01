@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="get-delivery-partner-orders"
+		doc:id="c84870c9-695f-420c-8a3a-30d9d0364afd">
+		<choice doc:name="Check Payment Card Type"
+			doc:id="8f76bd23-45f8-40f0-b0a3-2695c902385b">
+			<when
+				expression='#[vars.createCheckVars.paymentCardType == "UBE"]'>
+				<set-variable value="UberEats"
+					doc:name="deliveryPartner"
+					doc:id="fdbe8495-9d0f-4d21-b98e-180a7b640e5f"
+					variableName="deliveryPartner" />
+				<os:retrieve doc:name="Retrieve UberEats Orders"
+					doc:id="b91ed5f2-3324-48cd-9a74-9e055c8b45f2"
+					key="uberEatsOrderType" objectStore="Object_store"
+					target="orderType"
+					targetValue="#[((payload filter ($.store_id as String == vars.storeId)).order_type_id)[0]]" />
+			</when>
+			<when
+				expression='#[vars.createCheckVars.paymentCardType == "DD"]'>
+				<set-variable value="DoorDash"
+					doc:name="deliveryPartner"
+					doc:id="f582cf30-99de-4193-b7e7-e86e6d36ee64"
+					variableName="deliveryPartner" />
+				<os:retrieve doc:name="Retrieve DoorDash Orders"
+					doc:id="05f5983d-660c-4c61-95d4-efa3a4e34698"
+					key="doorDashOrderType" objectStore="Object_store"
+					target="orderType"
+					targetValue="#[((payload filter ($.store_id as String == vars.storeId)).order_type_id)[0]]" />
+			</when>
+			<when
+				expression='#[vars.createCheckVars.paymentCardType == "GH"]'>
+				<set-variable value="GrubHub"
+					doc:name="deliveryPartner"
+					doc:id="97b7a141-2136-4c0e-8d4e-0dd613c1045e"
+					variableName="deliveryPartner" />
+				<os:retrieve doc:name="Retrieve GrubHub Orders"
+					doc:id="3111e38c-fa4a-4efd-a955-70f1cb5172d9"
+					key="grubHubOrderType" objectStore="Object_store"
+					target="orderType"
+					targetValue="#[((payload filter ($.store_id as String == vars.storeId)).order_type_id)[0]]" />
+			</when>
+			<when
+				expression='#[vars.createCheckVars.paymentCardType == "PM"]'>
+				<set-variable value="Postmates"
+					doc:name="deliveryPartner"
+					doc:id="089c9588-fb17-4411-9375-c320c24188d8"
+					variableName="deliveryPartner" />
+				<os:retrieve doc:name="Retrieve PostMates Orders"
+					doc:id="c8dda2d9-54be-46f5-aa2f-c0434d4f1165"
+					key="postmatesOrderType" objectStore="Object_store"
+					target="orderType"
+					targetValue="#[((payload filter ($.store_id as String == vars.storeId)).order_type_id)[0]]" />
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="INFO: Default"
+					doc:id="2eb8e58d-2117-4e9f-9097-d220862a2582"
+					message="Payment Card is default" />
+				<set-variable value="" doc:name="orderType"
+					doc:id="0a0ab00c-1a19-4048-b5ea-1cd1bc6dc349"
+					variableName="orderType" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="retrieve-tender-media-details"
+		doc:id="48468065-ee33-4438-bcf4-752c9b3b3760">
+		<os:retrieve doc:name="Retrieve Tender Media Details"
+			doc:id="807d9f02-6b02-469f-898e-a1cf50b9de91" key="tenderMedia"
+			objectStore="Object_store" target="tenderMedia"
+			targetValue="#[((payload filter ($.store_id as String == vars.storeid)).tender_media_object_number)[0]]" />
+	</sub-flow>
+	<sub-flow name="insert-duplicate-orders"
+		doc:id="f4206cbe-3581-406d-9617-8712bc87fed7">
+		<choice doc:name="Choice"
+			doc:id="80c65ca1-ecdc-45fc-b4a1-6c29d1b958e0">
+			<when
+				expression='#[vars.tenderId.messageSubject != "Online Orders"]'>
+				<set-variable value="PayInStore"
+					doc:name="deliveryPartner"
+					doc:id="554682b5-f154-43ec-96a1-b8dccd759b7f"
+					variableName="deliveryPartner" />
+			</when>
+			<otherwise>
+				<set-variable value="OLO" doc:name="deliveryPartner"
+					doc:id="f3360221-c95a-4c79-afd2-62b883ee7052"
+					variableName="deliveryPartner" />
+			</otherwise>
+		</choice>
+		<db:stored-procedure
+			doc:name="Call prc_validate_olo_duplicate_orders_insert"
+			doc:id="93fccd55-8a53-4f14-99ee-41e514409ad9"
+			config-ref="Database_Config_Mule_Interface">
+			<db:sql><![CDATA[{ call dbo.prc_validate_olo_duplicate_orders_insert(:store_id,:cart_id,:order_id,:day_of_business,:delivery_partner_name)}]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	store_id: vars.logData.storeId,
+	cart_id: vars.logData.cartId,
+	orderId: vars.logData.orderId,
+	day_of_business: vars.logData.dayOfBusiness,
+	delivery_partner_name: vars.deliveryPartner
+}]]]></db:input-parameters>
+		</db:stored-procedure>
+	</sub-flow>
+	<sub-flow name="create-process-sub-flow"
+		doc:id="1e2ae279-7aa2-4b27-996c-bd2f6d1c3d5b">
+		<ee:transform doc:name="Post Transaction XML"
+			doc:id="50bbe9a6-d123-4a7e-be7c-f29e81944d9b">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable
+					resource="dwl/create-check/pos-transaction-xml.dwl"
+					variableName="postTransactionXML" />
+			</ee:variables>
+		</ee:transform>
+		<set-variable
+			value="#[{&#10;	methodName: 'CreateCheck',&#10;	storeId: vars.storeID,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.postTransactionXML&#10;}]"
+			doc:name="logData" doc:id="9f8e1fa9-a382-41d5-b644-40be1d39fedb"
+			variableName="logData" />
+		<flow-ref doc:name="insert-online-ordering-logs"
+			doc:id="744dd878-4cf4-4e6f-8ff1-a713c0f72d18"
+			name="insert-online-ordering-logs" />
+		<os:retrieve doc:name="Retrieve Store IP Properties" doc:id="cb8ab9f0-e76b-4494-baf3-6c37c0636bd4" key="storeIpProperties" objectStore="Object_store" target="storeIpProperties" targetValue="#[(payload filter ($.store_id as String == vars.storeID))]"/>
+		<ee:transform doc:name="Transform Message" doc:id="84c367b2-e1f4-4c95-a203-e7d08e763349" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="storeIpProperties" ><![CDATA[%dw 2.0
+output application/json
+---
+(vars.storeIpProperties)) map (item, index) -> {
+	gatewayIp: item.gateway_ip,
+	printerIp: item.printer_ip,
+	serverIp: item.server_ip
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="IP Address is not null" doc:id="6f6d160c-3f20-4a3d-b3c3-8badbe149ab2" >
+			<when expression="#[vars.storeIpProperties.serverIp != null]"/>
+			<otherwise >
+				<set-payload value="#['Store Number ' ++ vars.storeId ++ ' not setup in mulesoft for online ordering']" doc:name="Set Payload" doc:id="4447f5a7-4771-4992-8e7b-b9b3382a353a" />
+				<logger level="INFO" doc:name="INFO: Logger" doc:id="fa624a93-ca71-4011-b9a2-4542844a9cbe" message="#[payload]"/>
+				<set-variable
+					value="Error occurred in Online Ordering API" doc:name="emailSubject"
+					doc:id="80af0eb8-05de-4d31-b222-01481fe50a50"
+					variableName="emailSubject" />
+				<db:stored-procedure doc:name="Send Email Notification" doc:id="7591e32d-3146-4c50-ac75-799052e5781d" config-ref="Database_Config_Depot">
+					<db:sql ><![CDATA[{call prc_RemoteMail_RouteMessage(:type, :subject,:body)}]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	'type': "MobilePaymentNotification",
+	subject: vars.emailSubject,
+	body: payload
+}]]]></db:input-parameters>
+				</db:stored-procedure>
+				<set-variable
+			value="#[{&#10;	methodName: 'CreateCheck',&#10;	storeId: vars.storeID,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: &quot;Store server not reachable, able to reach Firewall&quot;&#10;}]"
+			doc:name="logData" doc:id="4046e051-c0d9-401e-832d-367a2ab6264b"
+			variableName="logData" />
+		<flow-ref doc:name="insert-online-ordering-logs"
+			doc:id="8f0db013-2ba9-4548-9df7-bf8489098da2"
+			name="insert-online-ordering-logs" />
+				<choice doc:name="Check Delivery Partner" doc:id="3d9c0dc0-0227-4144-a18f-cf2b45166163" >
+					<when expression='#[vars.tenderId.messageSubject != "Grub Hub Delivery" and vars.tenderId.messageSubject != "Uber Eats Delivery" and vars.tenderId.messageSubject != "Postmates Delivery" and vars.tenderId.messageSubject != "Door Dash Delivery"]'>
+						<ee:transform doc:name="Transform Message" doc:id="ab2d42e5-9fe6-48c0-b0ed-b6e3f8a3b1e9" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	createcheck: {
+		result: {
+			status: "failure",
+			message: "Unable to find check Bad Response returned from micros"
+		}
+	}
+}]]></ee:set-payload>
+							</ee:message>
+							<ee:variables >
+								<ee:set-variable variableName="deliveryOrderDetails" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	deliveryPartnerName: vars.tenderId.messageSubject,
+	storeId: vars.storeId,
+	orderId: vars.createCheckVars.cartId,
+	checkNumber: 'NULL',
+	dayofBusiness: (now() >> "CST") as Date {
+		format: "MM/dd/yyyy"
+	},
+	deliveryMethod: ' Pickup',
+	status: 'failed',
+	subTotal: if ( vars.initialPayload.createcheck.payment.subtotalNoDiscountsPlusTaxes == null or vars.initialPayload.createcheck.payment.taxTotal ==  null ) 'NULL'
+	else (((vars.initialPayload.createcheck.payment.subtotalNoDiscountsPlusTaxes as Number) - (vars.initialPayload.createcheck.payment.taxTotal as Number)) as String),
+	taxTotal: vars.initialPayload.createcheck.payment.taxTotal,
+	agentId: vars.deliveryOrderDetails.agentIdvars.initialPayload.createcheck.agentId default ""
+}]]></ee:set-variable>
+							</ee:variables>
+						</ee:transform>
+						<flow-ref doc:name="insert-delivery-order-details" doc:id="70f4a97f-6b4e-45fe-9660-89171b457e2d" name="insert-delivery-order-details"/>
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="INFO: Logger" doc:id="d83ff175-bc3f-4943-a598-6c72e9592849" message="Grub Hub delivery or Doordash delivery or UberEats delivery or Postmates delivery"/>
+					</otherwise>
+				</choice>
+		
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="insert-delivery-order-details" doc:id="4e584271-571b-4a8e-a5b4-db07e0572366" >
+		<async doc:name="Async" doc:id="d5228358-0df0-47d8-a6cd-420a0005c603" >
+			<db:stored-procedure doc:name="Insert Delivery Order Details" doc:id="aea8f562-a88a-44a8-a791-d4a65831249f" config-ref="Database_Config_Mule_Interface">
+				<db:sql ><![CDATA[{ call dbo.prc_delivery_order_details_insert(:delivery_partner_name,:store_id,:order_id,:check_number,:day_of_business,:delivery_method,:status,:sub_total,:tax_total,:agent_id)}]]></db:sql>
+				<db:input-parameters ><![CDATA[#[{
+	delivery_partner_name: vars.deliveryOrderDetails.deliveryPartnerName,
+	store_id: vars.deliveryOrderDetails.storeId,
+	order_id: vars.deliveryOrderDetails.orderId,
+	check_number: vars.deliveryOrderDetails.checkNumber,
+	day_of_business: if ( vars.deliveryOrderDetails.dayOfBusiness != "0001-01-01" ) vars.deliveryOrderDetails.dayOfBusiness else (now() >> "CST") as Date {
+		format: "MM/dd/yyyy"
+	},
+	delivery_method: vars.deliveryOrderDetails.deliveryMethod,
+	status: vars.deliveryOrderDetails.status,
+	sub_total:vars.deliveryOrderDetails.subTotal,
+	tax_total:vars.deliveryOrderDetails.taxTotal,
+	agent_id: vars.deliveryOrderDetails.agentId
+}]]]></db:input-parameters>
+			</db:stored-procedure>
+		</async>
+	</sub-flow>
+	<!-- <sub-flow name="serialized-coupon-sub-flow" doc:id="5db58ee3-d2b3-4a87-9b75-eca067665cff" 
+		> <logger level="INFO" doc:name="INFO: Start" doc:id="513cc75d-a817-4074-aa82-95c0dcde8ce5" 
+		message="#[vars.storeId] - Create Check Validate Serialized Coupon"/> <ee:transform 
+		doc:name="Transform Message" doc:id="2416746b-49bc-467f-a82b-9d92ef40f3b8" 
+		> <ee:message > </ee:message> <ee:variables > <ee:set-variable variableName="lookupData" 
+		><![CDATA[%dw 2.0 output application/json -&#45;&#45; { requestCode: 'SV_ACCEPT_COUPON', 
+		retransmit: 'N', terminalId: '1', siteId: 1, employeeId: '98008', posPlatform: 
+		'3700', amount: '0.00', localDate: now() as Date { format: "yyyyMMdd" }, 
+		localTime: now() as DateTime { format:"HHmmss" }, revenueCenter: '5', terminalType: 
+		'1', version: '8', timeOut: '120', language: 'en_US', currency: 'USD', sequence: 
+		'01', quantity: '1' }]]></ee:set-variable> <ee:set-variable variableName="couponStoreId" 
+		><![CDATA[%dw 2.0 output application/json -&#45;&#45; vars.storeId]]></ee:set-variable> 
+		</ee:variables> </ee:transform> <choice doc:name="Choice" doc:id="a491ed30-77d0-453b-92e7-211e45d7003e" 
+		> <when expression="#[vars.createCheckVars.orderDiscountNum == null and vars.orderDiscountNum.serializedCouponCode 
+		!= null]"> <logger level="INFO" doc:name="INFO: Coupon Found" doc:id="c118af9e-4a79-4fc5-ac55-b8e3ec8f43b3" 
+		message="Serialized Coupon Found"/> <ee:transform doc:name="Transform Message" 
+		doc:id="e9e5224b-1a95-4d1a-b216-556d9f23915c" > <ee:message > </ee:message> 
+		<ee:variables > <ee:set-variable variableName="couponMetadata" ><![CDATA[%dw 
+		2.0 output application/json fun getCheckNumber() = "9" ++ now().millisecond 
+		fun getMonthString() = using(month = now().month as String) if(sizeOf(month) 
+		== 1) ("00" ++ month) else "0" ++ month fun getDayString() = using(day = 
+		now().day as String) if(sizeOf(day) == 1) ("00" ++ day) else "0" ++ day fun 
+		getHourString() = using(hour = now().hour as String) if(sizeOf(hour) == 1) 
+		("00" ++ hour) else "0" ++ hour fun getMinString() = using(min = now().minutes 
+		as String) if(sizeOf(min) == 1) ("00" ++ min) else "0" ++ min fun getSecString() 
+		= using(sec = now().seconds as String) if(sizeOf(sec) == 1) ("00" ++ sec) 
+		else "0" ++ sec -&#45;&#45; { checkNumber: getCheckNumber(), checkSequence: 
+		"8" ++ now().milliseconds, traceId: now() as DateTime {format: "yyMMddHHmmss"}, 
+		//(now().year) ++ getMonthString() ++ getDayString() ++ getHourString() ++ 
+		getMinString() ++ getSecString() ++ "N01" ++ getCheckNumber(), localTime: 
+		now() as DateTime {format: "HHmmss"} }]]></ee:set-variable> </ee:variables> 
+		</ee:transform> <ee:transform doc:name="acceptCouponXML" doc:id="a189fc92-34ee-40e2-a21c-0bb8ebe42f64" 
+		> <ee:message > </ee:message> <ee:variables > <ee:set-variable variableName="acceptCouponXML" 
+		><![CDATA[%dw 2.0 output application/xml -&#45;&#45; { SVCMessage @(version: 
+		vars.lookupData.version as Number , timeout: vars.lookupData.timeOut as Number 
+		, language: vars.lookupData.language , currency: vars.lookupData.currency 
+		, sequence: vars.lookupData.sequence as Number): { RequestCode: vars.lookupData.requestCode, 
+		CouponCode: payload.createcheck.serializedCoupon.couponCode, CheckSummary: 
+		{ MenuItems: { (payload.createcheck.menuItems.resposapiMenuItem map ((value 
+		, index) -> { MI @(ID: (value.menuItem.miAltItemId replace "a" with "") as 
+		Number , QTY: vars.lookupData.quantity as Number): { "text()": value.menuItem.miPrice 
+		} })) }, Totals @(ttlDue: payload.createcheck.payment.subtotalNoDiscountsPlusTaxes 
+		as Number , ttlTax: payload.createcheck.payment.taxTotal as Number , ttlSvc: 
+		vars.lookupData.amount as Number , ttlPay: vars.lookupData.amount as Number): 
+		{ } }, TraceID: vars.couponMetadata.traceId, TerminalID: vars.lookupData.terminalId 
+		as Number, TerminalType: vars.lookupData.terminalType, TipAmount: vars.lookupData.amount 
+		as Number, Amount: vars.lookupData.amount as Number, LocalCurrency: vars.lookupData.currency, 
+		LocalDate: vars.lookupData.localDate as Number, LocalTime: vars.couponMetadata.localTime, 
+		PosPlatform: vars.lookupData.posPlatform as Number, BusinessDate: vars.lookupData.localDate 
+		as Number, CheckNumber: vars.couponMetadata.checkNum as Number, CheckSequence: 
+		vars.couponMetadata.checkSeq as Number, TransactionEmployee: vars.lookupData.employeeId 
+		as Number, RevenueCenter: vars.lookupData.revenueCenter as Number, Site: 
+		vars.lookupData.siteId } }]]></ee:set-variable> </ee:variables> </ee:transform> 
+		</when> <otherwise > <set-variable value="#[{ &#10; methodName: 'CreateCheck', 
+		&#10; storeId: vars.storeID, &#10; checkNumber: 'Null', &#10; checkSequence: 
+		'Null', &#10; employeeNumber: 'Null', &#10; tableNumber: 'Null', &#10; status: 
+		'1', &#10; message: &quot;No serialized coupon found&quot; &#10;}]" doc:name="logData" 
+		doc:id="85919a9e-1292-486a-866a-2fc3259ed2d3" variableName="logData"/> <flow-ref 
+		doc:name="insert-online-ordering-logs" doc:id="84fb7aad-5e26-4ad9-aa87-0191ef2163eb" 
+		name="insert-online-ordering-logs" /> </otherwise> </choice> </sub-flow> -->
+</mule>

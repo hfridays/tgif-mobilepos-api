@@ -1,0 +1,102 @@
+{
+	"createcheck": {
+		"result": {
+			"status": "success",
+			"message": "success"
+		},
+		"dayOfBusiness": "2016-07-08T00:00:00",
+		"check": {
+			"checkSeq": 232,
+			"checkId": "3344",
+			"tableNumber": 204,
+			"employeeNumber": 52,
+			"menuItems": [{
+				"miObjectNum": "S21",
+				"miAltItemId": "20021",
+				"menuQty": 1,
+				"menuAmount": "$10.00",
+				"lineEntry": "0",
+				"condiments": [{
+					"miObjectNum": "9041004",
+					"menuQty": 1,
+					"modCodeId": 6,
+					"menuAmount": "$1.49",
+					"miDiscount": {
+						"discObjectNum": "2224",
+						"discAmountOrPercent": "5.00"
+					}
+				}, {
+					"miObjectNum": "9041007",
+					"menuQty": 1,
+					"modCodeId": 3,
+					"menuAmount": "$1.00",
+					"miDiscount": {
+						"discObjectNum": "2224",
+						"discAmountOrPercent": "5.00"
+					}
+				}],
+				"miDiscount": {
+					"discObjectNum": "2224",
+					"discAmountOrPercent": "5.00"
+				}
+			}, {
+				"miObjectNum": "20005",
+				"miAltItemId": "20021",
+				"menuQty": 1,
+				"menuAmount": "$10.00",
+				"lineEntry": "0",
+				"condiments": [{
+					"miObjectNum": "9041004",
+					"menuQty": 1,
+					"modCodeId": 2,
+					"menuAmount": "$1.49",
+					"miDiscount": {
+						"discObjectNum": "2224",
+						"discAmountOrPercent": "5.00"
+					}
+				}, {
+					"miObjectNum": "9041007",
+					"menuQty": 1,
+					"modCodeId": 3,
+					"menuAmount": "$1.00",
+					"miDiscount": {
+						"discObjectNum": "2224",
+						"discAmountOrPercent": "5.00"
+					}
+				}],
+				"miDiscount": {
+					"discObjectNum": "2224",
+					"discAmountOrPercent": "5.00"
+				}
+			}],
+			"orderDiscount": {
+				"discObjectNum": "2224",
+				"discAmountOrPercent": "5.00"
+			},
+			"otherDiscounts": [{
+				"discName": "SOF Discount",
+				"discAmount": "11.90-"
+			}, {
+				"discName": "SOF Discount",
+				"discAmount": "11.90-"
+			}],
+			"payments": {
+				"paymentReference": "Vantive  token number if credit card.",
+				"paymentAmount": "$5.00"
+			},
+			"totals": {
+				"subTotal": "$16.29",
+				"taxTotal": "$2.00",
+				"tipTotal": "$5.00",
+				"amtPaid": "$5.00",
+				"totalDue": "$18.29"
+			},
+			"checkPrintLines": {
+				"printLines": [
+					"** TGI Friday's #3101**",
+					"QA Lab 3101"
+				]
+			}
+		}
+	}
+}
