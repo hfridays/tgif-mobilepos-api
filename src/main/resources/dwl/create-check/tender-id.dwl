@@ -1,5 +1,6 @@
 %dw 2.0
 output application/json
+var cardType = vars.paymentCard
 var fullfillmentType = vars.createCheckVars.fulltillmentType default "Delivery"
 var payInArray = ["MC", "VI", "DI", "AX", "AZ", "PayInStore"]
 fun getEmployeeObjectNumber(cardType, fullfillmentType) = if(payInArray contains cardType) "98008"

@@ -10,6 +10,7 @@
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	
 	<sub-flow name="get-delivery-partner-orders"
 		doc:id="c84870c9-695f-420c-8a3a-30d9d0364afd">
 		<choice doc:name="Check Payment Card Type"
@@ -130,7 +131,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			doc:id="744dd878-4cf4-4e6f-8ff1-a713c0f72d18"
 			name="insert-online-ordering-logs" />
 		<os:retrieve doc:name="Retrieve Store IP Properties" doc:id="cb8ab9f0-e76b-4494-baf3-6c37c0636bd4" key="storeIpProperties" objectStore="Object_store" target="storeIpProperties" targetValue="#[(payload filter ($.store_id as String == vars.storeID))]"/>
-		<ee:transform doc:name="Transform Message" doc:id="84c367b2-e1f4-4c95-a203-e7d08e763349" >
+		<ee:transform doc:name="Store IP Properties" doc:id="84c367b2-e1f4-4c95-a203-e7d08e763349" >
 			<ee:message >
 			</ee:message>
 			<ee:variables >
@@ -145,22 +146,47 @@ output application/json
 			</ee:variables>
 		</ee:transform>
 		<choice doc:name="IP Address is not null" doc:id="6f6d160c-3f20-4a3d-b3c3-8badbe149ab2" >
-			<when expression="#[vars.storeIpProperties.serverIp != null]"/>
+			<when expression="#[vars.storeIpProperties.serverIp != null]">
+				<choice doc:name="Check Response" doc:id="03a33763-1784-471f-ade3-69882f6aa972" >
+					<when expression='#[vars.createCheckServiceResponse.status == "Failed"]'>
+						<os:retrieve doc:name="Retrieve Error Message Details" doc:id="e7a63b49-cbea-4ee5-9994-d78f6f688064" key="ErrorMessage" target="errorMessageDetails"/>
+						<ee:transform doc:name="errorDescription" doc:id="6c8982a9-e1fb-4257-b3d0-ccabdd2dbdbd" >
+							<ee:message >
+							</ee:message>
+							<ee:variables >
+								<ee:set-variable variableName="errorDescription" ><![CDATA[%dw 2.0
+var arr = ((payload filter ($.message_number as String == vars.createCheckServiceResponse.response)).custom_message_text)
+var size = if(arr == null) 0 else sizeOf (arr)
+output application/java
+---
+if((size>0)) (arr[0]) else (vars.createCheckServiceResponse.response ++ " This is a new error code. Kindly check with POS Team")]]></ee:set-variable>
+							</ee:variables>
+						</ee:transform>
+					</when>
+				</choice>
+				<choice doc:name="Check Response" doc:id="19790038-2c23-4127-9d75-b2ec25d90774" >
+					<when expression="#[vars.createCheckServiceResponse.status == 'Success']">
+						<logger level="INFO" doc:name="INFO: Success" doc:id="c5adca61-826b-44ba-93a0-5442518e3f48" message="Web Service call was successfull"/>
+						<flow-ref doc:name="send-order-to-mail" doc:id="f1d34c22-4ebe-484d-b995-f4b5263dc3bd" name="send-order-to-mail"/>
+					</when>
+					<when expression="#[vars.createCheckServiceResponse.status == 'Failed' &amp;&amp; vars.createCheckServiceResponse.response == 'Store network unreachable at Firewall']">
+						<logger level="INFO" doc:name="INFO: Failed" doc:id="927b15aa-e621-4e46-9a4d-9ff5063eb941" message="Web Service call failed, error code=#[vars.createCheckServiceResponse.response]"/>
+					</when>
+					<when expression="#[vars.createCheckServiceResponse.status == 'Failed' &amp;&amp; vars.createCheckServiceResponse.response == 'Store server not reachable, able to reach Firewall']">
+						<logger level="INFO" doc:name="INFO: Failed" doc:id="204b90a9-354f-44f5-b79c-586216202043" message="Web Service call failed, error code=#[vars.createCheckServiceResponse.response]"/>
+					</when>
+					<when expression="#[vars.createCheckServiceResponse.status == 'Failed' &amp;&amp; vars.createCheckServiceResponse.response == 'Bad response']">
+						<logger level="INFO" doc:name="INFO: Failed" doc:id="00543f10-fff9-4b16-88a8-4b6d67643905" message="Web Service call failed, error code=#[vars.createCheckServiceResponse.response]"/>
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="Logger" doc:id="03f5bffe-f03a-4d63-a793-7cbf51bdff4f" />
+					</otherwise>
+				</choice>
+			</when>
 			<otherwise >
-				<set-payload value="#['Store Number ' ++ vars.storeId ++ ' not setup in mulesoft for online ordering']" doc:name="Set Payload" doc:id="4447f5a7-4771-4992-8e7b-b9b3382a353a" />
-				<logger level="INFO" doc:name="INFO: Logger" doc:id="fa624a93-ca71-4011-b9a2-4542844a9cbe" message="#[payload]"/>
-				<set-variable
-					value="Error occurred in Online Ordering API" doc:name="emailSubject"
-					doc:id="80af0eb8-05de-4d31-b222-01481fe50a50"
-					variableName="emailSubject" />
-				<db:stored-procedure doc:name="Send Email Notification" doc:id="7591e32d-3146-4c50-ac75-799052e5781d" config-ref="Database_Config_Depot">
-					<db:sql ><![CDATA[{call prc_RemoteMail_RouteMessage(:type, :subject,:body)}]]></db:sql>
-					<db:input-parameters ><![CDATA[#[{
-	'type': "MobilePaymentNotification",
-	subject: vars.emailSubject,
-	body: payload
-}]]]></db:input-parameters>
-				</db:stored-procedure>
+				<set-variable value="#['Store Number ' ++ vars.storeId ++ ' not setup in mulesoft for online ordering']" doc:name="emailMessage" doc:id="c218e312-47b8-4bae-87c8-82bbe7a2f555" variableName="emailMessage"/>
+				<logger level="INFO" doc:name="INFO: Logger" doc:id="fa624a93-ca71-4011-b9a2-4542844a9cbe" message="#[vars.emailMsg]"/>
+				<flow-ref doc:name="send-email-notification" doc:id="48b28b59-9bb8-4809-b029-878bf3ef4108" name="send-email-notification" />
 				<set-variable
 			value="#[{&#10;	methodName: 'CreateCheck',&#10;	storeId: vars.storeID,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: &quot;Store server not reachable, able to reach Firewall&quot;&#10;}]"
 			doc:name="logData" doc:id="4046e051-c0d9-401e-832d-367a2ab6264b"
@@ -208,6 +234,21 @@ output application/json
 						<flow-ref doc:name="insert-delivery-order-details" doc:id="70f4a97f-6b4e-45fe-9660-89171b457e2d" name="insert-delivery-order-details"/>
 					</when>
 					<otherwise >
+						<ee:transform doc:name="Transform Message" doc:id="a12fa88f-2bb0-49ff-ac53-8b9564e8ccc1">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	createcheck: {
+		result: {
+			status: "failure",
+			message: "Store server not reachable, able to reach Firewall"
+		}
+	}
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
 						<logger level="INFO" doc:name="INFO: Logger" doc:id="d83ff175-bc3f-4943-a598-6c72e9592849" message="Grub Hub delivery or Doordash delivery or UberEats delivery or Postmates delivery"/>
 					</otherwise>
 				</choice>
@@ -215,11 +256,11 @@ output application/json
 			</otherwise>
 		</choice>
 	</sub-flow>
-	<sub-flow name="insert-delivery-order-details" doc:id="4e584271-571b-4a8e-a5b4-db07e0572366" >
-		<async doc:name="Async" doc:id="d5228358-0df0-47d8-a6cd-420a0005c603" >
+	<sub-flow name="insert-delivery-order-details" doc:id="4e584271-571b-4a8e-a5b4-db07e0572366">
+		<async doc:name="Async" doc:id="d5228358-0df0-47d8-a6cd-420a0005c603">
 			<db:stored-procedure doc:name="Insert Delivery Order Details" doc:id="aea8f562-a88a-44a8-a791-d4a65831249f" config-ref="Database_Config_Mule_Interface">
-				<db:sql ><![CDATA[{ call dbo.prc_delivery_order_details_insert(:delivery_partner_name,:store_id,:order_id,:check_number,:day_of_business,:delivery_method,:status,:sub_total,:tax_total,:agent_id)}]]></db:sql>
-				<db:input-parameters ><![CDATA[#[{
+				<db:sql><![CDATA[{ call dbo.prc_delivery_order_details_insert(:delivery_partner_name,:store_id,:order_id,:check_number,:day_of_business,:delivery_method,:status,:sub_total,:tax_total,:agent_id)}]]></db:sql>
+				<db:input-parameters><![CDATA[#[{
 	delivery_partner_name: vars.deliveryOrderDetails.deliveryPartnerName,
 	store_id: vars.deliveryOrderDetails.storeId,
 	order_id: vars.deliveryOrderDetails.orderId,
@@ -235,6 +276,56 @@ output application/json
 }]]]></db:input-parameters>
 			</db:stored-procedure>
 		</async>
+	</sub-flow>
+	<sub-flow name="send-order-to-mail" doc:id="89e2aa2e-e9ef-4872-a0c4-8593657e98ec" >
+		<async doc:name="Async" doc:id="0ee9f62f-078e-4e02-b2b7-3eba3e4e6314" >
+			<ee:transform doc:name="Set Email Message" doc:id="dabb273b-ecc2-4beb-bf51-15e0fbac3d48" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable resource="dwl/create-check/email-message.dwl" variableName="emailMessage" />
+				</ee:variables>
+			</ee:transform>
+			<choice doc:name="Check Email Message" doc:id="dfea6612-bfec-4acb-b9d8-48d3f89baea4" >
+				<when expression='#[vars.emailMessage != "Print Check Lines not found"]'>
+					<flow-ref doc:name="send-email-notification-create" doc:id="0500eb3c-672f-4625-9268-a13fc55ade7c" name="send-email-notification-create"/>
+					<logger level="INFO" doc:name="Logger" doc:id="eba9f219-26f3-437b-ba52-53f7dc6a6a02" message="#[(payload == 'Success') ?'Email Online Order Check Lines to store Method Completed':'Email Online Order Check Lines to store Method Completed with Errors']"/>
+					<set-variable value="#[{&#10;	methodName: 'SendOrdertoEmail',&#10;	storeId: vars.storeID,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.emailMessage&#10;}]" doc:name="logData" doc:id="dc5bb56e-547c-48b3-8c45-d274d3e3581b" variableName="logData"/>
+					<flow-ref doc:name="insert-online-ordering-logs" doc:id="cdff9b5e-4be5-4fa4-bb9d-4064b2d28153" name="insert-online-ordering-logs"/>
+				</when>
+				<otherwise >
+					<set-variable value="No print check lines received from micros for store #[vars.storeId] in CreateCheck method" doc:name="emailMessage" doc:id="80cb0625-6e9a-4ee4-93af-3f87970da4f8" variableName="emailMessage" />
+					<logger level="INFO" doc:name="INFO: No Print Check Lines found" doc:id="1040103d-285e-4400-9c37-c24e30b7fb4b" message="#[payload]"/>
+					<flow-ref doc:name="send-email-notification" doc:id="626de2a9-79fc-4347-a48d-b777ffe92931" name="send-email-notification"/>
+					<set-variable value="#[{&#10;	methodName: 'SendOrdertoEmail',&#10;	storeId: vars.storeID,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: vars.emailMessage&#10;}]" doc:name="logData" doc:id="3c76d5c7-2b32-4937-b176-18108d997d1f" variableName="logData"/>
+					<flow-ref doc:name="insert-online-ordering-logs" doc:id="91d42ba4-455e-4bdc-b83a-0b9534b265ba" name="insert-online-ordering-logs"/>
+				</otherwise>
+			</choice>
+		</async>
+	</sub-flow>
+	<sub-flow name="send-email-notification-create" doc:id="eca0ef79-a105-453f-adc4-9cd4aca34bae">
+		<db:stored-procedure doc:name="Send Email Notification" doc:id="74a24c25-844d-4cea-98e2-bbf6fdb34905" config-ref="Database_Config_Depot">
+					<db:sql><![CDATA[{call prc_RemoteMail_CreateMessage(:id, :store, :type, :subject,:body, :param1, :param2)}]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
+	id: 1,
+	store: if (sizeOf(vars.storeId) < 4) (1 to (4 - sizeOf(vars.storeId))) map "#" joinBy "" ++ vars.storeId else vars.storeId,
+	'type': null,
+	subject: vars.tenderId.messageSubject,
+	body: vars.emailMessage,
+	param1: null,
+	param2: null
+}]]]></db:input-parameters>
+				</db:stored-procedure>
+	</sub-flow>
+	<sub-flow name="send-email-notification" doc:id="f3278fa1-c635-4f91-b109-3c564b29f5f4" >
+		<db:stored-procedure doc:name="Send Email Notification" doc:id="69ff1e53-21d6-4d37-b847-2c9facc3a571" config-ref="Database_Config_Depot">
+					<db:sql><![CDATA[{call prc_RemoteMail_RouteMessage(:type, :subject,:body)}]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
+	'type': "MobilePaymentNotification",
+	subject: "Error occurred in Online Ordering API",
+	body: vars.emailMessage
+}]]]></db:input-parameters>
+				</db:stored-procedure>
 	</sub-flow>
 	<!-- <sub-flow name="serialized-coupon-sub-flow" doc:id="5db58ee3-d2b3-4a87-9b75-eca067665cff" 
 		> <logger level="INFO" doc:name="INFO: Start" doc:id="513cc75d-a817-4074-aa82-95c0dcde8ce5" 
