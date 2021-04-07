@@ -1,12 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
+<mule
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
 	xmlns:db="http://www.mulesoft.org/schema/mule/db"
 	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
-http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd">
+	<http:listener-config
+		name="tgif-mobilepos-papi-httpListenerConfig">
+		<http:listener-connection host="0.0.0.0"
+			port="8081" />
+	</http:listener-config>
+	<apikit:config name="tgif-mobilepos-papi-config"
+		api="api\tgif-mobilepos-papi.raml"
+		outboundHeadersMapName="outboundHeaders"
+		httpStatusVarName="httpStatus" />
 	<db:config name="Database_Config_Depot"
 		doc:name="Database Config"
 		doc:id="a22595e0-d1f0-4100-991d-f4d4f026e472">
@@ -24,4 +41,23 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 	</db:config>
 	<os:object-store name="Object_store"
 		doc:name="Object store" doc:id="37e7f8a6-b58b-4952-b71e-e792750684ef" />
+	<wsc:config name="Web_Service_Consumer_Config"
+		doc:name="Web Service Consumer Config"
+		doc:id="db0c9a94-7f77-43a5-a868-8b741a2505d9">
+		<wsc:connection wsdlLocation="wsdl\TGIServer.wsdl"
+			service="Micros" port="BasicHttpBinding_ITGIServer"
+			address="http://#[vars.storeIpProperties.serverIp]:8086/TGIServer/TGIServer.svc" />
+	</wsc:config>
+	<http:request-config
+		name="HTTP_Request_configuration"
+		doc:name="HTTP Request configuration"
+		doc:id="9b7c4448-7e5e-45c4-856b-49963a0309f0">
+		<http:request-connection
+			host="#[vars.storeIpProperties[0].serverIp]" />
+	</http:request-config>
+	<configuration-properties
+		doc:name="Configuration properties"
+		doc:id="5db7c1ef-1f21-47a4-abfa-ab6720d50c2a"
+		file="config/${env}-config.yaml" />
+
 </mule>

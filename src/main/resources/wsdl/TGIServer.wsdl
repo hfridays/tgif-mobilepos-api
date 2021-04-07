@@ -1,0 +1,765 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:tns="http://tempuri.org/" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="Micros" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://tempuri.org/Imports" />
+    <xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/TGIServer.Request" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/TGIServer.Request" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:complexType name="ArrayOfMenuItem">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="MenuItem" nillable="true" type="tns:MenuItem" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfMenuItem" nillable="true" type="tns:ArrayOfMenuItem" />
+      <xs:complexType name="MenuItem">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Condiments" nillable="true" type="tns:ArrayOfMenuItemDefinition" />
+          <xs:element minOccurs="0" name="MenuItemDefinition" nillable="true" type="tns:MenuItemDefinition" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="MenuItem" nillable="true" type="tns:MenuItem" />
+      <xs:complexType name="ArrayOfMenuItemDefinition">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="MenuItemDefinition" nillable="true" type="tns:MenuItemDefinition" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfMenuItemDefinition" nillable="true" type="tns:ArrayOfMenuItemDefinition" />
+      <xs:complexType name="MenuItemDefinition">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ItemNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="MenuItemReference" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="MenuObjectNum" type="xs:int" />
+          <xs:element minOccurs="0" name="ParentItemNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="Quantity" type="xs:int" />
+          <xs:element minOccurs="0" name="SubFunctionId" type="xs:int" />
+          <xs:element minOccurs="0" name="UnitPrice" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="MenuItemDefinition" nillable="true" type="tns:MenuItemDefinition" />
+      <xs:complexType name="ArrayOfDatabaseInfo">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="DatabaseInfo" nillable="true" type="tns:DatabaseInfo" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfDatabaseInfo" nillable="true" type="tns:ArrayOfDatabaseInfo" />
+      <xs:complexType name="DatabaseInfo">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Name1" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Name2" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="FamilyGroup" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="MajorGroup" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="PrepTime" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="PrintNumber" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="ObjectNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="IsMenuItem" type="xs:boolean" />
+          <xs:element minOccurs="0" name="ItemNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="ParentItemNumber" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="DatabaseInfo" nillable="true" type="tns:DatabaseInfo" />
+      <xs:complexType name="KdsInfoRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:ServiceRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="CourseNumber" type="xs:int" />
+              <xs:element minOccurs="0" name="CustomerName" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="Destination" type="xs:int" />
+              <xs:element minOccurs="0" name="FireTime" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="MenuItems" nillable="true" type="tns:ArrayOfMenuItem" />
+              <xs:element minOccurs="0" name="ServerID" type="xs:int" />
+              <xs:element minOccurs="0" name="ServerName" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="SubTotal" type="xs:int" />
+              <xs:element minOccurs="0" name="TableName" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="TableNumber" type="xs:int" />
+              <xs:element minOccurs="0" name="Tax" type="xs:int" />
+              <xs:element minOccurs="0" name="TerminalNumber" type="xs:int" />
+              <xs:element minOccurs="0" name="Total" type="xs:int" />
+              <xs:element minOccurs="0" name="TrainingTransaction" type="xs:int" />
+              <xs:element minOccurs="0" name="TransactionNumber" type="xs:int" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="KdsInfoRequest" nillable="true" type="tns:KdsInfoRequest" />
+      <xs:complexType name="ServiceRequest">
+        <xs:sequence />
+      </xs:complexType>
+      <xs:element name="ServiceRequest" nillable="true" type="tns:ServiceRequest" />
+    </xs:schema>
+    <xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/TGIServer.Request" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/TGIServer.Request" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:complexType name="ArrayOfMenuItem">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="MenuItem" nillable="true" type="tns:MenuItem" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfMenuItem" nillable="true" type="tns:ArrayOfMenuItem" />
+      <xs:complexType name="MenuItem">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Condiments" nillable="true" type="tns:ArrayOfMenuItemDefinition" />
+          <xs:element minOccurs="0" name="MenuItemDefinition" nillable="true" type="tns:MenuItemDefinition" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="MenuItem" nillable="true" type="tns:MenuItem" />
+      <xs:complexType name="ArrayOfMenuItemDefinition">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="MenuItemDefinition" nillable="true" type="tns:MenuItemDefinition" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfMenuItemDefinition" nillable="true" type="tns:ArrayOfMenuItemDefinition" />
+      <xs:complexType name="MenuItemDefinition">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ItemNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="MenuItemReference" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="MenuObjectNum" type="xs:int" />
+          <xs:element minOccurs="0" name="ParentItemNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="Quantity" type="xs:int" />
+          <xs:element minOccurs="0" name="SubFunctionId" type="xs:int" />
+          <xs:element minOccurs="0" name="UnitPrice" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="MenuItemDefinition" nillable="true" type="tns:MenuItemDefinition" />
+      <xs:complexType name="ArrayOfDatabaseInfo">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="DatabaseInfo" nillable="true" type="tns:DatabaseInfo" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfDatabaseInfo" nillable="true" type="tns:ArrayOfDatabaseInfo" />
+      <xs:complexType name="DatabaseInfo">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Name1" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Name2" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="FamilyGroup" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="MajorGroup" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="PrepTime" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="PrintNumber" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="ObjectNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="IsMenuItem" type="xs:boolean" />
+          <xs:element minOccurs="0" name="ItemNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="ParentItemNumber" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="DatabaseInfo" nillable="true" type="tns:DatabaseInfo" />
+      <xs:complexType name="KdsInfoRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:ServiceRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="CourseNumber" type="xs:int" />
+              <xs:element minOccurs="0" name="CustomerName" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="Destination" type="xs:int" />
+              <xs:element minOccurs="0" name="FireTime" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="MenuItems" nillable="true" type="tns:ArrayOfMenuItem" />
+              <xs:element minOccurs="0" name="ServerID" type="xs:int" />
+              <xs:element minOccurs="0" name="ServerName" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="SubTotal" type="xs:int" />
+              <xs:element minOccurs="0" name="TableName" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="TableNumber" type="xs:int" />
+              <xs:element minOccurs="0" name="Tax" type="xs:int" />
+              <xs:element minOccurs="0" name="TerminalNumber" type="xs:int" />
+              <xs:element minOccurs="0" name="Total" type="xs:int" />
+              <xs:element minOccurs="0" name="TrainingTransaction" type="xs:int" />
+              <xs:element minOccurs="0" name="TransactionNumber" type="xs:int" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="KdsInfoRequest" nillable="true" type="tns:KdsInfoRequest" />
+      <xs:complexType name="ServiceRequest">
+        <xs:sequence />
+      </xs:complexType>
+      <xs:element name="ServiceRequest" nillable="true" type="tns:ServiceRequest" />
+    </xs:schema>
+    <xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/TGIServer.Response" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/TGIServer.Response" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:complexType name="KdsInfoResponse">
+        <xs:sequence>
+          <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/TGIServer.Request" minOccurs="0" name="DatabaseInfo" nillable="true" type="q1:ArrayOfDatabaseInfo" />
+          <xs:element minOccurs="0" name="Errors" nillable="true" type="xs:string" />
+          <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/TGIServer.Request" minOccurs="0" name="RequestInfo" nillable="true" type="q2:KdsInfoRequest" />
+          <xs:element minOccurs="0" name="Results" type="xs:boolean" />
+          <xs:element minOccurs="0" name="Trace" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="KdsInfoResponse" nillable="true" type="tns:KdsInfoResponse" />
+    </xs:schema>
+    <xs:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:element name="PostTotals">
+        <xs:complexType>
+          <xs:sequence />
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="PostTotalsResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="PostTotalsResult" type="xs:int" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SetCashDrawer">
+        <xs:complexType>
+          <xs:sequence />
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SetCashDrawerResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="SetCashDrawerResult" type="xs:int" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ShutdownOK">
+        <xs:complexType>
+          <xs:sequence />
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ShutdownOKResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="ShutdownOKResult" type="xs:int" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetMicrosDOB">
+        <xs:complexType>
+          <xs:sequence />
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetMicrosDOBResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="GetMicrosDOBResult" type="xs:dateTime" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetMicrosDataSet">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="RequestedInfo" nillable="true" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetMicrosDataSetResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="GetMicrosDataSetResult" nillable="true">
+              <xs:complexType>
+                <xs:annotation>
+                  <xs:appinfo>
+                    <ActualType Name="DataSet" Namespace="http://schemas.datacontract.org/2004/07/System.Data" xmlns="http://schemas.microsoft.com/2003/10/Serialization/" />
+                  </xs:appinfo>
+                </xs:annotation>
+                <xs:sequence>
+                  <xs:element ref="xs:schema" />
+                  <xs:any />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetMicrosDataSetForDate">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="RequestedInfo" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="DOB" type="xs:dateTime" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetMicrosDataSetForDateResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="GetMicrosDataSetForDateResult" nillable="true">
+              <xs:complexType>
+                <xs:annotation>
+                  <xs:appinfo>
+                    <ActualType Name="DataSet" Namespace="http://schemas.datacontract.org/2004/07/System.Data" xmlns="http://schemas.microsoft.com/2003/10/Serialization/" />
+                  </xs:appinfo>
+                </xs:annotation>
+                <xs:sequence>
+                  <xs:element ref="xs:schema" />
+                  <xs:any />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetServerStrengthCode">
+        <xs:complexType>
+          <xs:sequence />
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetServerStrengthCodeResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="GetServerStrengthCodeResult" nillable="true">
+              <xs:complexType>
+                <xs:annotation>
+                  <xs:appinfo>
+                    <ActualType Name="DataSet" Namespace="http://schemas.datacontract.org/2004/07/System.Data" xmlns="http://schemas.microsoft.com/2003/10/Serialization/" />
+                  </xs:appinfo>
+                </xs:annotation>
+                <xs:sequence>
+                  <xs:element ref="xs:schema" />
+                  <xs:any />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetForecastSales">
+        <xs:complexType>
+          <xs:sequence />
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetForecastSalesResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="GetForecastSalesResult" nillable="true">
+              <xs:complexType>
+                <xs:annotation>
+                  <xs:appinfo>
+                    <ActualType Name="DataSet" Namespace="http://schemas.datacontract.org/2004/07/System.Data" xmlns="http://schemas.microsoft.com/2003/10/Serialization/" />
+                  </xs:appinfo>
+                </xs:annotation>
+                <xs:sequence>
+                  <xs:element ref="xs:schema" />
+                  <xs:any />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="PostSales">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="sales" nillable="true" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="PostSalesResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="PostSalesResult" nillable="true" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SendOrderToKds">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="CheckNumber" type="xs:int" />
+            <xs:element minOccurs="0" name="FireTime" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="Destination" type="xs:int" />
+            <xs:element minOccurs="0" name="TerminalNumber" type="xs:int" />
+            <xs:element minOccurs="0" name="ServerID" type="xs:int" />
+            <xs:element minOccurs="0" name="ServerName" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="TableNumber" type="xs:int" />
+            <xs:element minOccurs="0" name="CustomerName" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="TrainingTransaction" type="xs:int" />
+            <xs:element minOccurs="0" name="TableName" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="SubTotal" type="xs:int" />
+            <xs:element minOccurs="0" name="Tax" type="xs:int" />
+            <xs:element minOccurs="0" name="Total" type="xs:int" />
+            <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/TGIServer.Request" minOccurs="0" name="MenuItems" nillable="true" type="q1:ArrayOfMenuItem" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SendOrderToKdsResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/TGIServer.Response" minOccurs="0" name="SendOrderToKdsResult" nillable="true" type="q2:KdsInfoResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+    <xs:schema elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:element name="DataSet" nillable="true">
+        <xs:complexType>
+          <xs:annotation>
+            <xs:appinfo>
+              <ActualType Name="DataSet" Namespace="http://schemas.datacontract.org/2004/07/System.Data" xmlns="http://schemas.microsoft.com/2003/10/Serialization/" />
+            </xs:appinfo>
+          </xs:annotation>
+          <xs:sequence>
+            <xs:element ref="xs:schema" />
+            <xs:any />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+    <xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/TGIServer.Request" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/TGIServer.Request" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:complexType name="ArrayOfMenuItem">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="MenuItem" nillable="true" type="tns:MenuItem" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfMenuItem" nillable="true" type="tns:ArrayOfMenuItem" />
+      <xs:complexType name="MenuItem">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Condiments" nillable="true" type="tns:ArrayOfMenuItemDefinition" />
+          <xs:element minOccurs="0" name="MenuItemDefinition" nillable="true" type="tns:MenuItemDefinition" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="MenuItem" nillable="true" type="tns:MenuItem" />
+      <xs:complexType name="ArrayOfMenuItemDefinition">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="MenuItemDefinition" nillable="true" type="tns:MenuItemDefinition" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfMenuItemDefinition" nillable="true" type="tns:ArrayOfMenuItemDefinition" />
+      <xs:complexType name="MenuItemDefinition">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ItemNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="MenuItemReference" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="MenuObjectNum" type="xs:int" />
+          <xs:element minOccurs="0" name="ParentItemNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="Quantity" type="xs:int" />
+          <xs:element minOccurs="0" name="SubFunctionId" type="xs:int" />
+          <xs:element minOccurs="0" name="UnitPrice" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="MenuItemDefinition" nillable="true" type="tns:MenuItemDefinition" />
+      <xs:complexType name="ArrayOfDatabaseInfo">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="DatabaseInfo" nillable="true" type="tns:DatabaseInfo" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfDatabaseInfo" nillable="true" type="tns:ArrayOfDatabaseInfo" />
+      <xs:complexType name="DatabaseInfo">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Name1" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Name2" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="FamilyGroup" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="MajorGroup" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="PrepTime" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="PrintNumber" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="ObjectNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="IsMenuItem" type="xs:boolean" />
+          <xs:element minOccurs="0" name="ItemNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="ParentItemNumber" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="DatabaseInfo" nillable="true" type="tns:DatabaseInfo" />
+      <xs:complexType name="KdsInfoRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:ServiceRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="CourseNumber" type="xs:int" />
+              <xs:element minOccurs="0" name="CustomerName" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="Destination" type="xs:int" />
+              <xs:element minOccurs="0" name="FireTime" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="MenuItems" nillable="true" type="tns:ArrayOfMenuItem" />
+              <xs:element minOccurs="0" name="ServerID" type="xs:int" />
+              <xs:element minOccurs="0" name="ServerName" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="SubTotal" type="xs:int" />
+              <xs:element minOccurs="0" name="TableName" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="TableNumber" type="xs:int" />
+              <xs:element minOccurs="0" name="Tax" type="xs:int" />
+              <xs:element minOccurs="0" name="TerminalNumber" type="xs:int" />
+              <xs:element minOccurs="0" name="Total" type="xs:int" />
+              <xs:element minOccurs="0" name="TrainingTransaction" type="xs:int" />
+              <xs:element minOccurs="0" name="TransactionNumber" type="xs:int" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="KdsInfoRequest" nillable="true" type="tns:KdsInfoRequest" />
+      <xs:complexType name="ServiceRequest">
+        <xs:sequence />
+      </xs:complexType>
+      <xs:element name="ServiceRequest" nillable="true" type="tns:ServiceRequest" />
+    </xs:schema>
+    <xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/TGIServer.Request" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/TGIServer.Request" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:complexType name="ArrayOfMenuItem">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="MenuItem" nillable="true" type="tns:MenuItem" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfMenuItem" nillable="true" type="tns:ArrayOfMenuItem" />
+      <xs:complexType name="MenuItem">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Condiments" nillable="true" type="tns:ArrayOfMenuItemDefinition" />
+          <xs:element minOccurs="0" name="MenuItemDefinition" nillable="true" type="tns:MenuItemDefinition" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="MenuItem" nillable="true" type="tns:MenuItem" />
+      <xs:complexType name="ArrayOfMenuItemDefinition">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="MenuItemDefinition" nillable="true" type="tns:MenuItemDefinition" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfMenuItemDefinition" nillable="true" type="tns:ArrayOfMenuItemDefinition" />
+      <xs:complexType name="MenuItemDefinition">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ItemNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="MenuItemReference" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="MenuObjectNum" type="xs:int" />
+          <xs:element minOccurs="0" name="ParentItemNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="Quantity" type="xs:int" />
+          <xs:element minOccurs="0" name="SubFunctionId" type="xs:int" />
+          <xs:element minOccurs="0" name="UnitPrice" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="MenuItemDefinition" nillable="true" type="tns:MenuItemDefinition" />
+      <xs:complexType name="ArrayOfDatabaseInfo">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="DatabaseInfo" nillable="true" type="tns:DatabaseInfo" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfDatabaseInfo" nillable="true" type="tns:ArrayOfDatabaseInfo" />
+      <xs:complexType name="DatabaseInfo">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Name1" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Name2" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="FamilyGroup" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="MajorGroup" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="PrepTime" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="PrintNumber" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="ObjectNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="IsMenuItem" type="xs:boolean" />
+          <xs:element minOccurs="0" name="ItemNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="ParentItemNumber" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="DatabaseInfo" nillable="true" type="tns:DatabaseInfo" />
+      <xs:complexType name="KdsInfoRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:ServiceRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="CourseNumber" type="xs:int" />
+              <xs:element minOccurs="0" name="CustomerName" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="Destination" type="xs:int" />
+              <xs:element minOccurs="0" name="FireTime" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="MenuItems" nillable="true" type="tns:ArrayOfMenuItem" />
+              <xs:element minOccurs="0" name="ServerID" type="xs:int" />
+              <xs:element minOccurs="0" name="ServerName" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="SubTotal" type="xs:int" />
+              <xs:element minOccurs="0" name="TableName" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="TableNumber" type="xs:int" />
+              <xs:element minOccurs="0" name="Tax" type="xs:int" />
+              <xs:element minOccurs="0" name="TerminalNumber" type="xs:int" />
+              <xs:element minOccurs="0" name="Total" type="xs:int" />
+              <xs:element minOccurs="0" name="TrainingTransaction" type="xs:int" />
+              <xs:element minOccurs="0" name="TransactionNumber" type="xs:int" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="KdsInfoRequest" nillable="true" type="tns:KdsInfoRequest" />
+      <xs:complexType name="ServiceRequest">
+        <xs:sequence />
+      </xs:complexType>
+      <xs:element name="ServiceRequest" nillable="true" type="tns:ServiceRequest" />
+    </xs:schema>
+    <xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/TGIServer.Response" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/TGIServer.Response" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:complexType name="KdsInfoResponse">
+        <xs:sequence>
+          <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/TGIServer.Request" minOccurs="0" name="DatabaseInfo" nillable="true" type="q1:ArrayOfDatabaseInfo" />
+          <xs:element minOccurs="0" name="Errors" nillable="true" type="xs:string" />
+          <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/TGIServer.Request" minOccurs="0" name="RequestInfo" nillable="true" type="q2:KdsInfoRequest" />
+          <xs:element minOccurs="0" name="Results" type="xs:boolean" />
+          <xs:element minOccurs="0" name="Trace" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="KdsInfoResponse" nillable="true" type="tns:KdsInfoResponse" />
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="ITGIServer_PostTotals_InputMessage">
+    <wsdl:part name="parameters" element="tns:PostTotals" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_PostTotals_OutputMessage">
+    <wsdl:part name="parameters" element="tns:PostTotalsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_SetCashDrawer_InputMessage">
+    <wsdl:part name="parameters" element="tns:SetCashDrawer" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_SetCashDrawer_OutputMessage">
+    <wsdl:part name="parameters" element="tns:SetCashDrawerResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_ShutdownOK_InputMessage">
+    <wsdl:part name="parameters" element="tns:ShutdownOK" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_ShutdownOK_OutputMessage">
+    <wsdl:part name="parameters" element="tns:ShutdownOKResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_GetMicrosDOB_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetMicrosDOB" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_GetMicrosDOB_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetMicrosDOBResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_GetMicrosDataSet_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetMicrosDataSet" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_GetMicrosDataSet_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetMicrosDataSetResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_GetMicrosDataSetForDate_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetMicrosDataSetForDate" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_GetMicrosDataSetForDate_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetMicrosDataSetForDateResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_GetServerStrengthCode_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetServerStrengthCode" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_GetServerStrengthCode_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetServerStrengthCodeResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_GetForecastSales_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetForecastSales" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_GetForecastSales_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetForecastSalesResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_PostSales_InputMessage">
+    <wsdl:part name="parameters" element="tns:PostSales" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_PostSales_OutputMessage">
+    <wsdl:part name="parameters" element="tns:PostSalesResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_SendOrderToKds_InputMessage">
+    <wsdl:part name="parameters" element="tns:SendOrderToKds" />
+  </wsdl:message>
+  <wsdl:message name="ITGIServer_SendOrderToKds_OutputMessage">
+    <wsdl:part name="parameters" element="tns:SendOrderToKdsResponse" />
+  </wsdl:message>
+  <wsdl:portType name="ITGIServer">
+    <wsdl:operation name="PostTotals">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITGIServer/PostTotals" message="tns:ITGIServer_PostTotals_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITGIServer/PostTotalsResponse" message="tns:ITGIServer_PostTotals_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="SetCashDrawer">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITGIServer/SetCashDrawer" message="tns:ITGIServer_SetCashDrawer_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITGIServer/SetCashDrawerResponse" message="tns:ITGIServer_SetCashDrawer_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="ShutdownOK">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITGIServer/ShutdownOK" message="tns:ITGIServer_ShutdownOK_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITGIServer/ShutdownOKResponse" message="tns:ITGIServer_ShutdownOK_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetMicrosDOB">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITGIServer/GetMicrosDOB" message="tns:ITGIServer_GetMicrosDOB_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITGIServer/GetMicrosDOBResponse" message="tns:ITGIServer_GetMicrosDOB_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetMicrosDataSet">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITGIServer/GetMicrosDataSet" message="tns:ITGIServer_GetMicrosDataSet_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITGIServer/GetMicrosDataSetResponse" message="tns:ITGIServer_GetMicrosDataSet_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetMicrosDataSetForDate">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITGIServer/GetMicrosDataSetForDate" message="tns:ITGIServer_GetMicrosDataSetForDate_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITGIServer/GetMicrosDataSetForDateResponse" message="tns:ITGIServer_GetMicrosDataSetForDate_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetServerStrengthCode">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITGIServer/GetServerStrengthCode" message="tns:ITGIServer_GetServerStrengthCode_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITGIServer/GetServerStrengthCodeResponse" message="tns:ITGIServer_GetServerStrengthCode_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetForecastSales">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITGIServer/GetForecastSales" message="tns:ITGIServer_GetForecastSales_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITGIServer/GetForecastSalesResponse" message="tns:ITGIServer_GetForecastSales_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="PostSales">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITGIServer/PostSales" message="tns:ITGIServer_PostSales_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITGIServer/PostSalesResponse" message="tns:ITGIServer_PostSales_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="SendOrderToKds">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITGIServer/SendOrderToKds" message="tns:ITGIServer_SendOrderToKds_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITGIServer/SendOrderToKdsResponse" message="tns:ITGIServer_SendOrderToKds_OutputMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BasicHttpBinding_ITGIServer" type="tns:ITGIServer">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="PostTotals">
+      <soap:operation soapAction="http://tempuri.org/ITGIServer/PostTotals" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SetCashDrawer">
+      <soap:operation soapAction="http://tempuri.org/ITGIServer/SetCashDrawer" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ShutdownOK">
+      <soap:operation soapAction="http://tempuri.org/ITGIServer/ShutdownOK" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMicrosDOB">
+      <soap:operation soapAction="http://tempuri.org/ITGIServer/GetMicrosDOB" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMicrosDataSet">
+      <soap:operation soapAction="http://tempuri.org/ITGIServer/GetMicrosDataSet" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMicrosDataSetForDate">
+      <soap:operation soapAction="http://tempuri.org/ITGIServer/GetMicrosDataSetForDate" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetServerStrengthCode">
+      <soap:operation soapAction="http://tempuri.org/ITGIServer/GetServerStrengthCode" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetForecastSales">
+      <soap:operation soapAction="http://tempuri.org/ITGIServer/GetForecastSales" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PostSales">
+      <soap:operation soapAction="http://tempuri.org/ITGIServer/PostSales" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendOrderToKds">
+      <soap:operation soapAction="http://tempuri.org/ITGIServer/SendOrderToKds" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="Micros">
+    <wsdl:port name="BasicHttpBinding_ITGIServer" binding="tns:BasicHttpBinding_ITGIServer">
+      <soap:address location="http://10.85.52.155:8086/TGIServer/TGIServer.svc" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

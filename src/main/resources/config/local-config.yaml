@@ -1,0 +1,14 @@
+mobilepos:
+  token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1bmlxdWVfbmFtZSI6IjYwMDQ3Iiwic3ViIjoiNjAwNDciLCJyb2xlIjpbIk1hbmFnZXIiLCJTdXBlcnZpc29yIl0sImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6MjE5NzIiLCJhdWQiOiJlNWU1OTI2NDMxZGY0ZGQ3OTdjN2VkNDJmNjFiNTFlNCIsImV4cCI6MTQ0MjAwODk3MywibmJmIjoxNDM5NDE2OTczfQ.13sXVrGlrczWSxcm9SxmGxMnoabC0xNETdsx_3ylNnE"
+
+microsApi:
+  connectionTimeout: "15000"
+  readTimeout: "30000"
+database:
+  user: "svc_MuleSoft_Test"
+  password: "Testing1"
+  driver: "com.microsoft.sqlserver.jdbc.SQLServerDriver"  
+  muleInterface:
+    url: "jdbc:sqlserver://52.165.132.229;databaseName=mulesoft_interface;"
+  depot:
+    url: "jdbc:sqlserver://52.165.132.229;databaseName=depot;"

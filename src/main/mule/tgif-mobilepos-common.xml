@@ -33,4 +33,24 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 </db:stored-procedure>
 		</async>
 	</sub-flow>
+	<sub-flow name="insert-cart-id-logs"
+		doc:id="3efb1c79-287e-454e-8a36-def5b1445be8">
+		<async doc:name="Async"
+			doc:id="f1f0d0ed-3a55-4b02-8b2c-5aab67e6d8e8">
+			<db:stored-procedure
+				doc:name="Insert Online Cart Id Details"
+				doc:id="3fd0837a-87a8-4cc9-aa5a-c6370a66e55b"
+				config-ref="Database_Config_Mule_Interface">
+				<db:sql><![CDATA[{ call dbo.prc_olo_cart_id_details_insert(:store_id,:cart_id,:check_payload,:day_of_business)}]]></db:sql>
+				<db:input-parameters ><![CDATA[#[{
+	store_id: vars.logData.storeId,
+	cart_id: vars.logData.cartId,
+	check_payload: vars.logData.payload,
+	day_of_business: vars.logData.dayOfBusiness
+}]]]></db:input-parameters>
+			
+</db:stored-procedure>
+		</async>
+	</sub-flow>
+	
 </mule>

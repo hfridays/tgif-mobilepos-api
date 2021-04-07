@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<flow name="tgif-mobilepos-utilFlow"
+		doc:id="800f681d-5d5b-427b-ae5f-034463701832" initialState="stopped">
+		<scheduler doc:name="Scheduler"
+			doc:id="990caf7e-3a10-45fc-8adb-b6ca2d8c148c">
+			<scheduling-strategy>
+				<fixed-frequency timeUnit="HOURS" frequency="12"/>
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="INFO: Start" doc:id="78995b7e-7cf5-4e00-aaae-61fcfcf9aa5a" message="Started loading Proeprties into Object Store"/>
+		<flow-ref doc:name="store-tenderMedia-properties-sub-flow"
+			doc:id="9f731b4b-329e-4b98-ad7c-6b9991641aba"
+			name="store-tenderMedia-properties-sub-flow" />
+		<flow-ref doc:name="store-ubereats-order-type-sub-flow"
+			doc:id="ac08b53c-9bb3-47d1-9540-4f99aab980d2"
+			name="store-ubereats-order-type-sub-flow" />
+		<flow-ref doc:name="store-doordash-order-type-sub-flow"
+			doc:id="5f9063b2-b535-4cfe-887f-45da0d704450"
+			name="store-doordash-order-type-sub-flow" />
+		<flow-ref doc:name="store-grubhub-order-type-sub-flow"
+			doc:id="272e21ec-39a5-4dfc-9291-c72e54bfcc05"
+			name="store-grubhub-order-type-sub-flow" />
+		<flow-ref doc:name="store-postmates-order-type-sub-flow"
+			doc:id="72903cbe-cf54-41eb-ad7d-9717a02a9b89"
+			name="store-postmates-order-type-sub-flow" />
+		<flow-ref doc:name="store-ip-properties-sub-flow"
+			doc:id="0fa75986-525b-496b-871d-303a02ce4b97"
+			name="store-ip-properties-sub-flow" />
+		<flow-ref doc:name="store-errorcode-properties-sub-flow"
+			doc:id="2530b151-11f4-4406-a04f-77e9616e087b"
+			name="store-errorcode-properties-sub-flow" />
+		<flow-ref doc:name="store-vrbrands-properties-sub-flow"
+			doc:id="949a3dd9-d538-49b0-998c-4d5a1f576210"
+			name="store-vrbrands-properties-sub-flow" />
+		<logger level="INFO" doc:name="INFO: Success" doc:id="66dd1587-4b5d-4cf2-8a3e-be0e4356c317" message="Finished loading Proeprties into Object Store"/>
+	</flow>
+	<sub-flow name="store-tenderMedia-properties-sub-flow"
+		doc:id="47603abd-6937-44bb-938d-1769dc5c13b8">
+		<logger level="INFO" doc:name="INFO: Start"
+			doc:id="3c8ceb0c-af6e-44c3-b5b4-55fef8c4cd9d"
+			message="Load Tender Media properties flow started" />
+		<db:select doc:name="Select"
+			doc:id="cb64bea0-3d54-43fa-a663-5effc33ad94a"
+			config-ref="Database_Config_Mule_Interface">
+			<db:sql><![CDATA[{call dbo.prc_get_tender_media_obj_num()}]]></db:sql>
+		</db:select>
+		<os:store doc:name="Store"
+			doc:id="f491eed3-5ec8-4076-8d80-7a00650ce84f" key="tenderMedia"
+			objectStore="Object_store" >
+			<os:value ><![CDATA[#[output application/json --- payload]]]></os:value>
+		</os:store>
+		<logger level="INFO" doc:name="INFO: Success"
+			doc:id="5e133f05-d5a4-49f0-a6de-6c93c9748027"
+			message="Load Tender Media properties flow finished" />
+	</sub-flow>
+	<sub-flow name="store-ubereats-order-type-sub-flow"
+		doc:id="2b796c99-e715-4ff4-8cba-5508141f0260">
+		<logger level="INFO" doc:name="INFO: Start"
+			doc:id="8182bb1f-7ac9-4466-a0fd-8340e11e6c0d"
+			message="Load UberEats order type flow started" />
+		<db:select doc:name="Select"
+			doc:id="1bf891f1-23a8-4661-a934-55f3eab5be8a"
+			config-ref="Database_Config_Mule_Interface">
+			<db:sql><![CDATA[{call dbo.prc_get_delivery_order_type('UberEats')}]]></db:sql>
+		</db:select>
+		<os:store doc:name="Store"
+			doc:id="785233fe-2e2c-4725-aa8f-5b8590c9ac9d" key="uberEatsOrderType"
+			objectStore="Object_store" >
+			<os:value ><![CDATA[#[output application/json --- payload]]]></os:value>
+		</os:store>
+		<logger level="INFO" doc:name="INFO: Success"
+			doc:id="bc7a7f24-c25c-401c-9389-dfc36288f68c"
+			message="Load UberEats order type flow finished" />
+	</sub-flow>
+	<sub-flow name="store-doordash-order-type-sub-flow"
+		doc:id="a9c294fc-fd8c-4b30-9262-080fb0a81946">
+		<logger level="INFO" doc:name="INFO: Start"
+			doc:id="f0cf3d04-cd4d-4d86-911e-d159990119cf"
+			message="Load Doordash order type flow started" />
+		<db:select doc:name="Select"
+			doc:id="7e1e626d-9bb0-4b58-b6bb-994a8a1f9187"
+			config-ref="Database_Config_Mule_Interface">
+			<db:sql><![CDATA[{call dbo.prc_get_delivery_order_type('DoorDash')}]]></db:sql>
+		</db:select>
+		<os:store doc:name="Store"
+			doc:id="db99f514-c316-4f4b-9149-b2cca83ccec1" key="doorDashOrderType"
+			objectStore="Object_store" >
+			<os:value ><![CDATA[#[output application/json --- payload]]]></os:value>
+		</os:store>
+		<logger level="INFO" doc:name="INFO: Success"
+			doc:id="6d1d2e21-2c7c-4d37-ae2a-9bf1fba34bf8"
+			message="Load Doordash order type flow finished" />
+	</sub-flow>
+	<sub-flow name="store-grubhub-order-type-sub-flow"
+		doc:id="9c97c9ac-50bb-4b99-a2d8-3adca27dbf40">
+		<logger level="INFO" doc:name="INFO: Start"
+			doc:id="93045736-edbb-4ce4-bd4c-914f968d5f08"
+			message="Load Grubhub order type flow started" />
+		<db:select doc:name="Select"
+			doc:id="2b81fac6-75cc-4b04-bb3c-32c436bb2df2"
+			config-ref="Database_Config_Mule_Interface">
+			<db:sql><![CDATA[{call dbo.prc_get_delivery_order_type('GrubHub')}]]></db:sql>
+		</db:select>
+		<os:store doc:name="Store"
+			doc:id="4c770c85-0701-4bae-93dc-2e4cf3f10433" key="grubHubOrderType"
+			objectStore="Object_store" >
+			<os:value ><![CDATA[#[output application/json --- payload]]]></os:value>
+		</os:store>
+		<logger level="INFO" doc:name="INFO: Success"
+			doc:id="e01e1534-d616-42b5-b8d9-67f93dc19795"
+			message="Load Grubhub order type flow finished" />
+	</sub-flow>
+	<sub-flow name="store-postmates-order-type-sub-flow"
+		doc:id="77f43662-ba48-450d-bcf9-5d5039603d1c">
+		<logger level="INFO" doc:name="INFO: Start"
+			doc:id="5bae9c58-006d-4374-8390-979173f4bf91"
+			message="Load Postmates order type flow started" />
+		<db:select doc:name="Select"
+			doc:id="9b823da2-17f1-4141-bd79-44cb10d56c33"
+			config-ref="Database_Config_Mule_Interface">
+			<db:sql><![CDATA[{call dbo.prc_get_delivery_order_type('Postmates')}]]></db:sql>
+		</db:select>
+		<os:store doc:name="Store"
+			doc:id="1ff4b77e-959d-4218-b5a9-b1ec2b472220"
+			key="postmatesOrderType" objectStore="Object_store" >
+			<os:value ><![CDATA[#[output application/json --- payload]]]></os:value>
+		</os:store>
+		<logger level="INFO" doc:name="INFO: Success"
+			doc:id="fa37107d-d7c6-477e-ad66-f5987084b4f8"
+			message="Load Postmates order type flow finished" />
+	</sub-flow>
+	<sub-flow name="store-ip-properties-sub-flow"
+		doc:id="3338b057-eef0-43cd-855a-97ff626804ce">
+		<logger level="INFO" doc:name="INFO: Start"
+			doc:id="039874fc-baf2-4e69-8b60-68bd29923bc0"
+			message="Load Store IP properties flow started" />
+		<db:select doc:name="Select"
+			doc:id="0498dba6-d80a-4e78-b49b-4ce54aa3e22d"
+			config-ref="Database_Config_Mule_Interface">
+			<db:sql><![CDATA[{call dbo.prc_get_store_properties()}]]></db:sql>
+		</db:select>
+		<os:store doc:name="Store"
+			doc:id="ac467b38-2711-4ddf-a357-a8fdac3b7a56" key="storeIpProperties"
+			objectStore="Object_store" >
+			<os:value ><![CDATA[#[output application/json --- payload]]]></os:value>
+		</os:store>
+		<logger level="INFO" doc:name="INFO: Success"
+			doc:id="d73f3600-a239-4c48-ac8b-ed8aec077bd2"
+			message="Load Store IP properties flow finished" />
+	</sub-flow>
+	<sub-flow name="store-errorcode-properties-sub-flow"
+		doc:id="c4d27f63-02fd-461f-91ad-db86246dd2fc">
+		<logger level="INFO" doc:name="INFO: Start"
+			doc:id="44eadd2d-fbf9-45e2-a0de-b15f2387e09a"
+			message="Load Error Code properties flow started" />
+		<db:select doc:name="Select"
+			doc:id="37b22550-09ed-4228-8fe7-a4bc283a4a89"
+			config-ref="Database_Config_Mule_Interface">
+			<db:sql><![CDATA[{call dbo.prc_get_micros_api_return_codes()}]]></db:sql>
+		</db:select>
+		<os:store doc:name="Store"
+			doc:id="5aec5350-9c1f-495d-90f2-ff9f994e48f2" key="errorMessage"
+			objectStore="Object_store" >
+			<os:value ><![CDATA[#[output application/json --- payload]]]></os:value>
+		</os:store>
+		<logger level="INFO" doc:name="INFO: Success"
+			doc:id="f3896aa6-c4c1-4ece-9eee-3fcf08d82497"
+			message="Load Error Code properties flow finished" />
+	</sub-flow>
+	<sub-flow name="store-vrbrands-properties-sub-flow"
+		doc:id="fb52e3c6-bd96-48ba-a667-198c527a1a0e">
+		<logger level="INFO" doc:name="INFO: Start"
+			doc:id="686a42ff-bd56-4ab2-b729-bcf158572483"
+			message="Load Vr Brands properties flow started" />
+		<db:select doc:name="Select"
+			doc:id="2ec8324b-7298-4991-b6e3-cbdbdee70ba7"
+			config-ref="Database_Config_Mule_Interface">
+			<db:sql><![CDATA[{call prc_get_vr_store_ids()}]]></db:sql>
+		</db:select>
+		<os:store doc:name="Store"
+			doc:id="c529460d-a4fb-42bc-95d3-b239ecb7711b" key="vrDetails"
+			objectStore="Object_store" >
+			<os:value ><![CDATA[#[output application/json --- payload]]]></os:value>
+		</os:store>
+		<logger level="INFO" doc:name="INFO: Success"
+			doc:id="30ea0375-0139-43c1-a5c3-a4f9a72b45c6"
+			message="Load Vr Brands properties flow finished" />
+	</sub-flow>
+</mule>

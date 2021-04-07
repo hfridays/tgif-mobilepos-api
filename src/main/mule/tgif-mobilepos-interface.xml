@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
-    <http:listener-config name="tgif-mobilepos-papi-httpListenerConfig">
-        <http:listener-connection host="0.0.0.0" port="8081" />
-    </http:listener-config>
-    <apikit:config name="tgif-mobilepos-papi-config" api="tgif-mobilepos-papi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <flow name="tgif-mobilepos-papi-main">
         <http:listener config-ref="tgif-mobilepos-papi-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -226,127 +222,7 @@ output application/json
         </ee:transform>
     </flow>
     <flow name="post:\createCheck:application\json:tgif-mobilepos-papi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  createcheck: {
-    result: {
-      status: "success",
-      message: "success"
-    },
-    dayOfBusiness: "2016-07-08T00:00:00",
-    check: {
-      checkSeq: 232,
-      checkId: "3344",
-      tableNumber: 204,
-      employeeNumber: 52,
-      menuItems: [
-        {
-          miObjectNum: "S21",
-          miAltItemId: "20021",
-          menuQty: 1,
-          menuAmount: "\$10.00",
-          lineEntry: "0",
-          condiments: [
-            {
-              miObjectNum: "9041004",
-              menuQty: 1,
-              modCodeId: 6,
-              menuAmount: "\$1.49",
-              miDiscount: {
-                discObjectNum: "2224",
-                discAmountOrPercent: "5.00"
-              }
-            }, 
-            {
-              miObjectNum: "9041007",
-              menuQty: 1,
-              modCodeId: 3,
-              menuAmount: "\$1.00",
-              miDiscount: {
-                discObjectNum: "2224",
-                discAmountOrPercent: "5.00"
-              }
-            }
-          ],
-          miDiscount: {
-            discObjectNum: "2224",
-            discAmountOrPercent: "5.00"
-          }
-        }, 
-        {
-          miObjectNum: "20005",
-          miAltItemId: "20021",
-          menuQty: 1,
-          menuAmount: "\$10.00",
-          lineEntry: "0",
-          condiments: [
-            {
-              miObjectNum: "9041004",
-              menuQty: 1,
-              modCodeId: 2,
-              menuAmount: "\$1.49",
-              miDiscount: {
-                discObjectNum: "2224",
-                discAmountOrPercent: "5.00"
-              }
-            }, 
-            {
-              miObjectNum: "9041007",
-              menuQty: 1,
-              modCodeId: 3,
-              menuAmount: "\$1.00",
-              miDiscount: {
-                discObjectNum: "2224",
-                discAmountOrPercent: "5.00"
-              }
-            }
-          ],
-          miDiscount: {
-            discObjectNum: "2224",
-            discAmountOrPercent: "5.00"
-          }
-        }
-      ],
-      orderDiscount: {
-        discObjectNum: "2224",
-        discAmountOrPercent: "5.00"
-      },
-      otherDiscounts: [
-        {
-          discName: "SOF Discount",
-          discAmount: "11.90-"
-        }, 
-        {
-          discName: "SOF Discount",
-          discAmount: "11.90-"
-        }
-      ],
-      payments: {
-        paymentReference: "Vantive  token number if credit card.",
-        paymentAmount: "\$5.00"
-      },
-      totals: {
-        subTotal: "\$16.29",
-        taxTotal: "\$2.00",
-        tipTotal: "\$5.00",
-        amtPaid: "\$5.00",
-        totalDue: "\$18.29"
-      },
-      checkPrintLines: {
-        printLines: [
-          "** TGI Friday's #3101**", 
-          "QA Lab 3101"
-        ]
-      }
-    }
-  }
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="create-check-flow" doc:id="1e53a43a-81c7-4417-87de-24a3e4856bb1" name="create-check-flow"/>
     </flow>
     <flow name="post:\pingIPAddress:tgif-mobilepos-papi-config">
 		<flow-ref doc:name="ping-ip-addess-flow" doc:id="c20cd2a5-08d6-4508-b357-877ee33316ac" name="ping-ip-addess-flow"/>

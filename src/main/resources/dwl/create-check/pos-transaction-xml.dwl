@@ -60,10 +60,10 @@ ns respos http://schemas.micros.com/RESPOS
 					respos#DiscObjectNum: payload.createcheck.orderDiscount.discObjectNum,
 					respos#DiscAmountOrPercent: payload.createcheck.orderDiscount.discAmountOrPercent
 				}) if (payload.createcheck.orderDiscount.discObjectNum != null),
-				(respos#pSubTotalDiscount: {
-					respos#DiscObjectNum: "vars.varCouponDiscObjectNum",
-					respos#DiscAmountOrPercent: "vars.varCouponDiscAmount"
-				}) if (payload.createcheck.orderDiscount.discObjectNum == null and payload.createcheck.serializedCoupon.couponCode != null),
+//				(respos#pSubTotalDiscount: {
+//					respos#DiscObjectNum: "vars.varCouponDiscObjectNum",
+//					respos#DiscAmountOrPercent: "vars.varCouponDiscAmount"
+//				}) if (payload.createcheck.orderDiscount.discObjectNum == null and payload.createcheck.serializedCoupon.couponCode != null),
 				respos#pTmedDetail: {
 					respos#TmedObjectNum: (vars.tenderId.tenderObjectNum),
 					respos#TmedPartialPayment: payload.createcheck.payment.tenderAmount,
