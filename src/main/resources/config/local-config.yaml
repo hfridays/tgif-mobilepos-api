@@ -12,3 +12,7 @@ database:
     url: "jdbc:sqlserver://52.165.132.229;databaseName=mulesoft_interface;"
   depot:
     url: "jdbc:sqlserver://52.165.132.229;databaseName=depot;"
+resposapi:
+  reconnect:
+    frequency: "2000"
+    count: "3"

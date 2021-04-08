@@ -1,0 +1,207 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<soap:Envelope
+	xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<CalculateTransactionTotalsResponse
+			xmlns="http://schemas.micros.com/RESPOS">
+			<ppMenuItems>
+				<ResPosAPI_MenuItem>
+					<MenuItem>
+						<MiObjectNum>35003</MiObjectNum>
+						<MiMenuLevel>4</MiMenuLevel>
+						<MiOverridePrice>17.47</MiOverridePrice>
+						<ItemDiscount>
+							<DiscObjectNum>0</DiscObjectNum>
+							<DiscReference>1</DiscReference>
+						</ItemDiscount>
+					</MenuItem>
+					<Condiments>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9001110</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9041004</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>1.49</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+					</Condiments>
+				</ResPosAPI_MenuItem>
+				<ResPosAPI_MenuItem>
+					<MenuItem>
+						<MiObjectNum>1007</MiObjectNum>
+						<MiMenuLevel>4</MiMenuLevel>
+						<MiOverridePrice>10.22</MiOverridePrice>
+						<ItemDiscount>
+							<DiscObjectNum>0</DiscObjectNum>
+							<DiscReference>1</DiscReference>
+						</ItemDiscount>
+					</MenuItem>
+					<Condiments>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9001110</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9110108</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+					</Condiments>
+				</ResPosAPI_MenuItem>
+				<ResPosAPI_MenuItem>
+					<MenuItem>
+						<MiObjectNum>20026</MiObjectNum>
+						<MiMenuLevel>4</MiMenuLevel>
+						<MiOverridePrice>13.79</MiOverridePrice>
+						<ItemDiscount>
+							<DiscObjectNum>0</DiscObjectNum>
+							<DiscReference>1</DiscReference>
+						</ItemDiscount>
+					</MenuItem>
+					<Condiments>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9001110</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9068225</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>2.99</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9001110</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9092502</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9001110</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9092702</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9001110</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9066105</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9001110</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9061203</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9001110</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9037002</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+					</Condiments>
+				</ResPosAPI_MenuItem>
+			</ppMenuItems>
+			<pSvcCharge>
+				<SvcChgObjectNum>0</SvcChgObjectNum>
+			</pSvcCharge>
+			<pSubtotalDiscount>
+				<DiscObjectNum>0</DiscObjectNum>
+			</pSubtotalDiscount>
+			<pTotalsResponse>
+				<TotalsSubTotal>45.96</TotalsSubTotal>
+				<TotalsTaxTotals>3.38</TotalsTaxTotals>
+				<TotalsOtherTotals>0.00</TotalsOtherTotals>
+				<TotalsAutoSvcChgTotals>0.00</TotalsAutoSvcChgTotals>
+				<TotalsTotalDue>49.34</TotalsTotalDue>
+			</pTotalsResponse>
+		</CalculateTransactionTotalsResponse>
+	</soap:Body>
+</soap:Envelope>

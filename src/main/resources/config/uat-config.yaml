@@ -5,13 +5,13 @@ microsApi:
   connectionTimeout: "15000"
   readTimeout: "30000"
 database:
-  user: "svc_MuleSoft_User"
+  user: "svc_MuleSoft_Test"
   password: "Testing1"
   driver: "com.microsoft.sqlserver.jdbc.SQLServerDriver"  
   muleInterface:
-    url: "jdbc:sqlserver://10.58.52.50:1433;databaseName=mulesoft_interface;"  
+    url: "jdbc:sqlserver://10.58.51.50:1433;databaseName=mulesoft_interface;"  
   depot:
-    url: "jdbc:sqlserver://10.58.52.50:1433;databaseName=depot;"
+    url: "jdbc:sqlserver://10.58.51.50:1433;databaseName=depot;"
 resposapi:
   reconnect:
     frequency: "2000"

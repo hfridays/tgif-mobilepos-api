@@ -9,14 +9,14 @@
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
 	<flow name="tgif-mobilepos-utilFlow"
-		doc:id="800f681d-5d5b-427b-ae5f-034463701832" initialState="stopped">
+		doc:id="800f681d-5d5b-427b-ae5f-034463701832" initialState="started">
 		<scheduler doc:name="Scheduler"
 			doc:id="990caf7e-3a10-45fc-8adb-b6ca2d8c148c">
 			<scheduling-strategy>
 				<fixed-frequency timeUnit="HOURS" frequency="12"/>
 			</scheduling-strategy>
 		</scheduler>
-		<logger level="INFO" doc:name="INFO: Start" doc:id="78995b7e-7cf5-4e00-aaae-61fcfcf9aa5a" message="Started loading Proeprties into Object Store"/>
+		<logger level="INFO" doc:name="INFO: Start" doc:id="78995b7e-7cf5-4e00-aaae-61fcfcf9aa5a" message="Started loading Properties into Object Store"/>
 		<flow-ref doc:name="store-tenderMedia-properties-sub-flow"
 			doc:id="9f731b4b-329e-4b98-ad7c-6b9991641aba"
 			name="store-tenderMedia-properties-sub-flow" />
@@ -41,7 +41,7 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		<flow-ref doc:name="store-vrbrands-properties-sub-flow"
 			doc:id="949a3dd9-d538-49b0-998c-4d5a1f576210"
 			name="store-vrbrands-properties-sub-flow" />
-		<logger level="INFO" doc:name="INFO: Success" doc:id="66dd1587-4b5d-4cf2-8a3e-be0e4356c317" message="Finished loading Proeprties into Object Store"/>
+		<logger level="INFO" doc:name="INFO: Success" doc:id="66dd1587-4b5d-4cf2-8a3e-be0e4356c317" message="Finished loading Properties into Object Store"/>
 	</flow>
 	<sub-flow name="store-tenderMedia-properties-sub-flow"
 		doc:id="47603abd-6937-44bb-938d-1769dc5c13b8">

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
+<mule xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns:java="http://www.mulesoft.org/schema/mule/java"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
 	xmlns:json="http://www.mulesoft.org/schema/mule/json"
 	xmlns:db="http://www.mulesoft.org/schema/mule/db"
 	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
@@ -12,7 +14,9 @@
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
-http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd">
 	<flow name="ms-heartbeat-flow"
 		doc:id="075f2d62-90a3-4246-80e6-519f938ff54c">
 		<logger level="INFO" doc:name="INFO: Start"
@@ -83,22 +87,31 @@ output application/json
 output application/json
 ---
 {
-	ipAddess: attributes.queryParams.IPAddress,
-	port: attributes.queryParams.Port
+	ipAddress: attributes.queryParams.ipAddress,
+	port: attributes.queryParams.port
 }]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
 				<logger level="INFO" doc:name="INFO: Request Details"
 					doc:id="a27b7755-33cc-406a-9024-846afa5adfe4"
-					message="Req Details #[vars.reqDetails]" />
-				<choice doc:name="Choice"
+					message="Request Details #[vars.reqDetails]" />
+				<java:invoke-static doc:name="Ping IP Address"
+					doc:id="f69dc9aa-5316-49be-bae2-739cd28cbb5d"
+					class="com.api.tgif.mobilepos.util.CommonUtil"
+					method="checkConnectivity(java.lang.String, java.lang.String)">
+					<java:args><![CDATA[#[{
+	ipAddress: vars.reqDetails.ipAddess,
+	port: vars.ipAddess.port
+}]]]></java:args>
+				</java:invoke-static>
+				<choice doc:name="Ping Success?"
 					doc:id="67b9b672-aeff-4e09-9ab8-ce21c973ec21">
 					<when expression='#[payload == "Host is reachable"]'>
 						<ee:transform doc:name="Create Success Response"
 							doc:id="26c2924f-dcd2-4af4-994e-6bdf0f5d0e93">
 							<ee:message>
 								<ee:set-payload><![CDATA[%dw 2.0
-output application/java
+output application/json
 ---
 {
 	result: {
@@ -112,6 +125,25 @@ output application/java
 							doc:id="477b6687-7cb5-4fdb-a6c3-afe5b1489529"
 							message="Ping IP Addess flow completed successfully" />
 					</when>
+					<otherwise>
+						<ee:transform doc:name="Create Failure Response"
+							doc:id="989efa3c-e00c-4b8b-8bf7-55b77ba3ffae">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	result: {
+		status: "success",
+		message: "Host is not reachable"
+	}
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<logger level="INFO" doc:name="INFO: Failure"
+							doc:id="d2613135-3e19-45ff-bd5c-7496d2d023e3"
+							message="Ping IP Addess flow completed unsuccessfully" />
+					</otherwise>
 				</choice>
 			</when>
 			<otherwise>
@@ -182,9 +214,9 @@ output application/json
 vars.initialPayload.createcheck.brandId]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
-				<flow-ref doc:name="retrieve-tender-media-details"
+				<flow-ref doc:name="get-tender-media-details"
 					doc:id="57841997-68fa-49fa-ac0b-27e251081b08"
-					name="retrieve-tender-media-details" />
+					name="get-tender-media-details" />
 				<flow-ref doc:name="get-delivery-partner-orders"
 					doc:id="18998350-9f5d-45eb-a2ee-5563535f524b"
 					name="get-delivery-partner-orders" />
@@ -332,12 +364,44 @@ output application/json
 					message="Create Check Flow completed unsuccessfully" />
 			</otherwise>
 		</choice>
+		<error-handler>
+			<on-error-continue enableNotifications="true"
+				logException="true" doc:name="On Error Continue"
+				doc:id="cf5cb7d2-3a22-43ce-a326-2cacc67feef8">
+				<logger level="INFO" doc:name="Logger"
+					doc:id="dd128c3d-eecb-4e97-a635-fee58e87333f"
+					message="Schema validation failed" />
+				<set-variable
+					value="Following error occurred in Create Check method for Store #[vars.storeId] : #[error]"
+					doc:name="emailMessage"
+					doc:id="e83d36a1-a29f-4154-8cc7-ee4d21033626"
+					variableName="emailMessage" />
+				<flow-ref doc:name="send-email-notification"
+					doc:id="ab8a7543-4495-4c2a-a456-8d9990738347"
+					name="send-email-notification" />
+				<set-payload
+					value='#[{&#10;	createcheck: {&#10;		result: {&#10;			status: "Failure",&#10;			message: error&#10;		}&#10;	}&#10;}]'
+					doc:name="Create Failure Response"
+					doc:id="88c6d5ca-07be-4bb6-8e87-bc949dfa545f" />
+				<logger level="INFO" doc:name="Logger"
+					doc:id="0f87e0a7-1950-469e-9263-e40df88a3819"
+					message="Create Check Flow Completed with Errors" />
+				<set-variable
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CreateCheck',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: error&#10;}]"
+					doc:name="logData" doc:id="015b42f7-4148-496b-8846-fa1392b93486"
+					variableName="logData" />
+				<flow-ref doc:name="insert-online-ordering-logs"
+					doc:id="6f61bfff-248d-486c-a3e8-0b4a6afaf9a7"
+					name="insert-online-ordering-logs" />
+
+			</on-error-continue>
+		</error-handler>
 	</flow>
 	<flow name="calculate-tax-and-total-flow"
 		doc:id="506d3351-e46c-4706-b6a8-677b9bbf352a">
 		<logger level="INFO" doc:name="INFO: Start"
 			doc:id="14fff35b-14a3-4176-8cab-385d0bf235a3"
-			message="Caluclate Taxt And Total Flow Started" />
+			message="Caluclate Tax And Total Flow Started" />
 		<flow-ref doc:name="get-access-token"
 			doc:id="76a5d86f-e805-4f54-aa4d-2e0eabb11c79" name="get-access-token" />
 		<choice doc:name="Check if access token valid"
@@ -351,16 +415,7 @@ output application/json
 					doc:name="storeId" doc:id="57d8c305-e445-45f3-8a92-e77d51a9ec7d"
 					variableName="storeId" />
 				<set-variable
-					value="#[{
-&#10;	methodName: 'CalculateTaxAndTotal',
-&#10;	storeId: if(vars.storeId != null) vars.storeId else vars.vrStoreId,
-&#10;	checkNumber: 'Null',
-&#10;	checkSequence: 'Null',
-&#10;	employeeNumber: 'Null',
-&#10;	tableNumber: 'Null',
-&#10;	status: '1',
-&#10;	message: vars.initialPayload
-&#10;}]"
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.initialPayload&#10;}]"
 					doc:name="logData" doc:id="8d731c8a-83ab-4c2e-a985-ec7aa780f1d0"
 					variableName="logData" />
 				<flow-ref doc:name="insert-online-ordering-logs"
@@ -369,7 +424,7 @@ output application/json
 				<json:validate-schema
 					doc:name="Validate Request schema"
 					doc:id="b00e2b82-e114-4e37-af90-50c802d32fcb"
-					schema="schema\caluclateTaxAndTotalRequest.json">
+					schema="schema/caluclateTaxAndTotalRequest.json">
 				</json:validate-schema>
 				<set-variable
 					value="#[payload.calculateTaxAndTotal.authenticationSystem]"
@@ -383,54 +438,177 @@ output application/json
 					<ee:message>
 					</ee:message>
 					<ee:variables>
-						<ee:set-variable resource="dwl\tenderId.dwl"
+						<ee:set-variable
+							resource="dwl\calculate-tax-and-total\tender-id.dwl"
 							variableName="tenderId" />
 					</ee:variables>
 				</ee:transform>
-				<ee:transform doc:name="Create XML"
+				<ee:transform doc:name="Create Request XML"
 					doc:id="76d7ad3c-4feb-4e92-83ea-2cd33f2ef50c">
 					<ee:message>
 					</ee:message>
 					<ee:variables>
-						<ee:set-variable resource="dwl/inputXml.dwl"
-							variableName="inputXml" />
+						<ee:set-variable
+							resource="dwl/calculate-tax-and-total/tax-and-total-xml.dwl"
+							variableName="taxAndTotalXml" />
 					</ee:variables>
 				</ee:transform>
 				<set-variable
-					value="#[{
-&#10;	methodName: 'CalculateTaxAndTotal',
-&#10;	storeId: if(vars.storeId != null) vars.storeId else vars.vrStoreId,
-&#10;	checkNumber: 'Null',
-&#10;	checkSequence: 'Null',
-&#10;	employeeNumber: 'Null',
-&#10;	tableNumber: 'Null',
-&#10;	status: '1',
-&#10;	message: payload
-&#10;}]"
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: payload&#10;}]"
 					doc:name="logData" doc:id="7fce33c6-544a-4de3-85b4-7896f0f2b345"
 					variableName="logData" />
 				<flow-ref doc:name="insert-online-ordering-logs"
 					doc:id="32c5bd3b-25de-4961-b5d5-110c68c0bb70"
 					name="insert-online-ordering-logs" />
-				<os:retrieve doc:name="Retrieve All Store Properties"
-					doc:id="cc6f0801-2cfc-4427-ae25-a9f24e405d91"
-					key="storeIpProperties" objectStore="Object_store"
-					target="storeProperties" />
-				<ee:transform doc:name="Get Store Properties"
-					doc:id="6eebbacf-826d-467a-9a1e-15393f31851d">
+				<flow-ref doc:name="get-store-ip-properties"
+					doc:id="058d401e-aab4-483f-aa72-0c2140e0cb41"
+					name="get-store-ip-properties" />
+				<logger level="INFO" doc:name="DEBUG: Service Request"
+					doc:id="66566e53-e516-4316-b0ea-eba70b548c1a"
+					message="#[vars.taxAndTotalXml]" />
+				<http:request method="POST"
+					doc:name="Request ResPos Api"
+					doc:id="13c72f99-b4d5-49be-9d49-eb030da62671"
+					config-ref="HTTP_Request_configuration"
+					path="/ResPosApiWeb/ResPosApiWeb.asmx"
+					target="calculateTotalServiceResponse" sendCorrelationId="AUTO">
+					<reconnect frequency="${resposapi.reconnect.frequency}"
+						count="${resposapi.reconnect.count}" />
+					<http:body><![CDATA[#[%dw 2.0
+output text/plain
+---
+write(vars.taxAndTotalXml, "application/xml")]]]></http:body>
+				</http:request>
+				<logger level="INFO" doc:name="DEBUG: Service Response"
+					doc:id="94e003b6-5239-43dd-853b-fb45998e3b41"
+					message="#[vars.calculateTotalServiceResponse]" />
+				<logger level="INFO" doc:name="Logger"
+					doc:id="56c281f4-94b8-4769-8cff-cfb68e686de5"
+					message="#[output application/xml --- vars.calculateTotalServiceResponse]" />
+				<ee:transform
+					doc:name="Calculate Total Service Response"
+					doc:id="49ae18b5-bc47-40eb-9ca9-008110edc9fc">
 					<ee:message>
 					</ee:message>
 					<ee:variables>
-						<ee:set-variable variableName="storeProperties"><![CDATA[%dw 2.0
-output application/java
+						<ee:set-variable
+							variableName="calculateTotalServiceResponse"><![CDATA[%dw 2.0
+output application/json
+ns soapenv http://schemas.xmlsoap.org/soap/envelope/
 ---
-(payload filter ($.store_id as String == vars.storeID)) map (item, index) -> {
-	gatewayIp: item.gateway_ip,
-	printerIp: item.printer_ip,
-	serverIp: item.server_ip
-}]]></ee:set-variable>
+if ( vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.CalculateTransactionTotalsResponse != null ) {
+	status: "Success",
+	response: vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.CalculateTransactionTotalsResponse
+} else {
+	status: "Failed",
+	response: ((vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.soapenv#Fault.detail replace "}" with "" replace "{" with "") splitBy ":")[1] replace "-" with ""
+}
+]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
+				<choice doc:name="Check Service Response"
+					doc:id="3968409f-ec9b-428f-b75b-e0e83df148a8">
+					<when
+						expression='#[vars.calculateTotalServiceResponse.status == "Success"]'>
+						<ee:transform doc:name="Create Success Response"
+							doc:id="3575e5fd-59c0-4266-9925-31f60690826f">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	calculateTaxAndTotal: {
+		result: {
+			status: "Success",
+			message: "Success"
+		},
+		totals: {
+			subTotal: vars.calculateTotalServiceResponse.response.pTotalsResponse.TotalsSubTotal as String,
+			taxTotal: vars.calculateTotalServiceResponse.response.pTotalsResponse.TotalsTaxTotals as String,
+			totalDue: vars.calculateTotalServiceResponse.response.pTotalsResponse.TotalsTotalDue as String
+		},
+		(orderDiscount: {
+			discObjectNum: vars.calculateTotalServiceResponse.response.pSubtotalDiscount.DiscObjectNum as String,
+			discAmountOrPercent: vars.calculateTotalServiceResponse.response.pSubtotalDiscount.DiscAmountOrPercent as String
+		}) if(vars.calculateTotalServiceResponse.response.pSubtotalDiscount.DiscAmountOrPercent != null),
+		(menuItems: vars.calculateTotalServiceResponse.response.ppMenuItems.ResPosAPI_MenuItem map ((value , index) -> {
+			miObjectNum: value.MenuItem.MiObjectNum as String,
+			menuQty: 1,
+			menuAmount: value.MenuItem.MiOverridePrice as String,
+			lineEntry: value.MenuItem.ItemDiscount.DiscReference as String,
+			// condimentcount: (sizeOf value.Condiments.ResPosAPI_MenuItemDefinition.*MiMenuLevel),
+			(condiments: value.Condiments.ResPosAPI_MenuItemDefinition map ((value , index) -> {
+				miObjectNum: value.MiObjectNum as String,
+				menuQty: 1,
+				menuAmount: value.MiOverridePrice as String
+			})) if (value.Condiments != null and value.Condiments != "" and ((sizeOf(value.Condiments.ResPosAPI_MenuItemDefinition.*MiMenuLevel)) > 1)),
+			(condiments: value.Condiments.*ResPosAPI_MenuItemDefinition default [] map {
+				miObjectNum: $.MiObjectNum as String,
+				menuQty: 1,
+				menuAmount: $.MiOverridePrice as String
+			}) if (value.Condiments != null and value.Condiments != "" and ((sizeOf(value.Condiments.ResPosAPI_MenuItemDefinition.*MiMenuLevel)) == 1))
+		})) if ((sizeOf(vars.calculateTotalServiceResponse.response.ppMenuItems.ResPosAPI_MenuItem.*MenuItem)) > 1),
+		(menuItems: (vars.calculateTotalServiceResponse.response.ppMenuItems.*ResPosAPI_MenuItem default []) map  {
+			miObjectNum: $.MenuItem.MiObjectNum as String,
+			menuQty: 1,
+			menuAmount: $.MenuItem.MiOverridePrice as String,
+			lineEntry: $.MenuItem.ItemDiscount.DiscReference as String,
+			(condiments: $.Condiments.ResPosAPI_MenuItemDefinition map ((value , index) -> {
+				miObjectNum: value.MiObjectNum as String,
+				menuQty: 1,
+				menuAmount: value.MiOverridePrice as String
+			})) if ($.Condiments != null and $.Condiments != "" and ((sizeOf($.Condiments.ResPosAPI_MenuItemDefinition.*MiMenuLevel)) > 1)),
+			(condiments: $.Condiments.*ResPosAPI_MenuItemDefinition default [] map {
+				miObjectNum: $.MiObjectNum as String,
+				menuQty: 1,
+				menuAmount: $.MiOverridePrice as String
+			}) if ($.Condiments != null and $.Condiments != "" and ((sizeOf($.Condiments.ResPosAPI_MenuItemDefinition.*MiMenuLevel)) == 1))
+		}) if ((sizeOf(vars.calculateTotalServiceResponse.response.ppMenuItems.ResPosAPI_MenuItem.*MenuItem)) == 1)
+	}
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<set-variable
+							value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: 'CalculateTotals completed with Serialized Coupons applied'&#10;}]"
+							doc:name="logData" doc:id="05b81a8b-5fbf-4d77-b65f-344238df62e8"
+							variableName="logData" />
+						<flow-ref doc:name="insert-online-ordering-logs"
+							doc:id="52042af7-dc77-4933-87ea-2827c21ac7f2"
+							name="insert-online-ordering-logs" />
+						<logger level="INFO" doc:name="INFO: Success"
+							doc:id="ecad389a-ac51-4fd7-b72c-03bd554e4af8"
+							message="Caluclate Tax And Total Flow Completed Successfully" />
+
+					</when>
+					<otherwise>
+						<ee:transform doc:name="Create Failure Response"
+							doc:id="6ae8a50d-4c47-4562-a9d6-c70122e80a0a">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"calculateTaxAndTotal": {
+		"result": {
+			"status": "failure",
+			"message": vars.calculateTotalServiceResponse.response
+		}
+	}
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<set-variable
+							value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: payload&#10;}]"
+							doc:name="logData" doc:id="ff4acc98-8bda-4933-a4e2-dbc76e712820"
+							variableName="logData" />
+						<flow-ref doc:name="insert-online-ordering-logs"
+							doc:id="e4beca4a-d6ec-4571-9d49-db4ceefdb3d5"
+							name="insert-online-ordering-logs" />
+						<logger level="INFO" doc:name="INFO: Failure"
+							doc:id="393bf2d6-88ee-4e21-b9b4-cdd2cd589270"
+							message="Caluclate Tax And Total Flow Completed Unuccessfully" />
+					</otherwise>
+				</choice>
 			</when>
 			<otherwise>
 				<ee:transform doc:name="Create Failure Response"
@@ -451,8 +629,42 @@ output application/json
 				</ee:transform>
 				<logger level="INFO" doc:name="INFO: Failure"
 					doc:id="c7763aa3-c153-4f09-88c0-6f341a8e5f94"
-					message="Caluclate Taxt And Total Flow flow completed unsuccessfully" />
+					message="Caluclate Tax And Total Flow flow completed unsuccessfully" />
 			</otherwise>
 		</choice>
+		<error-handler>
+			<on-error-continue enableNotifications="true"
+				logException="true" doc:name="On Error Continue"
+				doc:id="29705788-19cd-45e8-a838-051f674447ef">
+				<logger level="INFO" doc:name="Logger"
+					doc:id="0bce7609-f300-4e11-9c4b-a2f375aa4c12"
+					message="Schema validation failed" />
+				<set-variable
+					value="Following error occurred in CalculateTaxAndTotal method for Store #[vars.storeId] : #[error]"
+					doc:name="emailMessage"
+					doc:id="12e56814-d59d-4bd7-8287-a092217c9f53"
+					variableName="emailMessage" />
+				<flow-ref doc:name="send-email-notification"
+					doc:id="934d7cab-1418-4622-8947-dfded90777b4"
+					name="send-email-notification" />
+				<set-payload
+					value='#[{&#10;	calculateTaxAndTotal: {&#10;		result: {&#10;			status: "Failure",&#10;			message: error&#10;		}&#10;	}&#10;}]'
+					doc:name="Create Failure Response"
+					doc:id="755d4971-1efa-4d16-8aac-1351f6764db8" />
+				<logger level="INFO" doc:name="Logger"
+					doc:id="d5c0987f-d2ae-404f-baba-d1ba1263d4fd"
+					message="Caluclate Tax And Total Flow Completed with Errors" />
+				<set-variable
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: error&#10;}]"
+					doc:name="logData" doc:id="2c8fa8bf-f6d8-46c8-8c67-eb6fe4dacfcd"
+					variableName="logData" />
+				<flow-ref doc:name="insert-online-ordering-logs"
+					doc:id="6e01941e-07fc-4733-aaf9-e6cf3dd7d6ae"
+					name="insert-online-ordering-logs" />
+			</on-error-continue>
+
+		</error-handler>
 	</flow>
+	<flow name="calculate-total-flow"
+		doc:id="ad3f63d9-54cf-4671-9eb5-a2458ff6976a" />
 </mule>

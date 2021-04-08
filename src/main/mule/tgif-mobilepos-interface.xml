@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
     <flow name="tgif-mobilepos-papi-main">
         <http:listener config-ref="tgif-mobilepos-papi-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -120,111 +120,18 @@ output application/json
         </error-handler>
     </flow>
     <flow name="put:\calculateTaxAndTotal:application\json:tgif-mobilepos-papi-config">
-		<flow-ref doc:name="calculate-tax-and-total-flow" doc:id="e6622906-46f2-4026-8061-1bcaeff1ab2f" name="calculate-tax-and-total-flow"/>
+        <flow-ref doc:name="calculate-tax-and-total-flow" doc:id="e6622906-46f2-4026-8061-1bcaeff1ab2f" name="calculate-tax-and-total-flow" />
     </flow>
     <flow name="get:\msHeartBeat:tgif-mobilepos-papi-config">
-		<flow-ref doc:name="ms-heartbeat-flow" doc:id="7d549350-3090-4963-b40b-d2abf0bd3aee" name="ms-heartbeat-flow"/>
+        <flow-ref doc:name="ms-heartbeat-flow" doc:id="7d549350-3090-4963-b40b-d2abf0bd3aee" name="ms-heartbeat-flow" />
     </flow>
     <flow name="post:\calculateTotals:application\json:tgif-mobilepos-papi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  calculatetotals: {
-    result: {
-      status: "success",
-      message: "success"
-    },
-    totals: {
-      subTotal: "9.90",
-      taxTotal: "0.82",
-      totalDue: "10.72"
-    },
-    orderDiscount: {
-      discObjectNum: "2224",
-      discAmountOrPercent: "5.00"
-    },
-    menuItems: [
-      {
-        miObjectNum: "50006",
-        miAltItemId: "20008",
-        menuQty: 1,
-        menuAmount: "\$10.00",
-        lineEntry: "0",
-        errorMessage: "Menu item or Condiment not found in POS",
-        condiments: [
-          {
-            miObjectNum: "9041004",
-            menuQty: 1,
-            modCodeId: 2,
-            menuAmount: "\$1.49",
-            miDiscount: {
-              discObjectNum: "2224",
-              discAmountOrPercent: "5.00"
-            }
-          }, 
-          {
-            miObjectNum: "9041007",
-            menuQty: 1,
-            modCodeId: 3,
-            menuAmount: "\$1.00",
-            miDiscount: {
-              discObjectNum: "2224",
-              discAmountOrPercent: "5.00"
-            }
-          }
-        ],
-        miDiscount: {
-          discObjectNum: "2224",
-          discAmountOrPercent: "5.00"
-        }
-      }, 
-      {
-        miObjectNum: "9230102",
-        miAltItemId: "20008",
-        menuQty: 1,
-        menuAmount: "2.79",
-        lineEntry: "0",
-        errorMessage: "Menu item or Condiment not found in POS",
-        condiments: [
-          {
-            miObjectNum: "9041004",
-            menuQty: 1,
-            modCodeId: 3,
-            menuAmount: "\$1.49",
-            miDiscount: {
-              discObjectNum: "2224",
-              discAmountOrPercent: "5.00"
-            }
-          }, 
-          {
-            miObjectNum: "9041007",
-            menuQty: 1,
-            modCodeId: 4,
-            menuAmount: "\$1.00",
-            miDiscount: {
-              discObjectNum: "2224",
-              discAmountOrPercent: "5.00"
-            }
-          }
-        ],
-        miDiscount: {
-          discObjectNum: "3298",
-          discAmountOrPercent: "5.00"
-        }
-      }
-    ]
-  }
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="calculate-total-flow" doc:id="09157509-fa14-43c0-922c-2177253a984f" name="calculate-total-flow"/>
     </flow>
     <flow name="post:\createCheck:application\json:tgif-mobilepos-papi-config">
-		<flow-ref doc:name="create-check-flow" doc:id="1e53a43a-81c7-4417-87de-24a3e4856bb1" name="create-check-flow"/>
+        <flow-ref doc:name="create-check-flow" doc:id="1e53a43a-81c7-4417-87de-24a3e4856bb1" name="create-check-flow" />
     </flow>
-    <flow name="post:\pingIPAddress:tgif-mobilepos-papi-config">
-		<flow-ref doc:name="ping-ip-addess-flow" doc:id="c20cd2a5-08d6-4508-b357-877ee33316ac" name="ping-ip-addess-flow"/>
+    <flow name="get:\pingIPAddress:tgif-mobilepos-papi-config">
+        <flow-ref doc:name="ping-ip-addess-flow" doc:id="c20cd2a5-08d6-4508-b357-877ee33316ac" name="ping-ip-addess-flow" />
     </flow>
 </mule>

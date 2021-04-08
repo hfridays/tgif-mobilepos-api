@@ -1,14 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
 	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="
-http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
-	<sub-flow name="get-access-token" doc:id="9e17bb63-29b0-48ac-9696-21258c0576f0" >
-		<set-variable value="#[attributes.headers.ApiKey]" doc:name="reqAccessToken" doc:id="4d5d1ffb-b06c-4aa8-b520-cb9b5e9bcef5" variableName="reqAccessToken" />
-		<set-variable value="${mobilepos.token}" doc:name="accessToken" doc:id="cdeffd68-5412-4897-b94d-8b11e20b34b8" variableName="accessToken" />
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<sub-flow name="get-store-ip-properties"
+		doc:id="3446c974-5174-43c2-8b4c-5c522be84538">
+		<logger level="INFO" doc:name="INFO: Enter"
+			doc:id="b8f0cb8d-62da-4022-8456-401819f7d007"
+			message="Enter Get Store IP Properties from Object Store" />
+		<os:retrieve doc:name="Retrieve Store IP Properties"
+			doc:id="aa43a799-ae44-4593-a1c9-562657e149ab" key="storeIpProperties"
+			objectStore="Object_store" target="storeIpProperties" />
+		<set-variable
+			value="#[output application/json ---(vars.storeIpProperties filter ($.store_id as String == vars.storeId))]"
+			doc:name="storeIpProperties"
+			doc:id="9a38cf4b-46ab-4f4a-a36d-dd71cf8021be"
+			variableName="storeIpProperties" />
+		<ee:transform doc:name="Store IP Properties" doc:id="676c0fa5-fd6f-41d1-9829-16d8ab460547">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="storeIpProperties"><![CDATA[%dw 2.0
+output application/json
+---
+(vars.storeIpProperties) map (item, index) -> {
+	gatewayIp: item.gateway_ip,
+	printerIp: item.printer_ip,
+	serverIp: item.server_ip
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="INFO: Exit"
+			doc:id="3c2ea3e4-4819-429b-b5ed-27450682d43c"
+			message="Exit Get Store IP properties from Object Store" />
+	
+</sub-flow>
+
+	<sub-flow name="get-access-token"
+		doc:id="9e17bb63-29b0-48ac-9696-21258c0576f0">
+		<set-variable value="#[attributes.headers.ApiKey]"
+			doc:name="reqAccessToken"
+			doc:id="4d5d1ffb-b06c-4aa8-b520-cb9b5e9bcef5"
+			variableName="reqAccessToken" />
+		<set-variable value="${mobilepos.token}"
+			doc:name="accessToken" doc:id="cdeffd68-5412-4897-b94d-8b11e20b34b8"
+			variableName="accessToken" />
 	</sub-flow>
 	<sub-flow name="insert-online-ordering-logs"
 		doc:id="bbf9f077-8524-4446-a931-9ce93476faa1">
@@ -19,7 +61,7 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 				doc:id="314a9d0d-b420-474d-8b13-3407bb99226f"
 				config-ref="Database_Config_Mule_Interface">
 				<db:sql><![CDATA[{ call dbo.prc_onlineordering_logs_insert(:method_name,:store_id,:check_number,:check_sequence,:employee_number,:table_number,:status,:message)}]]></db:sql>
-				<db:input-parameters ><![CDATA[#[{
+				<db:input-parameters><![CDATA[#[{
 	method_name: vars.logData.methodName,
 	store_id: vars.logData.storeId,
 	check_number: vars.logData.checkNumber,
@@ -27,10 +69,9 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 	employee_number: vars.logData.employeeNumber,
 	table_number: vars.logData.tableNumber,
 	status: vars.logData.status,
-	message: vars.logData.message
+	message: write(vars.logData.message, "application/json")
 }]]]></db:input-parameters>
-			
-</db:stored-procedure>
+			</db:stored-procedure>
 		</async>
 	</sub-flow>
 	<sub-flow name="insert-cart-id-logs"
@@ -42,15 +83,30 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 				doc:id="3fd0837a-87a8-4cc9-aa5a-c6370a66e55b"
 				config-ref="Database_Config_Mule_Interface">
 				<db:sql><![CDATA[{ call dbo.prc_olo_cart_id_details_insert(:store_id,:cart_id,:check_payload,:day_of_business)}]]></db:sql>
-				<db:input-parameters ><![CDATA[#[{
+				<db:input-parameters><![CDATA[#[{
 	store_id: vars.logData.storeId,
 	cart_id: vars.logData.cartId,
 	check_payload: vars.logData.payload,
 	day_of_business: vars.logData.dayOfBusiness
 }]]]></db:input-parameters>
-			
-</db:stored-procedure>
+
+			</db:stored-procedure>
 		</async>
 	</sub-flow>
+		<sub-flow name="send-email-notification"
+		doc:id="db3166c9-a40b-4688-bd8c-40bfa7c0c8e3">
+		<db:stored-procedure
+			doc:name="Send Email Notification"
+			doc:id="7036e2da-a22f-4152-a406-01bf54fc9155"
+			config-ref="Database_Config_Depot">
+			<db:sql><![CDATA[{call prc_RemoteMail_RouteMessage(:type, :subject,:body)}]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	'type': "MobilePaymentNotification",
+	subject: "Error occurred in Online Ordering API",
+	body: vars.emailMessage
+}]]]></db:input-parameters>
+		</db:stored-procedure>
+	</sub-flow>
 	
+
 </mule>

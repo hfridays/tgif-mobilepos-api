@@ -35,41 +35,51 @@ http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/jav
 		<flow-ref doc:name="insert-online-ordering-logs"
 			doc:id="744dd878-4cf4-4e6f-8ff1-a713c0f72d18"
 			name="insert-online-ordering-logs" />
-		<flow-ref doc:name="retrieve-store-ip-properties" doc:id="ae14da2f-e4f5-484f-bd63-a34d4548ca0e" name="retrieve-store-ip-properties" />
-		<ee:transform doc:name="Store IP Properties"
-			doc:id="84c367b2-e1f4-4c95-a203-e7d08e763349">
-			<ee:message>
-			</ee:message>
-			<ee:variables>
-				<ee:set-variable variableName="storeIpProperties" ><![CDATA[%dw 2.0
-output application/json
----
-(vars.storeIpProperties) map (item, index) -> {
-	gatewayIp: item.gateway_ip,
-	printerIp: item.printer_ip,
-	serverIp: item.server_ip
-}]]></ee:set-variable>
-			</ee:variables>
-		</ee:transform>
+		<flow-ref doc:name="get-store-ip-properties"
+			doc:id="ae14da2f-e4f5-484f-bd63-a34d4548ca0e"
+			name="get-store-ip-properties" />
 		<choice doc:name="IP Address is not null"
 			doc:id="6f6d160c-3f20-4a3d-b3c3-8badbe149ab2">
 			<when expression="#[vars.storeIpProperties.serverIp != null]">
-				<logger level="INFO" doc:name="DEBUG: Service Request" doc:id="3e65925b-d103-4b6e-9d23-75b7fd0f996e" message="Request=#[vars.postTransactionXML]"/>
-				<http:request method="POST" doc:name="Request ResPosApi" doc:id="e81d5c75-0c94-4d76-8897-ea4f0d580b03" target="createCheckServiceResponse" config-ref="HTTP_Request_configuration" path="/ResPosApiWeb/ResPosApiWeb.asmx">
-					<http:body ><![CDATA[#[vars.postTransactionXML]]]></http:body>
+				<logger level="INFO" doc:name="DEBUG: Service Request"
+					doc:id="3e65925b-d103-4b6e-9d23-75b7fd0f996e"
+					message="Request=#[vars.postTransactionXML]" />
+				<http:request method="POST"
+					doc:name="Request ResPosApi"
+					doc:id="e81d5c75-0c94-4d76-8897-ea4f0d580b03"
+					target="createCheckServiceResponse"
+					config-ref="HTTP_Request_configuration"
+					path="/ResPosApiWeb/ResPosApiWeb.asmx">
+					<reconnect frequency="${resposapi.reconnect.frequency}" count="${resposapi.reconnect.count}"/>
+					<http:body><![CDATA[#[vars.postTransactionXML]]]></http:body>
 				</http:request>
-				<logger level="INFO" doc:name="DEBUG: Service Response" doc:id="3c74b5ad-d84f-445d-826c-0b4c549239ef" message="Response=#[vars.createCheckServiceResponse]"/>
-				<ee:transform doc:name="Transform Message" doc:id="0b3d76ab-d1c5-4f37-b836-1351abf53cf9">
+				<set-variable
+					value="#[&quot;&lt;?xml version='1.0' encoding='UTF-8'?&gt;&#10;&lt;soapenv:Envelope xmlns:soapenv='http://www.w3.org/2003/05/soap-envelope'&gt;&#10;  &lt;soapenv:Body&gt;&#10;  &lt;PostTransactionExResponse xmlns = 'http://schemas.micros.com/RESPOS'&gt;&#10;  &lt;ppVoucherOutput/&gt;&#10;  &lt;pSubTotalDiscount&gt;&#10;    &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;  &lt;/pSubTotalDiscount&gt;&#10;  &lt;pTmedDetail&gt;&#10;    &lt;TmedReference&gt;c4045&lt;/TmedReference&gt;&#10;    &lt;TmedObjectNum&gt;12&lt;/TmedObjectNum&gt;&#10;    &lt;TmedPartialPayment&gt;25.77&lt;/TmedPartialPayment&gt;&#10;    &lt;TmedEPayment&gt;&#10;      &lt;StartDate&gt;1899-12-30T00:00:00&lt;/StartDate&gt;&#10;      &lt;AccountDataSource&gt;SOURCE_UNDEFINED&lt;/AccountDataSource&gt;&#10;      &lt;ExpirationDate&gt;1899-12-30T00:00:00&lt;/ExpirationDate&gt;&#10;      &lt;PaymentCommand&gt;NO_E_PAYMENT&lt;/PaymentCommand&gt;&#10;      &lt;AccountType&gt;ACCOUNT_TYPE_UNDEFINED&lt;/AccountType&gt;&#10;      &lt;IssueNumber&gt;0&lt;/IssueNumber&gt;&#10;    &lt;/TmedEPayment&gt;&#10;  &lt;/pTmedDetail&gt;&#10;  &lt;pTotalsResponse&gt;&#10;    &lt;TotalsOtherTotals&gt;0.00&lt;/TotalsOtherTotals&gt;&#10;    &lt;TotalsAutoSvcChgTotals&gt;0.00&lt;/TotalsAutoSvcChgTotals&gt;&#10;    &lt;TotalsTaxTotals&gt;2.29&lt;/TotalsTaxTotals&gt;&#10;    &lt;TotalsTotalDue&gt;0.00&lt;/TotalsTotalDue&gt;&#10;    &lt;TotalsSubTotal&gt;23.48&lt;/TotalsSubTotal&gt;&#10;  &lt;/pTotalsResponse&gt;&#10;  &lt;ppCheckPrintLines&gt;&#10;    &lt;string&gt;******* DELIVERY ORDER  *******&#10;    Name: Jiten P&#10;    Door Dash  Order c4045&#10;    Support Phone 855-231-4434&#10;    -&#10;    ** Store #0098 **&#10;    13071 Worldgate Drive&#10;    96101 Con Chic&#10;    ----------------------------------------&#10;    Chk 9285        Jiten_04          Gst  2&#10;    Apr07'21 12:19PM&#10;    ----------------------------------------&#10;    *Delivery V&#10;    1 __CC SPCY SLM F             10.99&#10;    -NO-&#10;    CC-Bacon&#10;    -NO-&#10;    CC-Pickled Jalp&#10;    &#10;    CC-Coke                    2.00&#10;    &#10;    Bun&#10;    1 __CC-Grll Wngs 8            10.49&#10;    &#10;    CC-Ranch 2oz&#10;    &#10;    CC-GParm SC 2oz&#10;    &#10;    CC-Fries&#10;    Charge Tip                   0.00&#10;    HOUSE ACCT                  25.77&#10;    &#10;    Subtotal                    23.48&#10;    Sales/MB Tax                 2.29&#10;    Amt. Paid                   25.77&#10;    -----------96101 Check Closed-----------&#10;    ------------Apr07'21 12:19PM------------&#10;    &lt;/string&gt;&#10;  &lt;/ppCheckPrintLines&gt;&#10;  &lt;pGuestCheck&gt;&#10;    &lt;CheckEmployeeObjectNum&gt;96101&lt;/CheckEmployeeObjectNum&gt;&#10;    &lt;pCheckInfoLines&gt;&#10;      &lt;string&gt;******* DELIVERY ORDER  *******&lt;/string&gt;&#10;      &lt;string&gt;&lt;/string&gt;&#10;      &lt;string&gt;Name: Jiten P&lt;/string&gt;&#10;      &lt;string&gt;&lt;/string&gt;&#10;      &lt;string&gt;Door Dash  Order c4045&lt;/string&gt;&#10;      &lt;string&gt;Support Phone 855-231-4434&lt;/string&gt;&#10;      &lt;string&gt;-&lt;/string&gt;&#10;    &lt;/pCheckInfoLines&gt;&#10;    &lt;CheckSeq&gt;594964&lt;/CheckSeq&gt;&#10;    &lt;pPrintJobIds&gt;&#10;      &lt;int&gt;12&lt;/int&gt;&#10;      &lt;int&gt;13&lt;/int&gt;&#10;    &lt;/pPrintJobIds&gt;&#10;    &lt;CheckDateToFire&gt;1899-12-30T00:00:00&lt;/CheckDateToFire&gt;&#10;    &lt;CheckStatusBits&gt;0&lt;/CheckStatusBits&gt;&#10;    &lt;CheckID&gt;Jiten_045&lt;/CheckID&gt;&#10;    &lt;CheckTableObjectNum&gt;0&lt;/CheckTableObjectNum&gt;&#10;    &lt;CheckOrderType&gt;10&lt;/CheckOrderType&gt;&#10;    &lt;CheckNum&gt;9285&lt;/CheckNum&gt;&#10;    &lt;CheckRevenueCenterObjectNum&gt;6&lt;/CheckRevenueCenterObjectNum&gt;&#10;    &lt;CheckGuestCount&gt;0&lt;/CheckGuestCount&gt;&#10;  &lt;/pGuestCheck&gt;&#10;  &lt;ppMenuItems&gt;&#10;    &lt;ResPosAPI_MenuItem&gt;&#10;      &lt;MenuItem&gt;&#10;        &lt;MiMenuLevel&gt;4&lt;/MiMenuLevel&gt;&#10;        &lt;MiOverridePrice&gt;10.49&lt;/MiOverridePrice&gt;&#10;        &lt;MiReference/&gt;&#10;        &lt;MiObjectNum&gt;4719&lt;/MiObjectNum&gt;&#10;        &lt;ItemDiscount&gt;&#10;          &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;          &lt;DiscReference&gt;1&lt;/DiscReference&gt;&#10;        &lt;/ItemDiscount&gt;&#10;      &lt;/MenuItem&gt;&#10;      &lt;Condiments&gt;&#10;        &lt;ResPosAPI_MenuItemDefinition&gt;&#10;          &lt;MiMenuLevel&gt;1&lt;/MiMenuLevel&gt;&#10;          &lt;MiOverridePrice&gt;0.00&lt;/MiOverridePrice&gt;&#10;          &lt;MiReference/&gt;&#10;          &lt;MiObjectNum&gt;9001110&lt;/MiObjectNum&gt;&#10;          &lt;ItemDiscount&gt;&#10;            &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;          &lt;/ItemDiscount&gt;&#10;        &lt;/ResPosAPI_MenuItemDefinition&gt;&#10;        &lt;ResPosAPI_MenuItemDefinition&gt;&#10;          &lt;MiMenuLevel&gt;1&lt;/MiMenuLevel&gt;&#10;          &lt;MiOverridePrice&gt;0.00&lt;/MiOverridePrice&gt;&#10;          &lt;MiReference/&gt;&#10;          &lt;MiObjectNum&gt;4942&lt;/MiObjectNum&gt;&#10;          &lt;ItemDiscount&gt;&#10;            &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;          &lt;/ItemDiscount&gt;&#10;        &lt;/ResPosAPI_MenuItemDefinition&gt;&#10;        &lt;ResPosAPI_MenuItemDefinition&gt;&#10;          &lt;MiMenuLevel&gt;1&lt;/MiMenuLevel&gt;&#10;          &lt;MiOverridePrice&gt;0.00&lt;/MiOverridePrice&gt;&#10;          &lt;MiReference/&gt;&#10;          &lt;MiObjectNum&gt;9001110&lt;/MiObjectNum&gt;&#10;          &lt;ItemDiscount&gt;&#10;            &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;          &lt;/ItemDiscount&gt;&#10;        &lt;/ResPosAPI_MenuItemDefinition&gt;&#10;        &lt;ResPosAPI_MenuItemDefinition&gt;&#10;          &lt;MiMenuLevel&gt;1&lt;/MiMenuLevel&gt;&#10;          &lt;MiOverridePrice&gt;0.00&lt;/MiOverridePrice&gt;&#10;          &lt;MiReference/&gt;&#10;          &lt;MiObjectNum&gt;4920&lt;/MiObjectNum&gt;&#10;          &lt;ItemDiscount&gt;&#10;            &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;          &lt;/ItemDiscount&gt;&#10;        &lt;/ResPosAPI_MenuItemDefinition&gt;&#10;        &lt;ResPosAPI_MenuItemDefinition&gt;&#10;          &lt;MiMenuLevel&gt;1&lt;/MiMenuLevel&gt;&#10;          &lt;MiOverridePrice&gt;0.00&lt;/MiOverridePrice&gt;&#10;          &lt;MiReference/&gt;&#10;          &lt;MiObjectNum&gt;9001110&lt;/MiObjectNum&gt;&#10;          &lt;ItemDiscount&gt;&#10;            &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;          &lt;/ItemDiscount&gt;&#10;        &lt;/ResPosAPI_MenuItemDefinition&gt;&#10;        &lt;ResPosAPI_MenuItemDefinition&gt;&#10;          &lt;MiMenuLevel&gt;1&lt;/MiMenuLevel&gt;&#10;          &lt;MiOverridePrice&gt;0.00&lt;/MiOverridePrice&gt;&#10;          &lt;MiReference/&gt;&#10;          &lt;MiObjectNum&gt;4904&lt;/MiObjectNum&gt;&#10;          &lt;ItemDiscount&gt;&#10;            &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;          &lt;/ItemDiscount&gt;&#10;        &lt;/ResPosAPI_MenuItemDefinition&gt;&#10;      &lt;/Condiments&gt;&#10;    &lt;/ResPosAPI_MenuItem&gt;&#10;    &lt;ResPosAPI_MenuItem&gt;&#10;      &lt;MenuItem&gt;&#10;        &lt;MiMenuLevel&gt;4&lt;/MiMenuLevel&gt;&#10;        &lt;MiOverridePrice&gt;10.99&lt;/MiOverridePrice&gt;&#10;        &lt;MiReference/&gt;&#10;        &lt;MiObjectNum&gt;4733&lt;/MiObjectNum&gt;&#10;        &lt;ItemDiscount&gt;&#10;          &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;          &lt;DiscReference&gt;1&lt;/DiscReference&gt;&#10;        &lt;/ItemDiscount&gt;&#10;      &lt;/MenuItem&gt;&#10;      &lt;Condiments&gt;&#10;        &lt;ResPosAPI_MenuItemDefinition&gt;&#10;          &lt;MiMenuLevel&gt;1&lt;/MiMenuLevel&gt;&#10;          &lt;MiOverridePrice&gt;0.00&lt;/MiOverridePrice&gt;&#10;          &lt;MiReference/&gt;&#10;          &lt;MiObjectNum&gt;9001102&lt;/MiObjectNum&gt;&#10;          &lt;ItemDiscount&gt;&#10;            &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;          &lt;/ItemDiscount&gt;&#10;        &lt;/ResPosAPI_MenuItemDefinition&gt;&#10;        &lt;ResPosAPI_MenuItemDefinition&gt;&#10;          &lt;MiMenuLevel&gt;1&lt;/MiMenuLevel&gt;&#10;          &lt;MiOverridePrice&gt;0.00&lt;/MiOverridePrice&gt;&#10;          &lt;MiReference/&gt;&#10;          &lt;MiObjectNum&gt;4903&lt;/MiObjectNum&gt;&#10;          &lt;ItemDiscount&gt;&#10;            &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;          &lt;/ItemDiscount&gt;&#10;        &lt;/ResPosAPI_MenuItemDefinition&gt;&#10;        &lt;ResPosAPI_MenuItemDefinition&gt;&#10;          &lt;MiMenuLevel&gt;1&lt;/MiMenuLevel&gt;&#10;          &lt;MiOverridePrice&gt;0.00&lt;/MiOverridePrice&gt;&#10;          &lt;MiReference/&gt;&#10;          &lt;MiObjectNum&gt;9001102&lt;/MiObjectNum&gt;&#10;          &lt;ItemDiscount&gt;&#10;            &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;          &lt;/ItemDiscount&gt;&#10;        &lt;/ResPosAPI_MenuItemDefinition&gt;&#10;        &lt;ResPosAPI_MenuItemDefinition&gt;&#10;          &lt;MiMenuLevel&gt;1&lt;/MiMenuLevel&gt;&#10;          &lt;MiOverridePrice&gt;0.00&lt;/MiOverridePrice&gt;&#10;          &lt;MiReference/&gt;&#10;          &lt;MiObjectNum&gt;4909&lt;/MiObjectNum&gt;&#10;          &lt;ItemDiscount&gt;&#10;            &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;          &lt;/ItemDiscount&gt;&#10;        &lt;/ResPosAPI_MenuItemDefinition&gt;&#10;        &lt;ResPosAPI_MenuItemDefinition&gt;&#10;          &lt;MiMenuLevel&gt;1&lt;/MiMenuLevel&gt;&#10;          &lt;MiOverridePrice&gt;0.00&lt;/MiOverridePrice&gt;&#10;          &lt;MiReference/&gt;&#10;          &lt;MiObjectNum&gt;9001110&lt;/MiObjectNum&gt;&#10;          &lt;ItemDiscount&gt;&#10;            &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;          &lt;/ItemDiscount&gt;&#10;        &lt;/ResPosAPI_MenuItemDefinition&gt;&#10;        &lt;ResPosAPI_MenuItemDefinition&gt;&#10;          &lt;MiMenuLevel&gt;1&lt;/MiMenuLevel&gt;&#10;          &lt;MiOverridePrice&gt;2.00&lt;/MiOverridePrice&gt;&#10;          &lt;MiReference/&gt;&#10;          &lt;MiObjectNum&gt;4986&lt;/MiObjectNum&gt;&#10;          &lt;ItemDiscount&gt;&#10;            &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;          &lt;/ItemDiscount&gt;&#10;        &lt;/ResPosAPI_MenuItemDefinition&gt;&#10;        &lt;ResPosAPI_MenuItemDefinition&gt;&#10;          &lt;MiMenuLevel&gt;1&lt;/MiMenuLevel&gt;&#10;          &lt;MiOverridePrice&gt;0.00&lt;/MiOverridePrice&gt;&#10;          &lt;MiReference/&gt;&#10;          &lt;MiObjectNum&gt;9001110&lt;/MiObjectNum&gt;&#10;          &lt;ItemDiscount&gt;&#10;            &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;          &lt;/ItemDiscount&gt;&#10;        &lt;/ResPosAPI_MenuItemDefinition&gt;&#10;        &lt;ResPosAPI_MenuItemDefinition&gt;&#10;          &lt;MiMenuLevel&gt;1&lt;/MiMenuLevel&gt;&#10;          &lt;MiOverridePrice&gt;0.00&lt;/MiOverridePrice&gt;&#10;          &lt;MiReference/&gt;&#10;          &lt;MiObjectNum&gt;9066105&lt;/MiObjectNum&gt;&#10;          &lt;ItemDiscount&gt;&#10;            &lt;DiscObjectNum&gt;0&lt;/DiscObjectNum&gt;&#10;          &lt;/ItemDiscount&gt;&#10;        &lt;/ResPosAPI_MenuItemDefinition&gt;&#10;      &lt;/Condiments&gt;&#10;    &lt;/ResPosAPI_MenuItem&gt;&#10;  &lt;/ppMenuItems&gt;&#10;  &lt;pServiceChg&gt;&#10;    &lt;SvcChgObjectNum&gt;1&lt;/SvcChgObjectNum&gt;&#10;    &lt;SvcChgAmountOrPercent&gt;0.00&lt;/SvcChgAmountOrPercent&gt;&#10;  &lt;/pServiceChg&gt;&#10;&lt;/PostTransactionExResponse&gt;&#10;  &lt;/soapenv:Body&gt;&#10;&lt;/soapenv:Envelope&gt;&quot;]"
+					doc:name="Set Variable"
+					doc:id="242a7f10-2fad-416b-b16f-19a9d3e3060b"
+					variableName="createCheckServiceResponse"
+					mimeType="application/xml" />
+				<logger level="INFO" doc:name="DEBUG: Service Response"
+					doc:id="3c74b5ad-d84f-445d-826c-0b4c549239ef"
+					message="Response=#[vars.createCheckServiceResponse]" />
+				<ee:transform doc:name="Create Check Service Response"
+					doc:id="0b3d76ab-d1c5-4f37-b836-1351abf53cf9">
 					<ee:message>
 					</ee:message>
-					<ee:variables >
-						<ee:set-variable variableName="createCheckServiceResponse" ><![CDATA[%dw 2.0
+					<ee:variables>
+						<ee:set-variable
+							variableName="createCheckServiceResponse"><![CDATA[%dw 2.0
 output application/json
+ns soapenv http://www.w3.org/2003/05/soap-envelope
 ---
-{
-	status: "",
-	response: ""
-}]]></ee:set-variable>
+if ( vars.createCheckServiceResponse.soapenv#Envelope.soapenv#Body.PostTransactionExResponse != null ) {
+	status: "Success",
+	response: vars.createCheckServiceResponse.soapenv#Envelope.soapenv#Body.PostTransactionExResponse
+} else {
+	status: "Failed",
+	response: ((vars.createCheckServiceResponse.soapenv#Envelope.soapenv#Body.soapenv#Fault.detail replace "}" with "" replace "{" with "") splitBy ":")[1] replace "-" with ""
+}
+]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
 				<choice doc:name="Check Response"
@@ -93,8 +103,11 @@ if((size>0)) (arr[0]) else (vars.createCheckServiceResponse.response ++ " This i
 							</ee:variables>
 						</ee:transform>
 					</when>
-					<otherwise >
-						<logger level="INFO" doc:name="INFO: Web Service call successfull" doc:id="8b1c871c-89f4-483b-bbd9-dbae0b4e491f" message="Web Service call successfull"/>
+					<otherwise>
+						<logger level="INFO"
+							doc:name="INFO: Web Service call successfull"
+							doc:id="8b1c871c-89f4-483b-bbd9-dbae0b4e491f"
+							message="Web Service call successfull" />
 					</otherwise>
 				</choice>
 				<choice doc:name="Check Response"
@@ -107,50 +120,83 @@ if((size>0)) (arr[0]) else (vars.createCheckServiceResponse.response ++ " This i
 						<flow-ref doc:name="send-order-to-mail"
 							doc:id="f1d34c22-4ebe-484d-b995-f4b5263dc3bd"
 							name="send-order-to-mail" />
-						<wsc:consume doc:name="TGIF Web Service call"
-							doc:id="6c874b91-dda6-4da4-be65-9f77502293e3"
-							config-ref="Web_Service_Consumer_Config" operation="GetMicrosDOB" target="tgifServiceResponse">
-							<wsc:message>
-								<wsc:body><![CDATA[#[%dw 2.0
-output application/xml
-ns tem http://tempuri.org/
----
-{
-	tem#GetMicrosDOB: {
-	}
-}]]]></wsc:body>
-							</wsc:message>
-						</wsc:consume>
-						<set-variable value="#[%dw 2.0&#10;output application/json&#10;ns ns0 http://tempuri.org/&#10;---&#10;vars.tgifServiceResponse.ns0#GetMicrosDOBResponse.ns0#GetMicrosDOBResult as String]" doc:name="dayOfBusiness" doc:id="c2f4b891-bab8-4570-8764-4e6990da227d" variableName="dayOfBusiness"/>
-						<ee:transform doc:name="Create Check JSON" doc:id="685f5ef5-1462-4213-9369-4197fa8230cc">
+						<!-- <wsc:consume doc:name="TGIF Web Service call" -->
+						<!-- doc:id="6c874b91-dda6-4da4-be65-9f77502293e3" -->
+						<!-- config-ref="Web_Service_Consumer_Config" operation="GetMicrosDOB" 
+							target="tgifServiceResponse"> -->
+						<!-- <wsc:message> -->
+						<!-- <wsc:body><![CDATA[#[%dw 2.0 -->
+						<!-- output application/xml -->
+						<!-- ns tem http://tempuri.org/ -->
+						<!-- -&#45;&#45; -->
+						<!-- { -->
+						<!-- tem#GetMicrosDOB: { -->
+						<!-- } -->
+						<!-- }]]]></wsc:body> -->
+						<!-- </wsc:message> -->
+						<!-- </wsc:consume> -->
+						<!-- <set-variable value="#[%dw 2.0 --><!-- &#10;output application/json -->						<!-- &#10;ns ns0 http://tempuri.org/ -->						<!-- &#10;-&#45;&#45; -->						<!-- &#10;vars.tgifServiceResponse.ns0#GetMicrosDOBResponse.ns0#GetMicrosDOBResult 							as String]" doc:name="dayOfBusiness" doc:id="c2f4b891-bab8-4570-8764-4e6990da227d" 							variableName="dayOfBusiness"/> -->
+						<set-variable value="2021-04-08T00:00:00"
+							doc:name="Set Variable"
+							doc:id="daae5d5e-33f2-4089-b71d-960fc395cea7"
+							variableName="dayOfBusiness" />
+						<ee:transform doc:name="Create Check JSON"
+							doc:id="685f5ef5-1462-4213-9369-4197fa8230cc">
 							<ee:message>
+								<ee:set-payload
+									resource="dwl/create-check/create-check.dwl" />
 							</ee:message>
-							<ee:variables >
-								<ee:set-variable resource="dwl/create-check/create-check.dwl" variableName="createCheck" />
+							<ee:variables>
 							</ee:variables>
 						</ee:transform>
-						<set-variable value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CreateCheck',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: vars.createCheck.createcheck.check.checkId,&#10;	checkSequence: vars.createCheck.createcheck.check.checkSeq,&#10;	employeeNumber: vars.createCheck.createcheck.check.employeeNumber,&#10;	tableNumber: vars.createCheck.createcheck.check.tableNumber,&#10;	status: '1',&#10;	message: vars.createCheck&#10;}]" doc:name="logData" doc:id="ac29d5aa-f9a1-4458-afe9-dca11e43902a" variableName="logData"/>
-						<flow-ref doc:name="insert-online-ordering-logs" doc:id="b9160f75-2045-4d56-bab6-de3ff126864a" name="insert-online-ordering-logs"/>
-						<choice doc:name="Check Delivery Partner" doc:id="6090368a-9778-4d9d-a6f1-725cccddde12">
-							<when expression='#[using(subject = vars.tenderId.messageSubject) subject != "Grub Hub Delivery" and subject != "Uber Eats Delivery" and subject != "Postmates Delivery" and subject != "Door Dash Delivery"]'>
-								<set-variable value="#[{&#10;	storeId: vars.storeId,&#10;	cartId: vars.createCheckVars.cartId,&#10;	payload: vars.createCheck,&#10;	dayofBusiness: vars.createCheck.dayOfBusiness&#10;}]" doc:name="Cart Log Data" doc:id="33eb7c68-1585-4db7-9b57-94a93a691053" variableName="logData" />
-								<flow-ref doc:name="insert-cart-id-logs" doc:id="b3856a74-ed3d-4b5e-b12b-6eed4c9edb64" name="insert-cart-id-logs" />
-								<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	deliveryPartnerName: vars.tenderId.messageSubject,&#10;	storeId: vars.storeId,&#10;	orderId: vars.createCheckVars.cartId,&#10;	checkNumber: vars.createCheck.createcheck.check.checkId,&#10;	dayofBusiness:vars.createCheck.createcheck.dayOfBusiness,&#10;	deliveryMethod: ' Pickup',&#10;	status: 'success',&#10;	subTotal: if ( vars.initialPayload.createcheck.payment.subtotalNoDiscountsPlusTaxes == null or vars.initialPayload.createcheck.payment.taxTotal ==  null ) 'NULL'&#10;	else (((vars.initialPayload.createcheck.payment.subtotalNoDiscountsPlusTaxes as Number) - (vars.initialPayload.createcheck.payment.taxTotal as Number)) as String),&#10;	taxTotal: vars.initialPayload.createcheck.payment.taxTotal,&#10;	agentId: vars.initialPayload.createcheck.agentId default &quot;&quot;&#10;}]" doc:name="Delivery Order Log Data" doc:id="bf01c2f4-9895-4b9d-9129-20a2d8e213dc" variableName="deliveryOrderDetails" />
-								<flow-ref doc:name="insert-delivery-order-details" doc:id="9171196d-77a7-4b1e-93d9-c623e6402923" name="insert-delivery-order-details" />
+						<set-variable
+							value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CreateCheck',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: vars.createCheck.createcheck.check.checkId,&#10;	checkSequence: vars.createCheck.createcheck.check.checkSeq,&#10;	employeeNumber: vars.createCheck.createcheck.check.employeeNumber,&#10;	tableNumber: vars.createCheck.createcheck.check.tableNumber,&#10;	status: '1',&#10;	message: vars.createCheck&#10;}]"
+							doc:name="logData" doc:id="ac29d5aa-f9a1-4458-afe9-dca11e43902a"
+							variableName="logData" />
+						<flow-ref doc:name="insert-online-ordering-logs"
+							doc:id="b9160f75-2045-4d56-bab6-de3ff126864a"
+							name="insert-online-ordering-logs" />
+						<choice doc:name="Check Delivery Partner"
+							doc:id="6090368a-9778-4d9d-a6f1-725cccddde12">
+							<when
+								expression='#[using(subject = vars.tenderId.messageSubject) subject != "Grub Hub Delivery" and subject != "Uber Eats Delivery" and subject != "Postmates Delivery" and subject != "Door Dash Delivery"]'>
+								<set-variable
+									value="#[{&#10;	storeId: vars.storeId,&#10;	cartId: vars.createCheckVars.cartId,&#10;	payload: vars.createCheck,&#10;	dayofBusiness: vars.createCheck.dayOfBusiness&#10;}]"
+									doc:name="Cart Log Data"
+									doc:id="33eb7c68-1585-4db7-9b57-94a93a691053"
+									variableName="logData" />
+								<flow-ref doc:name="insert-cart-id-logs"
+									doc:id="b3856a74-ed3d-4b5e-b12b-6eed4c9edb64"
+									name="insert-cart-id-logs" />
+								<set-variable
+									value="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	deliveryPartnerName: vars.tenderId.messageSubject,&#10;	storeId: vars.storeId,&#10;	orderId: vars.createCheckVars.cartId,&#10;	checkNumber: vars.createCheck.createcheck.check.checkId,&#10;	dayofBusiness:vars.createCheck.createcheck.dayOfBusiness,&#10;	deliveryMethod: ' Pickup',&#10;	status: 'success',&#10;	subTotal: if ( vars.initialPayload.createcheck.payment.subtotalNoDiscountsPlusTaxes == null or vars.initialPayload.createcheck.payment.taxTotal ==  null ) 'NULL'&#10;	else (((vars.initialPayload.createcheck.payment.subtotalNoDiscountsPlusTaxes as Number) - (vars.initialPayload.createcheck.payment.taxTotal as Number)) as String),&#10;	taxTotal: vars.initialPayload.createcheck.payment.taxTotal,&#10;	agentId: vars.initialPayload.createcheck.agentId default &quot;&quot;&#10;}]"
+									doc:name="Delivery Order Log Data"
+									doc:id="bf01c2f4-9895-4b9d-9129-20a2d8e213dc"
+									variableName="deliveryOrderDetails" />
+								<flow-ref doc:name="insert-delivery-order-details"
+									doc:id="9171196d-77a7-4b1e-93d9-c623e6402923"
+									name="insert-delivery-order-details" />
 							</when>
-							<otherwise >
-								<logger level="INFO" doc:name="INFO: Logger" doc:id="d5301b82-3d75-462e-9e03-1563be315a28" message="Grub Hub delivery or Doordash delivery or UberEats delivery or Postmates delivery"/>
+							<otherwise>
+								<logger level="INFO" doc:name="INFO: Logger"
+									doc:id="d5301b82-3d75-462e-9e03-1563be315a28"
+									message="Grub Hub delivery or Doordash delivery or UberEats delivery or Postmates delivery" />
 							</otherwise>
 						</choice>
 					</when>
-					<otherwise >
-						<logger level="INFO" doc:name="INFO: Web Service call failed" doc:id="03f5bffe-f03a-4d63-a793-7cbf51bdff4f" message="Web Service call failed"/>
-						<ee:transform doc:name="Transform Message" doc:id="40f19ad1-e7d7-475d-9e84-5f7188b7ac59" >
-							<ee:message >
-								<ee:set-payload resource="dwl/create-check/failure-payload.dwl" />
+					<otherwise>
+						<logger level="INFO"
+							doc:name="INFO: Web Service call failed"
+							doc:id="03f5bffe-f03a-4d63-a793-7cbf51bdff4f"
+							message="Web Service call failed" />
+						<ee:transform doc:name="Transform Message"
+							doc:id="40f19ad1-e7d7-475d-9e84-5f7188b7ac59">
+							<ee:message>
+								<ee:set-payload
+									resource="dwl/create-check/failure-payload.dwl" />
 							</ee:message>
-							<ee:variables >
-								<ee:set-variable variableName="emailMessage" ><![CDATA[%dw 2.0
+							<ee:variables>
+								<ee:set-variable variableName="emailMessage"><![CDATA[%dw 2.0
 output application/json
 ---
 if ( vars.createCheckServiceResponse.response == "Store server not reachable, able to reach Firewall" ) "Store server not reachable, able to reach Firewall " ++ vars.storeId ++ " in CreateCheck method"
@@ -158,42 +204,69 @@ else if ( vars.createCheckServiceResponse.response == "Store network unreachable
 else ""]]></ee:set-variable>
 							</ee:variables>
 						</ee:transform>
-						<choice doc:name="Send Email?" doc:id="a8ed260e-1561-4c42-9992-486f99ba34ba" >
-							<when expression='#[vars.createCheckServiceResponse.response == "Store server not reachable, able to reach Firewall" or vars.createCheckServiceResponse.response == "Store network unreachable at Firewall"]'>
-								<flow-ref doc:name="send-email-notification" doc:id="c049463f-4033-4de0-b9f2-2562566e3365" name="send-email-notification"/>
+						<choice doc:name="Send Email?"
+							doc:id="a8ed260e-1561-4c42-9992-486f99ba34ba">
+							<when
+								expression='#[vars.createCheckServiceResponse.response == "Store server not reachable, able to reach Firewall" or vars.createCheckServiceResponse.response == "Store network unreachable at Firewall"]'>
+								<flow-ref doc:name="send-email-notification"
+									doc:id="c049463f-4033-4de0-b9f2-2562566e3365"
+									name="send-email-notification" />
 							</when>
-							<otherwise >
-								<logger level="INFO" doc:name="INFO: No email triggered" doc:id="98de8a0a-fb8e-4352-9d7e-c715c99cfcdd" message="No Email triggered"/>
+							<otherwise>
+								<logger level="INFO" doc:name="INFO: No email triggered"
+									doc:id="98de8a0a-fb8e-4352-9d7e-c715c99cfcdd"
+									message="No Email triggered" />
 							</otherwise>
 						</choice>
-						<choice doc:name="Check Delivery Partner" doc:id="30f4d89c-1865-44c8-a6b7-65f4c3520841" >
-							<when expression='#[vars.tenderId.messageSubject != "Grub Hub Delivery" and vars.tenderId.messageSubject != "Uber Eats Delivery" and vars.tenderId.messageSubject != "Postmates Delivery" and vars.tenderId.messageSubject != "Door Dash Delivery"]'>
-								<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	deliveryPartnerName: vars.tenderId.messageSubject,&#10;	storeId: vars.storeId,&#10;	orderId: vars.createCheckVars.cartId,&#10;	checkNumber: 'NULL',&#10;	dayofBusiness: (now() &gt;&gt; &quot;CST&quot;) as Date {&#10;		format: &quot;MM/dd/yyyy&quot;&#10;	},&#10;	deliveryMethod: ' Pickup',&#10;	status: 'success',&#10;	subTotal: if ( vars.initialPayload.createcheck.payment.subtotalNoDiscountsPlusTaxes == null or vars.initialPayload.createcheck.payment.taxTotal ==  null ) 'NULL'&#10;	else (((vars.initialPayload.createcheck.payment.subtotalNoDiscountsPlusTaxes as Number) - (vars.initialPayload.createcheck.payment.taxTotal as Number)) as String),&#10;	taxTotal: vars.initialPayload.createcheck.payment.taxTotal,&#10;	agentId: vars.initialPayload.createcheck.agentId default &quot;&quot;&#10;}]" doc:name="Delivery Order Log Data" doc:id="28e80786-2db2-423b-aa1d-00a22acc0ac8" variableName="deliveryOrderDetails"/>
-								<flow-ref doc:name="insert-delivery-order-details" doc:id="f37e78a2-8e85-4b3b-98d0-7674da0189bc" name="insert-delivery-order-details"/>
+						<choice doc:name="Check Delivery Partner"
+							doc:id="30f4d89c-1865-44c8-a6b7-65f4c3520841">
+							<when
+								expression='#[vars.tenderId.messageSubject != "Grub Hub Delivery" and vars.tenderId.messageSubject != "Uber Eats Delivery" and vars.tenderId.messageSubject != "Postmates Delivery" and vars.tenderId.messageSubject != "Door Dash Delivery"]'>
+								<set-variable
+									value="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	deliveryPartnerName: vars.tenderId.messageSubject,&#10;	storeId: vars.storeId,&#10;	orderId: vars.createCheckVars.cartId,&#10;	checkNumber: 'NULL',&#10;	dayofBusiness: (now() &gt;&gt; &quot;CST&quot;) as Date {&#10;		format: &quot;MM/dd/yyyy&quot;&#10;	},&#10;	deliveryMethod: ' Pickup',&#10;	status: 'success',&#10;	subTotal: if ( vars.initialPayload.createcheck.payment.subtotalNoDiscountsPlusTaxes == null or vars.initialPayload.createcheck.payment.taxTotal ==  null ) 'NULL'&#10;	else (((vars.initialPayload.createcheck.payment.subtotalNoDiscountsPlusTaxes as Number) - (vars.initialPayload.createcheck.payment.taxTotal as Number)) as String),&#10;	taxTotal: vars.initialPayload.createcheck.payment.taxTotal,&#10;	agentId: vars.initialPayload.createcheck.agentId default &quot;&quot;&#10;}]"
+									doc:name="Delivery Order Log Data"
+									doc:id="28e80786-2db2-423b-aa1d-00a22acc0ac8"
+									variableName="deliveryOrderDetails" />
+								<flow-ref doc:name="insert-delivery-order-details"
+									doc:id="f37e78a2-8e85-4b3b-98d0-7674da0189bc"
+									name="insert-delivery-order-details" />
 							</when>
-							<otherwise >
-								<logger level="INFO" doc:name="INFO: Logger" doc:id="779d1453-d7f2-46b2-a955-c458d94055a7" message="Grub Hub delivery or Doordash delivery or UberEats delivery or Postmates delivery"/>
+							<otherwise>
+								<logger level="INFO" doc:name="INFO: Logger"
+									doc:id="779d1453-d7f2-46b2-a955-c458d94055a7"
+									message="Grub Hub delivery or Doordash delivery or UberEats delivery or Postmates delivery" />
 							</otherwise>
 						</choice>
 					</otherwise>
 				</choice>
 			</when>
-			<otherwise >
-				<set-variable value="#['Store Number ' ++ vars.storeId ++ ' not setup in mulesoft for online ordering']" doc:name="emailMessage" doc:id="c218e312-47b8-4bae-87c8-82bbe7a2f555" variableName="emailMessage"/>
-				<logger level="INFO" doc:name="INFO: Logger" doc:id="fa624a93-ca71-4011-b9a2-4542844a9cbe" message="#[vars.emailMessage]"/>
-				<flow-ref doc:name="send-email-notification" doc:id="48b28b59-9bb8-4809-b029-878bf3ef4108" name="send-email-notification" />
+			<otherwise>
 				<set-variable
-			value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CreateCheck',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: &quot;Store server not reachable, able to reach Firewall&quot;&#10;}]"
-			doc:name="logData" doc:id="4046e051-c0d9-401e-832d-367a2ab6264b"
-			variableName="logData" />
-		<flow-ref doc:name="insert-online-ordering-logs"
-			doc:id="8f0db013-2ba9-4548-9df7-bf8489098da2"
-			name="insert-online-ordering-logs" />
-				<choice doc:name="Check Delivery Partner" doc:id="3d9c0dc0-0227-4144-a18f-cf2b45166163" >
-					<when expression='#[vars.tenderId.messageSubject != "Grub Hub Delivery" and vars.tenderId.messageSubject != "Uber Eats Delivery" and vars.tenderId.messageSubject != "Postmates Delivery" and vars.tenderId.messageSubject != "Door Dash Delivery"]'>
-						<ee:transform doc:name="Transform Message" doc:id="ab2d42e5-9fe6-48c0-b0ed-b6e3f8a3b1e9" >
-							<ee:message >
-								<ee:set-payload ><![CDATA[%dw 2.0
+					value="#['Store Number ' ++ vars.storeId ++ ' not setup in mulesoft for online ordering']"
+					doc:name="emailMessage"
+					doc:id="c218e312-47b8-4bae-87c8-82bbe7a2f555"
+					variableName="emailMessage" />
+				<logger level="INFO" doc:name="INFO: Logger"
+					doc:id="fa624a93-ca71-4011-b9a2-4542844a9cbe"
+					message="#[vars.emailMessage]" />
+				<flow-ref doc:name="send-email-notification"
+					doc:id="48b28b59-9bb8-4809-b029-878bf3ef4108"
+					name="send-email-notification" />
+				<set-variable
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CreateCheck',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: &quot;Store server not reachable, able to reach Firewall&quot;&#10;}]"
+					doc:name="logData" doc:id="4046e051-c0d9-401e-832d-367a2ab6264b"
+					variableName="logData" />
+				<flow-ref doc:name="insert-online-ordering-logs"
+					doc:id="8f0db013-2ba9-4548-9df7-bf8489098da2"
+					name="insert-online-ordering-logs" />
+				<choice doc:name="Check Delivery Partner"
+					doc:id="3d9c0dc0-0227-4144-a18f-cf2b45166163">
+					<when
+						expression='#[vars.tenderId.messageSubject != "Grub Hub Delivery" and vars.tenderId.messageSubject != "Uber Eats Delivery" and vars.tenderId.messageSubject != "Postmates Delivery" and vars.tenderId.messageSubject != "Door Dash Delivery"]'>
+						<ee:transform doc:name="Transform Message"
+							doc:id="ab2d42e5-9fe6-48c0-b0ed-b6e3f8a3b1e9">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -205,8 +278,9 @@ output application/json
 	}
 }]]></ee:set-payload>
 							</ee:message>
-							<ee:variables >
-								<ee:set-variable variableName="deliveryOrderDetails" ><![CDATA[%dw 2.0
+							<ee:variables>
+								<ee:set-variable
+									variableName="deliveryOrderDetails"><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -226,10 +300,13 @@ output application/json
 }]]></ee:set-variable>
 							</ee:variables>
 						</ee:transform>
-						<flow-ref doc:name="insert-delivery-order-details" doc:id="70f4a97f-6b4e-45fe-9660-89171b457e2d" name="insert-delivery-order-details"/>
+						<flow-ref doc:name="insert-delivery-order-details"
+							doc:id="70f4a97f-6b4e-45fe-9660-89171b457e2d"
+							name="insert-delivery-order-details" />
 					</when>
-					<otherwise >
-						<ee:transform doc:name="Transform Message" doc:id="a12fa88f-2bb0-49ff-ac53-8b9564e8ccc1">
+					<otherwise>
+						<ee:transform doc:name="Transform Message"
+							doc:id="a12fa88f-2bb0-49ff-ac53-8b9564e8ccc1">
 							<ee:message>
 								<ee:set-payload><![CDATA[%dw 2.0
 output application/java
@@ -244,76 +321,108 @@ output application/java
 }]]></ee:set-payload>
 							</ee:message>
 						</ee:transform>
-						<logger level="INFO" doc:name="INFO: Logger" doc:id="d83ff175-bc3f-4943-a598-6c72e9592849" message="Grub Hub delivery or Doordash delivery or UberEats delivery or Postmates delivery"/>
+						<logger level="INFO" doc:name="INFO: Logger"
+							doc:id="d83ff175-bc3f-4943-a598-6c72e9592849"
+							message="Grub Hub delivery or Doordash delivery or UberEats delivery or Postmates delivery" />
 					</otherwise>
 				</choice>
-		
 			</otherwise>
 		</choice>
 	</sub-flow>
-	<sub-flow name="send-order-to-mail" doc:id="75b17d5b-cc56-4bbe-87f2-16ba970ff8cd" >
-		<logger level="INFO" doc:name="INFO: Called send order to email flow" doc:id="b2379ba5-e6d2-469e-a017-194eea64078d" message="Called send order to email flow"/>
-		<ee:transform doc:name="Transform Message" doc:id="c53e0e1f-cdc0-4a29-bead-23cceee403ea" >
-			<ee:message >
+	<sub-flow name="send-order-to-mail"
+		doc:id="75b17d5b-cc56-4bbe-87f2-16ba970ff8cd">
+		<logger level="INFO"
+			doc:name="INFO: Called send order to email flow"
+			doc:id="b2379ba5-e6d2-469e-a017-194eea64078d"
+			message="Called send order to email flow" />
+		<ee:transform doc:name="Stripes Code"
+			doc:id="c53e0e1f-cdc0-4a29-bead-23cceee403ea">
+			<ee:message>
 			</ee:message>
-			<ee:variables >
-				<ee:set-variable variableName="stripesCodeArgs" ><![CDATA[%dw 2.0
+			<ee:variables>
+				<ee:set-variable variableName="stripesCode"><![CDATA[%dw 2.0
 output application/json
+import java!com::api::tgif::mobilepos::util::CommonUtil
 fun getMonth(date) = ((date splitBy " ")[0] replace "'" with "-") as Date {format: "MMMdd-yy"} as String {format: "M"} as Number
 fun getDay(date) = ((date splitBy " ")[0] replace "'" with "-") as Date {format: "MMMdd-yy"} as String {format: "d"} as Number
-fun getChkNumber(date) = (date splitBy " ")[1]
+fun getChkNumber(date) = (date splitBy " ")[1] as Number
+fun getArgs() = {
+    month: getMonth(trim((vars.createCheckServiceResponse.response.ppCheckPrintLines.string splitBy "\n")[10])),
+    day: getDay(trim((vars.createCheckServiceResponse.response.ppCheckPrintLines.string splitBy "\n")[10])),
+    checkNumber: getChkNumber(trim((vars.createCheckServiceResponse.response.ppCheckPrintLines.string splitBy "\n")[9])) 
+}
 ---
-{
-    month: getMonth(vars.createCheckServiceResponse.response.ppCheckPrintLines.string[10]),
-    day: getDay(vars.createCheckServiceResponse.response.ppCheckPrintLines.string[10]),
-    checkNumber: getChkNumber(vars.createCheckServiceResponse.response.ppCheckPrintLines.string[9]) 
-}]]></ee:set-variable>
+CommonUtil::StripesCode(vars.storeId as Number, vars.createCheckServiceResponse.response.pTotalsResponse.TotalsSubTotal as Number, getArgs().month,getArgs().day,getArgs().checkNumber)
+]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<java:invoke-static doc:name="Stripes Code" doc:id="b5c5e826-5287-42e4-b9b8-74371ab457fa" target="stripesCode" class="com.api.tgif.mobilepos.util.CommonUtil" method="StripesCode">
-			<java:args ><![CDATA[#[{
-	storeNumber: vars.storeId as Number, 
-	subTotal: vars.createCheckServiceResponse.response.pTotalsResponse.TotalsSubTotal, 
-	month: vars.stripesCodeArgs.month, 
-	day: vars.stripesCodeArgs.day, 
-	checkNumber: vars.stripesCodeArgs.checkNumber
-}]]]></java:args>
-		</java:invoke-static>
-		<async doc:name="Async" doc:id="08f77de5-76c8-4a3e-97bd-d622d587bb6d" >
-			<ee:transform doc:name="Set Email Message" doc:id="d6a42f53-8e89-4c2f-afe4-25fc145b50f6" >
-				<ee:message >
+		<async doc:name="Async"
+			doc:id="08f77de5-76c8-4a3e-97bd-d622d587bb6d">
+			<ee:transform doc:name="Set Email Message"
+				doc:id="d6a42f53-8e89-4c2f-afe4-25fc145b50f6">
+				<ee:message>
 				</ee:message>
-				<ee:variables >
-					<ee:set-variable resource="dwl/create-check/email-message.dwl" variableName="emailMessage" />
+				<ee:variables>
+					<ee:set-variable
+						resource="dwl/create-check/email-message.dwl"
+						variableName="emailMessage" />
 				</ee:variables>
 			</ee:transform>
-			<choice doc:name="Check Email Message" doc:id="ce22d4e6-ff91-47de-a122-916d8e0e6343" >
-				<when expression='#[vars.emailMessage != "Print Check Lines not found"]'>
-					<flow-ref doc:name="send-create-email-notification" doc:id="69cdc0c1-6b90-4042-a983-97f5e879becb" name="send-create-email-notification"/>
-					<logger level="INFO" doc:name="INFO: Logger" doc:id="115eb29a-50e2-4584-91b9-18d761393e42" message="Email Online Order Check Lines to store Method Completed"/>
-					<set-variable value="#[output application/json&#10;---&#10;{&#10;	methodName: 'SendOrdertoEmail',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.emailMessage&#10;}]" doc:name="logData" doc:id="d8b12544-fd38-461a-a21a-a3982dd8d164" variableName="logData"/>
-					<flow-ref doc:name="insert-online-ordering-logs" doc:id="419ff3e6-58c4-4b3a-9d49-fe2ad2138fb9" name="insert-online-ordering-logs"/>
+			<choice doc:name="Check Email Message"
+				doc:id="ce22d4e6-ff91-47de-a122-916d8e0e6343">
+				<when
+					expression='#[vars.emailMessage != "Print Check Lines not found"]'>
+					<flow-ref doc:name="send-create-email-notification"
+						doc:id="69cdc0c1-6b90-4042-a983-97f5e879becb"
+						name="send-create-email-notification" />
+					<logger level="INFO" doc:name="INFO: Logger"
+						doc:id="115eb29a-50e2-4584-91b9-18d761393e42"
+						message="Email Online Order Check Lines to store Method Completed" />
+					<set-variable
+						value="#[output application/json&#10;---&#10;{&#10;	methodName: 'SendOrdertoEmail',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.emailMessage&#10;}]"
+						doc:name="logData" doc:id="d8b12544-fd38-461a-a21a-a3982dd8d164"
+						variableName="logData" />
+					<flow-ref doc:name="insert-online-ordering-logs"
+						doc:id="419ff3e6-58c4-4b3a-9d49-fe2ad2138fb9"
+						name="insert-online-ordering-logs" />
 				</when>
-				<otherwise >
-					<set-variable value="#[if(vars.emailMessage == &quot;Print Check Lines not found&quot;) &quot;No print check lines received from micros for store &quot; ++ vars.storeId ++ &quot; in CreateCheck method&quot;&#10;else 'Error occurred while reading Print Check Lines for store ' + vars.storeId ++ &quot; in CreateCheck method. Error message : Exception in Print Check Lines&quot;]" doc:name="emailMessage" doc:id="026a1fbc-73a0-4962-8a4e-0044dad162be" variableName="emailMessage" />
-					<logger level="INFO" doc:name="INFO: Email Message" doc:id="48687be1-48e6-4428-9a94-e6527f6ca228" message="#[vars.emailMessage]" />
-					<flow-ref doc:name="send-email-notification" doc:id="d8ac5fa2-c70b-406f-87d1-6a34cef65b5d" name="send-email-notification"/>
-					<logger level="INFO" doc:name="INFO: Logger" doc:id="5c5d5a2a-cdd6-45a3-bdc8-4957f6838b56" message="Read Print Check Lines Method Completed with Errors"/>
-					<set-variable value="#[output application/json&#10;---&#10;{&#10;	methodName: 'SendOrdertoEmail',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: vars.emailMessage&#10;}]" doc:name="logData" doc:id="67298980-ed1d-4cc3-842c-9970212fb860" variableName="logData"/>
-					<flow-ref doc:name="insert-online-ordering-logs" doc:id="a90ee520-7ddb-49dc-90bc-ea1c30ed4b5a" name="insert-online-ordering-logs"/>
-				
-</otherwise>
+				<otherwise>
+					<set-variable
+						value="#[if(vars.emailMessage == &quot;Print Check Lines not found&quot;) &quot;No print check lines received from micros for store &quot; ++ vars.storeId ++ &quot; in CreateCheck method&quot;&#10;else 'Error occurred while reading Print Check Lines for store ' + vars.storeId ++ &quot; in CreateCheck method. Error message : Exception in Print Check Lines&quot;]"
+						doc:name="emailMessage"
+						doc:id="026a1fbc-73a0-4962-8a4e-0044dad162be"
+						variableName="emailMessage" />
+					<logger level="INFO" doc:name="INFO: Email Message"
+						doc:id="48687be1-48e6-4428-9a94-e6527f6ca228"
+						message="#[vars.emailMessage]" />
+					<flow-ref doc:name="send-email-notification"
+						doc:id="d8ac5fa2-c70b-406f-87d1-6a34cef65b5d"
+						name="send-email-notification" />
+					<logger level="INFO" doc:name="INFO: Logger"
+						doc:id="5c5d5a2a-cdd6-45a3-bdc8-4957f6838b56"
+						message="Read Print Check Lines Method Completed with Errors" />
+					<set-variable
+						value="#[output application/json&#10;---&#10;{&#10;	methodName: 'SendOrdertoEmail',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: vars.emailMessage&#10;}]"
+						doc:name="logData" doc:id="67298980-ed1d-4cc3-842c-9970212fb860"
+						variableName="logData" />
+					<flow-ref doc:name="insert-online-ordering-logs"
+						doc:id="a90ee520-7ddb-49dc-90bc-ea1c30ed4b5a"
+						name="insert-online-ordering-logs" />
+				</otherwise>
 			</choice>
 		</async>
 	</sub-flow>
 	<sub-flow name="get-delivery-partner-orders"
 		doc:id="15728ae5-7d4a-4169-a607-f7d052bbd35b">
-		<logger level="INFO" doc:name="INFO: Start" doc:id="de214dd4-328b-492c-a62a-bcb118ce41ec" message="Enter Get Delivery Partner order from Object Store flow"/>
-		<ee:transform doc:name="Delivery Partner" doc:id="af2ba628-f84f-4976-8cdd-16f87f99e244" >
-			<ee:message >
+		<logger level="INFO" doc:name="INFO: Start"
+			doc:id="de214dd4-328b-492c-a62a-bcb118ce41ec"
+			message="Enter Get Delivery Partner order from Object Store flow" />
+		<ee:transform doc:name="Delivery Partner"
+			doc:id="af2ba628-f84f-4976-8cdd-16f87f99e244">
+			<ee:message>
 			</ee:message>
-			<ee:variables >
-				<ee:set-variable variableName="retrieveKey" ><![CDATA[%dw 2.0
+			<ee:variables>
+				<ee:set-variable variableName="retrieveKey"><![CDATA[%dw 2.0
 output application/json
 ---
 if(vars.createCheckVars.paymentCardType == "UBE") "uberEatsOrderType"
@@ -321,7 +430,7 @@ else if(vars.createCheckVars.paymentCardType == "DD") "doorDashOrderType"
 else if(vars.createCheckVars.paymentCardType == "GH") "grubHubOrderType"
 else if(vars.createCheckVars.paymentCardType == "PM") "postmatesOrderType"
 else ""]]></ee:set-variable>
-				<ee:set-variable variableName="deliveryPartner" ><![CDATA[%dw 2.0
+				<ee:set-variable variableName="deliveryPartner"><![CDATA[%dw 2.0
 output application/json
 ---
 if(vars.createCheckVars.paymentCardType == "UBE") "UberEats"
@@ -329,35 +438,43 @@ else if(vars.createCheckVars.paymentCardType == "DD") "DoorDash"
 else if(vars.createCheckVars.paymentCardType == "GH") "GrubHub"
 else if(vars.createCheckVars.paymentCardType == "PM") "Postmates"
 else ""]]></ee:set-variable>
-			
-</ee:variables>
+			</ee:variables>
 		</ee:transform>
-		<os:retrieve doc:name="Retrieve Delivery Partner Orders" doc:id="d7291d14-abbc-45cf-afc0-c6c5d20cac07" key="#[vars.retrieveKey]" objectStore="Object_store" target="orderType"/>
-		<set-variable value="#[output application/json --- ((vars.orderType filter ($.store_id as String == vars.storeId)).order_type_id)[0]]" doc:name="orderType" doc:id="8742b20d-326b-4960-9851-0f4bcb2a1c28" variableName="orderType"/>
-		<logger level="INFO" doc:name="INFO: Exit" doc:id="8a9de6d3-bff9-4876-9351-959f029e2759" message="Exit Get Delivery Partner order from Object Store flow"/>
-	
-
-</sub-flow>
-	<sub-flow name="retrieve-tender-media-details"
+		<os:retrieve doc:name="Retrieve Delivery Partner Orders"
+			doc:id="d7291d14-abbc-45cf-afc0-c6c5d20cac07"
+			key="#[vars.retrieveKey]" objectStore="Object_store"
+			target="orderType" />
+		<set-variable
+			value="#[output application/json --- ((vars.orderType filter ($.store_id as String == vars.storeId)).order_type_id)[0]]"
+			doc:name="orderType" doc:id="8742b20d-326b-4960-9851-0f4bcb2a1c28"
+			variableName="orderType" />
+		<logger level="INFO" doc:name="INFO: Exit"
+			doc:id="8a9de6d3-bff9-4876-9351-959f029e2759"
+			message="Exit Get Delivery Partner order from Object Store flow" />
+	</sub-flow>
+	<sub-flow name="get-tender-media-details"
 		doc:id="7b1214fa-07dc-49ea-81e2-5896fad52029">
-		<logger level="INFO" doc:name="INFO: Enter" doc:id="0dc9acae-7568-4c3a-a0e3-f0783b1136e2" message="Enter Get Tender details from Object Store"/>
+		<logger level="INFO" doc:name="INFO: Enter"
+			doc:id="0dc9acae-7568-4c3a-a0e3-f0783b1136e2"
+			message="Enter Get Tender details from Object Store" />
 		<os:retrieve doc:name="Retrieve Tender Media Details"
 			doc:id="507a6e87-0240-4344-8496-ec46c5a4297f" key="tenderMedia"
-			objectStore="Object_store" target="tenderMedia"/>
-		<set-variable value="#[output application/json --- ((vars.tenderMedia filter ($.store_id as String == vars.storeId)).tender_media_object_number)[0]]" doc:name="tenderMedia" doc:id="62bfb746-3988-4842-9d04-40cb10720289" variableName="tenderMedia"/>
-		<logger level="INFO" doc:name="INFO: Exit" doc:id="35defe16-3907-4c9f-963f-b50c2e5b09d2" message="Exit Get Tender details from Object Store"/>
-	
+			objectStore="Object_store" target="tenderMedia" />
+		<set-variable
+			value="#[output application/json --- ((vars.tenderMedia filter ($.store_id as String == vars.storeId)).tender_media_object_number)[0]]"
+			doc:name="tenderMedia" doc:id="62bfb746-3988-4842-9d04-40cb10720289"
+			variableName="tenderMedia" />
+		<logger level="INFO" doc:name="INFO: Exit"
+			doc:id="35defe16-3907-4c9f-963f-b50c2e5b09d2"
+			message="Exit Get Tender details from Object Store" />
 	</sub-flow>
-	<sub-flow name="retrieve-store-ip-properties" doc:id="24d3480f-0fcc-4b73-a6c7-2ce276f156fb" >
-		<logger level="INFO" doc:name="INFO: Enter" doc:id="6cdbf02c-1433-414b-8475-8ecd7312955c" message="Enter Get Store IP Properties from Object Store"/>
-		<os:retrieve doc:name="Retrieve Store IP Properties" doc:id="e4aa1b57-9a5c-4ee1-a37c-1d5436cc1d1a" key="storeIpProperties" objectStore="Object_store" target="storeIpProperties" />
-		<set-variable value="#[output application/json ---(vars.storeIpProperties filter ($.store_id as String == vars.storeId))]" doc:name="storeIpProperties" doc:id="6dbb0d61-d208-4403-9454-6952a698a34e" variableName="storeIpProperties" />
-		<logger level="INFO" doc:name="INFO: Exit" doc:id="200393f2-21a6-459e-8be2-08cb66ff9284" message="Exit Get Store IP properties from Object Store"/>
-	</sub-flow>
-	
 	<sub-flow name="insert-duplicate-orders"
 		doc:id="2e4a93df-ea30-4df5-bc02-c25701e92a61">
-		<set-variable value='#[if(vars.tenderId.messageSubject != "Online Orders") "PayInStore" else "OLO"]' doc:name="deliveryPartner" doc:id="ca9a7114-1b28-4c3b-8cc6-c0bb9471c395" variableName="deliveryPartner" />
+		<set-variable
+			value='#[if(vars.tenderId.messageSubject != "Online Orders") "PayInStore" else "OLO"]'
+			doc:name="deliveryPartner"
+			doc:id="ca9a7114-1b28-4c3b-8cc6-c0bb9471c395"
+			variableName="deliveryPartner" />
 		<db:stored-procedure
 			doc:name="Call prc_validate_olo_duplicate_orders_insert"
 			doc:id="940a2703-243a-401c-a486-1c18c3b9c9a6"
@@ -372,9 +489,14 @@ else ""]]></ee:set-variable>
 }]]]></db:input-parameters>
 		</db:stored-procedure>
 	</sub-flow>
-	<sub-flow name="insert-delivery-order-details" doc:id="4e584271-571b-4a8e-a5b4-db07e0572366">
-		<async doc:name="Async" doc:id="d5228358-0df0-47d8-a6cd-420a0005c603">
-			<db:stored-procedure doc:name="Insert Delivery Order Details" doc:id="aea8f562-a88a-44a8-a791-d4a65831249f" config-ref="Database_Config_Mule_Interface">
+	<sub-flow name="insert-delivery-order-details"
+		doc:id="4e584271-571b-4a8e-a5b4-db07e0572366">
+		<async doc:name="Async"
+			doc:id="d5228358-0df0-47d8-a6cd-420a0005c603">
+			<db:stored-procedure
+				doc:name="Insert Delivery Order Details"
+				doc:id="aea8f562-a88a-44a8-a791-d4a65831249f"
+				config-ref="Database_Config_Mule_Interface">
 				<db:sql><![CDATA[{ call dbo.prc_delivery_order_details_insert(:delivery_partner_name,:store_id,:order_id,:check_number,:day_of_business,:delivery_method,:status,:sub_total,:tax_total,:agent_id)}]]></db:sql>
 				<db:input-parameters><![CDATA[#[{
 	delivery_partner_name: vars.deliveryOrderDetails.deliveryPartnerName,
@@ -393,11 +515,15 @@ else ""]]></ee:set-variable>
 			</db:stored-procedure>
 		</async>
 	</sub-flow>
-	
-	<sub-flow name="send-create-email-notification" doc:id="eca0ef79-a105-453f-adc4-9cd4aca34bae">
-		<db:stored-procedure doc:name="Send Email Notification" doc:id="74a24c25-844d-4cea-98e2-bbf6fdb34905" config-ref="Database_Config_Depot" target="sentEmail">
-					<db:sql><![CDATA[{call prc_RemoteMail_CreateMessage(:id, :store, :type, :subject,:body, :param1, :param2)}]]></db:sql>
-					<db:input-parameters><![CDATA[#[{
+
+	<sub-flow name="send-create-email-notification"
+		doc:id="eca0ef79-a105-453f-adc4-9cd4aca34bae">
+		<db:stored-procedure
+			doc:name="Send Email Notification"
+			doc:id="74a24c25-844d-4cea-98e2-bbf6fdb34905"
+			config-ref="Database_Config_Depot" target="sentEmail">
+			<db:sql><![CDATA[{call prc_RemoteMail_CreateMessage(:id, :store, :type, :subject,:body, :param1, :param2)}]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
 	id: 1,
 	store: if (sizeOf(vars.storeId) < 4) (1 to (4 - sizeOf(vars.storeId))) map "#" joinBy "" ++ vars.storeId else vars.storeId,
 	'type': null,
@@ -406,17 +532,7 @@ else ""]]></ee:set-variable>
 	param1: null,
 	param2: null
 }]]]></db:input-parameters>
-				</db:stored-procedure>
-	</sub-flow>
-	<sub-flow name="send-email-notification" doc:id="f3278fa1-c635-4f91-b109-3c564b29f5f4" >
-		<db:stored-procedure doc:name="Send Email Notification" doc:id="69ff1e53-21d6-4d37-b847-2c9facc3a571" config-ref="Database_Config_Depot">
-					<db:sql><![CDATA[{call prc_RemoteMail_RouteMessage(:type, :subject,:body)}]]></db:sql>
-					<db:input-parameters><![CDATA[#[{
-	'type': "MobilePaymentNotification",
-	subject: "Error occurred in Online Ordering API",
-	body: vars.emailMessage
-}]]]></db:input-parameters>
-				</db:stored-procedure>
+		</db:stored-procedure>
 	</sub-flow>
 	<!-- <sub-flow name="serialized-coupon-sub-flow" doc:id="5db58ee3-d2b3-4a87-9b75-eca067665cff" 
 		> <logger level="INFO" doc:name="INFO: Start" doc:id="513cc75d-a817-4074-aa82-95c0dcde8ce5" 
@@ -472,10 +588,11 @@ else ""]]></ee:set-variable>
 		as Number, RevenueCenter: vars.lookupData.revenueCenter as Number, Site: 
 		vars.lookupData.siteId } }]]></ee:set-variable> </ee:variables> </ee:transform> 
 		</when> <otherwise > <set-variable value="#[{ &#10; methodName: 'CreateCheck', 
-		&#10; storeId: if(vars.storeId != null) vars.storeId else vars.vrStoreId,, &#10; checkNumber: 'Null', &#10; checkSequence: 
-		'Null', &#10; employeeNumber: 'Null', &#10; tableNumber: 'Null', &#10; status: 
-		'1', &#10; message: &quot;No serialized coupon found&quot; &#10;}]" doc:name="logData" 
-		doc:id="85919a9e-1292-486a-866a-2fc3259ed2d3" variableName="logData"/> <flow-ref 
-		doc:name="insert-online-ordering-logs" doc:id="84fb7aad-5e26-4ad9-aa87-0191ef2163eb" 
-		name="insert-online-ordering-logs" /> </otherwise> </choice> </sub-flow> -->
+		&#10; storeId: if(vars.storeId != null) vars.storeId else vars.vrStoreId,, 
+		&#10; checkNumber: 'Null', &#10; checkSequence: 'Null', &#10; employeeNumber: 
+		'Null', &#10; tableNumber: 'Null', &#10; status: '1', &#10; message: &quot;No 
+		serialized coupon found&quot; &#10;}]" doc:name="logData" doc:id="85919a9e-1292-486a-866a-2fc3259ed2d3" 
+		variableName="logData"/> <flow-ref doc:name="insert-online-ordering-logs" 
+		doc:id="84fb7aad-5e26-4ad9-aa87-0191ef2163eb" name="insert-online-ordering-logs" 
+		/> </otherwise> </choice> </sub-flow> -->
 </mule>
