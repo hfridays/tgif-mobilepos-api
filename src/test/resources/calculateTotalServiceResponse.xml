@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope
+	xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<soap:Body>
+		<CalculateTransactionTotalsResponse
+			xmlns="http://schemas.micros.com/RESPOS">
+			<ppMenuItems>
+				<ResPosAPI_MenuItem>
+					<MenuItem>
+						<MiObjectNum>1005</MiObjectNum>
+						<MiMenuLevel>5</MiMenuLevel>
+						<MiOverridePrice>11.99</MiOverridePrice>
+						<ItemDiscount>
+							<DiscObjectNum>0</DiscObjectNum>
+							<DiscReference>0</DiscReference>
+						</ItemDiscount>
+					</MenuItem>
+				</ResPosAPI_MenuItem>
+			</ppMenuItems>
+			<pSvcCharge>
+				<SvcChgObjectNum>0</SvcChgObjectNum>
+			</pSvcCharge>
+			<pSubtotalDiscount>
+				<DiscObjectNum>3298</DiscObjectNum>
+				<DiscAmountOrPercent>-3.00</DiscAmountOrPercent>
+			</pSubtotalDiscount>
+			<pTotalsResponse>
+				<TotalsSubTotal>8.99</TotalsSubTotal>
+				<TotalsTaxTotals>0.63</TotalsTaxTotals>
+				<TotalsOtherTotals>0.00</TotalsOtherTotals>
+				<TotalsAutoSvcChgTotals>0.00</TotalsAutoSvcChgTotals>
+				<TotalsTotalDue>9.62</TotalsTotalDue>
+			</pTotalsResponse>
+		</CalculateTransactionTotalsResponse>
+	</soap:Body>
+</soap:Envelope>

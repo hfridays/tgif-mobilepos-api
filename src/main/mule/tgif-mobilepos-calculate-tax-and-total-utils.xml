@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:java="http://www.mulesoft.org/schema/mule/java"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
+	<sub-flow name="call-respos-api-for-tax-and-total"
+		doc:id="403c9e1f-eb9c-4a04-8913-7fcef6f1931b">
+		<ee:transform doc:name="Create Request XML"
+			doc:id="da312dfb-8f68-49ff-bafc-d2c1241d21fa">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable
+					resource="dwl/calculate-tax-and-total/tax-and-total-xml.dwl"
+					variableName="taxAndTotalXml" />
+			</ee:variables>
+		</ee:transform>
+		<set-variable
+			value="#[output application/json
+&#10;---
+&#10;{
+&#10;	methodName: 'CalculateTaxAndTotal',
+&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
+&#10;	checkNumber: 'Null',
+&#10;	checkSequence: 'Null',
+&#10;	employeeNumber: 'Null',
+&#10;	tableNumber: 'Null',
+&#10;	status: '1',
+&#10;	message: vars.taxAndTotalXml
+&#10;}]"
+			doc:name="logData" doc:id="955487dd-dc6b-4032-9e20-9b107a90975d"
+			variableName="logData" />
+		<flow-ref doc:name="insert-online-ordering-logs"
+			doc:id="6f7f9c87-fc62-428d-8594-51bd4f35cbc1"
+			name="insert-online-ordering-logs" />
+		<logger level="INFO" doc:name="DEBUG: Service Request"
+			doc:id="55fc6d0d-14b8-4326-a9bd-298efc51fa0e"
+			message="#[vars.taxAndTotalXml]" />
+		<http:request method="POST" doc:name="Request ResPos Api"
+			doc:id="29d455c3-28cb-4859-8104-7046e281c76f"
+			config-ref="HTTP_Request_configuration"
+			path="/ResPosApiWeb/ResPosApiWeb.asmx"
+			target="calculateTotalServiceResponse" sendCorrelationId="AUTO"
+			responseTimeout="${microsApi.connectionTimeout}">
+			<reconnect frequency="${resposapi.reconnect.frequency}"
+				count="${resposapi.reconnect.count}" />
+			<http:body><![CDATA[#[%dw 2.0
+output text/plain
+---
+write(vars.taxAndTotalXml, "application/xml")]]]></http:body>
+		</http:request>
+		<logger level="INFO" doc:name="DEBUG: Service Response"
+			doc:id="2a5e8015-6c1d-4493-9fc9-bd2731177ac4"
+			message="#[vars.calculateTotalServiceResponse]" />
+		<logger level="INFO" doc:name="Logger"
+			doc:id="39598cbf-88ce-4b87-b2f5-af31984cd47f"
+			message="#[output application/xml --- vars.calculateTotalServiceResponse]" />
+		<ee:transform doc:name="Calculate Total Service Response"
+			doc:id="4060ed51-709a-42ed-b814-93361717cab0">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable
+					variableName="calculateTotalServiceResponse"><![CDATA[%dw 2.0
+output application/json
+ns soapenv http://schemas.xmlsoap.org/soap/envelope/
+---
+if ( vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.CalculateTransactionTotalsResponse != null ) {
+	status: "Success",
+	response: vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.CalculateTransactionTotalsResponse
+} else {
+	status: "Failed",
+	response: ((vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.soapenv#Fault.detail replace "}" with "" replace "{" with "") splitBy ":")[1] replace "-" with ""
+}
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Check Service Response"
+			doc:id="5004a40f-9349-4d68-9739-2ac7920d088a">
+			<when
+				expression='#[vars.calculateTotalServiceResponse.status == "Success"]'>
+				<ee:transform doc:name="Create Success Response"
+					doc:id="7b4bb26d-681d-4482-9227-a6579cb2a067">
+					<ee:message>
+						<ee:set-payload resource="dwl/calculate-tax-and-total/calculate-tax-and-total-success-response.dwl" />
+					
+</ee:message>
+				</ee:transform>
+				<set-variable
+					value="#[output application/json
+&#10;---
+&#10;{
+&#10;	methodName: 'CalculateTaxAndTotal',
+&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
+&#10;	checkNumber: 'Null',
+&#10;	checkSequence: 'Null',
+&#10;	employeeNumber: 'Null',
+&#10;	tableNumber: 'Null',
+&#10;	status: '1',
+&#10;	message: 'CalculateTotals completed with Serialized Coupons applied'
+&#10;}]"
+					doc:name="logData" doc:id="b3cb8864-2e14-4165-abaa-e40b32c23fac"
+					variableName="logData" />
+				<flow-ref doc:name="insert-online-ordering-logs"
+					doc:id="b562b32a-d729-42ce-914c-02cf4de5162e"
+					name="insert-online-ordering-logs" />
+				<logger level="INFO" doc:name="INFO: Success"
+					doc:id="db8d44fa-6a31-4139-858c-39831482aad1"
+					message="Caluclate Tax And Total Flow Completed Successfully" />
+
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Create Failure Response"
+					doc:id="e9ba6154-b776-41cb-b3e9-a91301ee5bee">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"calculateTaxAndTotal": {
+		"result": {
+			"status": "failure",
+			"message": vars.calculateTotalServiceResponse.response
+		}
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable
+					value="#[output application/json
+&#10;---
+&#10;{
+&#10;	methodName: 'CalculateTaxAndTotal',
+&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
+&#10;	checkNumber: 'Null',
+&#10;	checkSequence: 'Null',
+&#10;	employeeNumber: 'Null',
+&#10;	tableNumber: 'Null',
+&#10;	status: '0',
+&#10;	message: payload
+&#10;}]"
+					doc:name="logData" doc:id="f07f9093-c721-4bc7-a280-a42e838d3862"
+					variableName="logData" />
+				<flow-ref doc:name="insert-online-ordering-logs"
+					doc:id="85c1ecef-e196-435c-8626-75fbb9321158"
+					name="insert-online-ordering-logs" />
+				<logger level="INFO" doc:name="INFO: Failure"
+					doc:id="ce6ee604-bdb5-4d7c-8cd8-f2be6c4a826b"
+					message="Caluclate Tax And Total Flow Completed Unuccessfully" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+</mule>

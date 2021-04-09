@@ -84,24 +84,9 @@ if ( vars.createCheckServiceResponse.soapenv#Envelope.soapenv#Body.PostTransacti
 				</ee:transform>
 				<choice doc:name="Check Response"
 					doc:id="03a33763-1784-471f-ade3-69882f6aa972">
-					<when
-						expression='#[vars.createCheckServiceResponse.status == "Failed"]'>
-						<os:retrieve doc:name="Retrieve Error Message Details"
-							doc:id="e7a63b49-cbea-4ee5-9994-d78f6f688064" key="ErrorMessage"
-							target="errorMessageDetails" />
-						<ee:transform doc:name="errorDescription"
-							doc:id="6c8982a9-e1fb-4257-b3d0-ccabdd2dbdbd">
-							<ee:message>
-							</ee:message>
-							<ee:variables>
-								<ee:set-variable variableName="errorDescription"><![CDATA[%dw 2.0
-var arr = ((vars.errorMessageDetails filter ($.message_number as String == vars.createCheckServiceResponse.response)).custom_message_text)
-var size = if(arr == null) 0 else sizeOf (arr)
-output application/java
----
-if((size>0)) (arr[0]) else (vars.createCheckServiceResponse.response ++ " This is a new error code. Kindly check with POS Team")]]></ee:set-variable>
-							</ee:variables>
-						</ee:transform>
+					<when expression='#[vars.createCheckServiceResponse.status == "Failed"]'>
+						<set-variable value="#[vars.createCheckServiceResponse.response]" doc:name="errorCode" doc:id="2b5fdd0a-2b78-4dca-9e4e-4f5b26089c66" variableName="errorCode"/>
+						<flow-ref doc:name="get-error-code-details" doc:id="3602992e-7c86-4b89-86dc-593cbace7736" name="get-error-code-details" />
 					</when>
 					<otherwise>
 						<logger level="INFO"
@@ -246,9 +231,6 @@ else ""]]></ee:set-variable>
 					doc:name="emailMessage"
 					doc:id="c218e312-47b8-4bae-87c8-82bbe7a2f555"
 					variableName="emailMessage" />
-				<logger level="INFO" doc:name="INFO: Logger"
-					doc:id="fa624a93-ca71-4011-b9a2-4542844a9cbe"
-					message="#[vars.emailMessage]" />
 				<flow-ref doc:name="send-email-notification"
 					doc:id="48b28b59-9bb8-4809-b029-878bf3ef4108"
 					name="send-email-notification" />
@@ -392,9 +374,6 @@ CommonUtil::StripesCode(vars.storeId as Number, vars.createCheckServiceResponse.
 						doc:name="emailMessage"
 						doc:id="026a1fbc-73a0-4962-8a4e-0044dad162be"
 						variableName="emailMessage" />
-					<logger level="INFO" doc:name="INFO: Email Message"
-						doc:id="48687be1-48e6-4428-9a94-e6527f6ca228"
-						message="#[vars.emailMessage]" />
 					<flow-ref doc:name="send-email-notification"
 						doc:id="d8ac5fa2-c70b-406f-87d1-6a34cef65b5d"
 						name="send-email-notification" />

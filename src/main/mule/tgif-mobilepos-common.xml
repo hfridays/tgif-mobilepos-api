@@ -5,7 +5,8 @@
 	xmlns:db="http://www.mulesoft.org/schema/mule/db"
 	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
@@ -17,19 +18,15 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		<os:retrieve doc:name="Retrieve Store IP Properties"
 			doc:id="aa43a799-ae44-4593-a1c9-562657e149ab" key="storeIpProperties"
 			objectStore="Object_store" target="storeIpProperties" />
-		<set-variable
-			value="#[output application/json ---(vars.storeIpProperties filter ($.store_id as String == vars.storeId))]"
-			doc:name="storeIpProperties"
-			doc:id="9a38cf4b-46ab-4f4a-a36d-dd71cf8021be"
-			variableName="storeIpProperties" />
-		<ee:transform doc:name="Store IP Properties" doc:id="676c0fa5-fd6f-41d1-9829-16d8ab460547">
+		<ee:transform doc:name="Store IP Properties"
+			doc:id="676c0fa5-fd6f-41d1-9829-16d8ab460547">
 			<ee:message>
 			</ee:message>
 			<ee:variables>
 				<ee:set-variable variableName="storeIpProperties"><![CDATA[%dw 2.0
 output application/json
 ---
-(vars.storeIpProperties) map (item, index) -> {
+(vars.storeIpProperties filter ($.store_id as String == vars.storeId)) map (item, index) -> {
 	gatewayIp: item.gateway_ip,
 	printerIp: item.printer_ip,
 	serverIp: item.server_ip
@@ -39,9 +36,29 @@ output application/json
 		<logger level="INFO" doc:name="INFO: Exit"
 			doc:id="3c2ea3e4-4819-429b-b5ed-27450682d43c"
 			message="Exit Get Store IP properties from Object Store" />
+	</sub-flow>
+
+	<sub-flow name="get-error-code-details"
+		doc:id="23dbee4c-8f7d-438d-827e-058574e2064f">
+		<logger level="INFO" doc:name="INFO: Enter"
+			doc:id="688520f8-fa4d-4f94-a8bb-14425d699d9f"
+			message="Enter GetError Code Details from Object Store" />
+		<os:retrieve doc:name="Retrieve Error Message Details" doc:id="2c701452-39a8-4cd9-b981-d5ffe6ad2b80" key="ErrorMessage" target="errorMessageDetails" />
+		<ee:transform doc:name="errorDescription" doc:id="1d50a3ca-20f2-4189-8d9b-389b3b9a1812">
+							<ee:message>
+							</ee:message>
+							<ee:variables>
+								<ee:set-variable variableName="errorDescription"><![CDATA[%dw 2.0
+var arr = ((vars.errorMessageDetails filter ($.message_number as String == vars.errorCode)).custom_message_text)
+var size = if(arr == null) 0 else sizeOf (arr)
+output application/java
+---
+if((size>0)) (arr[0]) else (vars.errorCode ++ " This is a new error code. Kindly check with POS Team")]]></ee:set-variable>
+							</ee:variables>
+						</ee:transform>
+		<logger level="INFO" doc:name="INFO: Exit" doc:id="c96a128e-97da-44fe-92a7-354e2b6bb69a" message="Exit GetError Code Details from Object Store"/>
 	
 </sub-flow>
-
 	<sub-flow name="get-access-token"
 		doc:id="9e17bb63-29b0-48ac-9696-21258c0576f0">
 		<set-variable value="#[attributes.headers.ApiKey]"
@@ -95,7 +112,10 @@ output application/json
 	</sub-flow>
 		<sub-flow name="send-email-notification"
 		doc:id="db3166c9-a40b-4688-bd8c-40bfa7c0c8e3">
-		<db:stored-procedure
+		<logger level="INFO" doc:name="INFO: Logger"
+					doc:id="a42c39b4-e8e7-47af-ac8b-d7eb924dd902"
+					message="#[vars.emailMessage]" />
+					<db:stored-procedure
 			doc:name="Send Email Notification"
 			doc:id="7036e2da-a22f-4152-a406-01bf54fc9155"
 			config-ref="Database_Config_Depot">
