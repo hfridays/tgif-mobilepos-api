@@ -1,0 +1,22 @@
+{
+	"calculatetotals": {
+		"menuItems": {
+			"resposapiMenuItem": [{
+				"menuItem": {
+					"miObjectNum": "1005",
+					"miAltItemId": "1005",
+					"lineEntry": "0",
+					"miMenuLevel": "5",
+					"miReference": "",
+					"miPrice": "16.99",
+					"menuQty": 0
+				}
+			}]
+		},
+		    "orderDiscount": {
+      "discObjectNum": "3298",
+      "discAmountOrPercent": "3.00"
+    },
+		"authenticationSystem": "web"
+	}
+}

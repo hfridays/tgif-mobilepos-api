@@ -1,0 +1,74 @@
+{
+  "calculateTaxAndTotal": {
+    "menuItems": {
+      "resposapiMenuItem": [
+        {
+          "menuItem": {
+            "miObjectNum": "20044",
+            "miAltItemId": "20044",
+            "lineEntry": "1",
+            "miMenuLevel": "4"
+          },
+          "condiments": {
+            "resposapiCondimentMenuItem": [
+              {
+                "miAltItemId": "9001103",
+                "miMenuLevel": "1",
+                "miObjectNum": "9001103",
+                "MiReference": ""
+              },
+              {
+                "miAltItemId": "9066105",
+                "miMenuLevel": "1",
+                "miObjectNum": "9066105",
+                "MiReference": "Add"
+              },
+              {
+                "miAltItemId": "9001103",
+                "miMenuLevel": "1",
+                "miObjectNum": "9001103",
+                "MiReference": ""
+              },
+              {
+                "miAltItemId": "9061203",
+                "miMenuLevel": "1",
+                "miObjectNum": "9061203",
+                "MiReference": "Add"
+              },
+              {
+                "miAltItemId": "9001103",
+                "miMenuLevel": "1",
+                "miObjectNum": "9001103",
+                "MiReference": ""
+              },
+              {
+                "miAltItemId": "9037002",
+                "miMenuLevel": "1",
+                "miObjectNum": "9037002",
+                "MiReference": "Add"
+              }
+            ]
+          }
+        },
+        {
+          "menuItem": {
+            "miObjectNum": "80020",
+            "miAltItemId": "80020",
+            "lineEntry": "1",
+            "miMenuLevel": "4"
+          },
+          "condiments": {
+            "resposapiCondimentMenuItem": [
+              
+            ]
+          }
+        }
+      ]
+    },
+    "orderDiscount": {
+      "discObjectNum": "3684",
+      "discAmountOrPercent": "3.13"
+    },
+    "authenticationSystem": "GH"
+  }
+}

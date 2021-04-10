@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope
+	xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<soap:Body>
+		<CalculateTransactionTotalsResponse
+			xmlns="http://schemas.micros.com/RESPOS">
+			<ppMenuItems>
+				<ResPosAPI_MenuItem>
+					<MenuItem>
+						<MiObjectNum>20044</MiObjectNum>
+						<MiMenuLevel>4</MiMenuLevel>
+						<MiOverridePrice>6.66</MiOverridePrice>
+						<ItemDiscount>
+							<DiscObjectNum>0</DiscObjectNum>
+							<DiscReference>1</DiscReference>
+						</ItemDiscount>
+					</MenuItem>
+					<Condiments>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9001103</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9066105</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9001103</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9061203</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9001103</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+						<ResPosAPI_MenuItemDefinition>
+							<MiObjectNum>9037002</MiObjectNum>
+							<MiMenuLevel>1</MiMenuLevel>
+							<MiOverridePrice>0.00</MiOverridePrice>
+							<MiReference />
+							<ItemDiscount>
+								<DiscObjectNum>0</DiscObjectNum>
+							</ItemDiscount>
+						</ResPosAPI_MenuItemDefinition>
+					</Condiments>
+				</ResPosAPI_MenuItem>
+				<ResPosAPI_MenuItem>
+					<MenuItem>
+						<MiObjectNum>80020</MiObjectNum>
+						<MiMenuLevel>4</MiMenuLevel>
+						<MiOverridePrice>5.39</MiOverridePrice>
+						<ItemDiscount>
+							<DiscObjectNum>0</DiscObjectNum>
+							<DiscReference>1</DiscReference>
+						</ItemDiscount>
+					</MenuItem>
+					<Condiments />
+				</ResPosAPI_MenuItem>
+			</ppMenuItems>
+			<pSvcCharge>
+				<SvcChgObjectNum>0</SvcChgObjectNum>
+			</pSvcCharge>
+			<pSubtotalDiscount>
+				<DiscObjectNum>3684</DiscObjectNum>
+				<DiscAmountOrPercent>-3.13</DiscAmountOrPercent>
+			</pSubtotalDiscount>
+			<pTotalsResponse>
+				<TotalsSubTotal>8.92</TotalsSubTotal>
+				<TotalsTaxTotals>0.62</TotalsTaxTotals>
+				<TotalsOtherTotals>0.00</TotalsOtherTotals>
+				<TotalsAutoSvcChgTotals>0.00</TotalsAutoSvcChgTotals>
+				<TotalsTotalDue>9.54</TotalsTotalDue>
+			</pTotalsResponse>
+		</CalculateTransactionTotalsResponse>
+	</soap:Body>
+</soap:Envelope>

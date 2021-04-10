@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns0:Envelope xmlns:ns0="http://schemas.xmlsoap.org/soap/envelope/">
+  <ns0:Body>
+    <ns1:CalculateTransactionTotals xmlns:ns1="http://schemas.micros.com/RESPOS">
+      <ns1:ppMenuItems>
+        <ns1:ResPosAPI_MenuItem>
+          <ns1:MenuItem>
+            <ns1:MiObjectNum>1005</ns1:MiObjectNum>
+            <ns1:MiMenuLevel>5</ns1:MiMenuLevel>
+            <ns1:ItemDiscount>
+              <ns1:DiscReference>0</ns1:DiscReference>
+            </ns1:ItemDiscount>
+          </ns1:MenuItem>
+        </ns1:ResPosAPI_MenuItem>
+      </ns1:ppMenuItems>
+      <ns1:pSubtotalDiscount>
+        <ns1:DiscObjectNum>3298</ns1:DiscObjectNum>
+        <ns1:DiscAmountOrPercent>3</ns1:DiscAmountOrPercent>
+      </ns1:pSubtotalDiscount>
+      <ns1:revenueCenter>5</ns1:revenueCenter>
+      <ns1:orderType>5</ns1:orderType>
+      <ns1:employeeNumber>98008</ns1:employeeNumber>
+    </ns1:CalculateTransactionTotals>
+  </ns0:Body>
+</ns0:Envelope>

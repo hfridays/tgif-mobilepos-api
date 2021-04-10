@@ -17,7 +17,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd
 http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd">
-			<flow name="ms-heartbeat-flow"
+	<flow name="ms-heartbeat-flow"
 		doc:id="075f2d62-90a3-4246-80e6-519f938ff54c">
 		<logger level="INFO" doc:name="INFO: Start"
 			doc:id="d006150b-3d3e-4c70-99d1-710e5840dfec"
@@ -211,7 +211,7 @@ output application/json
 						<ee:set-variable variableName="brandId"><![CDATA[%dw 2.0
 output application/json
 ---
-vars.initialPayload.createcheck.brandId]]></ee:set-variable>
+vars.initialPayload.createcheck.brandId default "NULL"]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
 				<flow-ref doc:name="get-tender-media-details"
@@ -370,9 +370,9 @@ output application/json
 				doc:id="cf5cb7d2-3a22-43ce-a326-2cacc67feef8">
 				<logger level="INFO" doc:name="Logger"
 					doc:id="dd128c3d-eecb-4e97-a635-fee58e87333f"
-					message="Schema validation failed" />
+					message="Error Encountered=#[error.description]" />
 				<set-variable
-					value="Following error occurred in Create Check method for Store #[vars.storeId] : #[error]"
+					value='#["Following error occurred in Create Check method for Store " ++ vars.storeId ++ "=" ++ write(error, "application/json")]'
 					doc:name="emailMessage"
 					doc:id="e83d36a1-a29f-4154-8cc7-ee4d21033626"
 					variableName="emailMessage" />
@@ -380,7 +380,7 @@ output application/json
 					doc:id="ab8a7543-4495-4c2a-a456-8d9990738347"
 					name="send-email-notification" />
 				<set-payload
-					value='#[{&#10;	createcheck: {&#10;		result: {&#10;			status: "Failure",&#10;			message: error&#10;		}&#10;	}&#10;}]'
+					value='#[output application/json&#10;---&#10;{&#10;	createcheck: {&#10;		result: {&#10;			status: "Failure",&#10;			message: error&#10;		}&#10;	}&#10;}]'
 					doc:name="Create Failure Response"
 					doc:id="88c6d5ca-07be-4bb6-8e87-bc949dfa545f" />
 				<logger level="INFO" doc:name="Logger"
@@ -401,7 +401,7 @@ output application/json
 		doc:id="506d3351-e46c-4706-b6a8-677b9bbf352a">
 		<logger level="INFO" doc:name="INFO: Start"
 			doc:id="14fff35b-14a3-4176-8cab-385d0bf235a3"
-			message="Caluclate Tax And Total Flow Started" />
+			message="Calculate Tax And Total Flow Started" />
 		<flow-ref doc:name="get-access-token"
 			doc:id="76a5d86f-e805-4f54-aa4d-2e0eabb11c79" name="get-access-token" />
 		<choice doc:name="Check if access token valid"
@@ -434,7 +434,7 @@ output application/json
 						<ee:set-variable
 							resource="dwl\calculate-tax-and-total\tender-id.dwl"
 							variableName="tenderId" />
-						<ee:set-variable variableName="authSystem" ><![CDATA[%dw 2.0
+						<ee:set-variable variableName="authSystem"><![CDATA[%dw 2.0
 output application/json
 ---
 payload.calculateTaxAndTotal.authenticationSystem]]></ee:set-variable>
@@ -443,7 +443,9 @@ payload.calculateTaxAndTotal.authenticationSystem]]></ee:set-variable>
 				<flow-ref doc:name="get-store-ip-properties"
 					doc:id="058d401e-aab4-483f-aa72-0c2140e0cb41"
 					name="get-store-ip-properties" />
-				<flow-ref doc:name="call-respos-api-for-tax-and-total" doc:id="219b2c6b-5ed1-49dc-9e82-aa6ceb7d4ca4" name="call-respos-api-for-tax-and-total" />
+				<flow-ref doc:name="call-respos-api-for-tax-and-total"
+					doc:id="219b2c6b-5ed1-49dc-9e82-aa6ceb7d4ca4"
+					name="call-respos-api-for-tax-and-total" />
 			</when>
 			<otherwise>
 				<ee:transform doc:name="Create Failure Response"
@@ -470,12 +472,77 @@ output application/json
 		<error-handler>
 			<on-error-continue enableNotifications="true"
 				logException="true" doc:name="On Error Continue"
+				doc:id="1c51311b-aac4-4dfe-8785-5e6514a30f9f"
+				type="HTTP:CONNECTIVITY">
+				<logger level="INFO" doc:name="Logger" doc:id="40aad7c5-5143-42cd-b8d9-2b659fbaab45" message="Connectivity Error"/>
+				<java:invoke-static doc:name="Ping Gateway"
+					doc:id="2b565535-6a38-44e2-98ce-766bd65a29a6"
+					class="com.api.tgif.mobilepos.util.CommonUtil"
+					method="pingGatewayServer(java.lang.String)">
+					<java:args><![CDATA[#[{
+	ipAddress: vars.storeIpProperties[0].gatewayIp
+}]]]></java:args>
+				</java:invoke-static>
+				<choice doc:name="Choice"
+					doc:id="6a941289-3c8d-4e14-b246-cc7dd3798f9d">
+					<when expression="#[payload]">
+						<ee:transform doc:name="Create Failure Response"
+							doc:id="c7c6e037-98b0-4c35-96b5-ecbbd0d19c47">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"calculateTaxAndTotal": {
+		"result": {
+			"status": "failure",
+			"message": "Store server not reachable, able to reach Firewall"
+		}
+	}
+}]]></ee:set-payload>
+							</ee:message>
+							<ee:variables>
+							</ee:variables>
+						</ee:transform>
+					</when>
+					<otherwise>
+						<ee:transform doc:name="Create Failure Response"
+							doc:id="b50641d6-4376-445c-8eed-2675373a7b54">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"calculateTaxAndTotal": {
+		"result": {
+			"status": "failure",
+			"message": "Store network unreachable at Firewall"
+		}
+	}
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+				<set-variable
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: payload&#10;}]"
+					doc:name="logData" doc:id="349ed6b2-efa5-4f6f-bc39-3d44c39f5215"
+					variableName="logData" />
+				<flow-ref doc:name="insert-online-ordering-logs"
+					doc:id="000b39ea-86df-4ef7-8585-1193fcdb4c27"
+					name="insert-online-ordering-logs" />
+				<logger level="INFO" doc:name="INFO: Failure"
+					doc:id="a15ef7a2-7c67-4e5b-8301-80034d2ac8ab"
+					message="Caluclate Tax And Total Flow flow completed unsuccessfully" />
+			</on-error-continue>
+			<on-error-continue enableNotifications="true"
+				logException="true" doc:name="On Error Continue"
 				doc:id="29705788-19cd-45e8-a838-051f674447ef">
 				<logger level="INFO" doc:name="Logger"
 					doc:id="0bce7609-f300-4e11-9c4b-a2f375aa4c12"
-					message="Schema validation failed" />
+					message="Error Encountered=#[error.description]" />
 				<set-variable
-					value="Following error occurred in CalculateTaxAndTotal method for Store #[vars.storeId] : #[error]"
+					value='#["Following error occurred in CalculateTaxAndTotal method for Store " ++ vars.storeId ++ "=" ++ write(error, "application/json")]'
 					doc:name="emailMessage"
 					doc:id="12e56814-d59d-4bd7-8287-a092217c9f53"
 					variableName="emailMessage" />
@@ -483,7 +550,7 @@ output application/json
 					doc:id="934d7cab-1418-4622-8947-dfded90777b4"
 					name="send-email-notification" />
 				<set-payload
-					value='#[{&#10;	calculateTaxAndTotal: {&#10;		result: {&#10;			status: "Failure",&#10;			message: error&#10;		}&#10;	}&#10;}]'
+					value='#[output application/json&#10;---&#10;{&#10;	calculateTaxAndTotal: {&#10;		result: {&#10;			status: "Failure",&#10;			message: error&#10;		}&#10;	}&#10;}]'
 					doc:name="Create Failure Response"
 					doc:id="755d4971-1efa-4d16-8aac-1351f6764db8" />
 				<logger level="INFO" doc:name="Logger"
@@ -496,6 +563,9 @@ output application/json
 				<flow-ref doc:name="insert-online-ordering-logs"
 					doc:id="6e01941e-07fc-4733-aaf9-e6cf3dd7d6ae"
 					name="insert-online-ordering-logs" />
+				<logger level="INFO" doc:name="INFO: Failure"
+					doc:id="f6bdcef1-1c6c-4eab-863f-68d599736db1"
+					message="Caluclate Tax And Total Flow flow completed unsuccessfully" />
 			</on-error-continue>
 
 		</error-handler>
@@ -561,22 +631,25 @@ else "5"
 	calcTotalsOrderTypeID: getOrderTypeIDforMicros(getPaymentCardType(vars.authSystem)),
 	calcTotalsRevenueCenterObjectNumber: getRevenueCenterObjectNumforMicros(getPaymentCardType(vars.authSystem))
 }]]></ee:set-variable>
-						<ee:set-variable variableName="authSystem" ><![CDATA[%dw 2.0
+						<ee:set-variable variableName="authSystem"><![CDATA[%dw 2.0
 output application/json
 ---
 payload.calculatetotals.authenticationSystem]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
-								<flow-ref doc:name="get-store-ip-properties"
+				<flow-ref doc:name="get-store-ip-properties"
 					doc:id="30bad4d9-214e-4212-970a-cbc89cf7a780"
 					name="get-store-ip-properties" />
 				<choice doc:name="IP Address is not null"
 					doc:id="c8532eb6-5b48-4621-9e5b-894b70007f07">
 					<when expression="#[vars.storeIpProperties.serverIp != null]">
-						<flow-ref doc:name="call-respos-api-taxt-total-caluclation" doc:id="4eba4ed6-8e48-4fa0-8528-155c20dd9207" name="call-respos-api-taxt-total-caluclation" />
+						<flow-ref doc:name="call-respos-api-tax-calculation"
+							doc:id="4eba4ed6-8e48-4fa0-8528-155c20dd9207"
+							name="call-respos-api-tax-calculation" />
 					</when>
 					<otherwise>
-					<ee:transform doc:name="Create Failure Response" doc:id="05a5d1a4-7c58-4ad9-8fcb-e953e23d835e">
+						<ee:transform doc:name="Create Failure Response"
+							doc:id="05a5d1a4-7c58-4ad9-8fcb-e953e23d835e">
 							<ee:message>
 								<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -590,12 +663,12 @@ output application/json
 	}
 }]]></ee:set-payload>
 							</ee:message>
-							<ee:variables >
-								<ee:set-variable variableName="emailMessage" ><![CDATA[%dw 2.0
+							<ee:variables>
+								<ee:set-variable variableName="emailMessage"><![CDATA[%dw 2.0
 output application/json
 ---
 'Store Number ' ++ vars.storeId ++ ' not setup in mulesoft for online ordering']]></ee:set-variable>
-								<ee:set-variable variableName="logData" ><![CDATA[%dw 2.0
+								<ee:set-variable variableName="logData"><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -610,19 +683,22 @@ output application/json
 }]]></ee:set-variable>
 							</ee:variables>
 						</ee:transform>
-				
-				<flow-ref doc:name="send-email-notification"
-					doc:id="33a66e56-9bcb-44e3-8b40-fa31722400f8"
-					name="send-email-notification" />
-				<flow-ref doc:name="insert-online-ordering-logs"
-					doc:id="5113608c-523a-4b6e-9253-92a67a2f714c"
-					name="insert-online-ordering-logs" />
-						<logger level="INFO" doc:name="INFO: Failure" doc:id="642b452e-4d54-47a9-95e4-97632debd905" message="Calculate Total Flow completed unsuccessfully"/>
+
+						<flow-ref doc:name="send-email-notification"
+							doc:id="33a66e56-9bcb-44e3-8b40-fa31722400f8"
+							name="send-email-notification" />
+						<flow-ref doc:name="insert-online-ordering-logs"
+							doc:id="5113608c-523a-4b6e-9253-92a67a2f714c"
+							name="insert-online-ordering-logs" />
+						<logger level="INFO" doc:name="INFO: Failure"
+							doc:id="642b452e-4d54-47a9-95e4-97632debd905"
+							message="Calculate Total Flow completed unsuccessfully" />
 					</otherwise>
 				</choice>
-				
-		</when>
-			<otherwise><ee:transform doc:name="Create Failure Response"
+
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Create Failure Response"
 					doc:id="16b75471-852b-4bcc-98b3-e137a725f22f">
 					<ee:message>
 						<ee:set-payload><![CDATA[%dw 2.0
@@ -641,16 +717,110 @@ output application/json
 				<logger level="INFO" doc:name="INFO: Failure"
 					doc:id="a2c19d5a-2e34-4060-86cf-4f8ecfe8d7cd"
 					message="Calculate Total Flow completed unsuccessfully" />
-		</otherwise></choice>
-	<error-handler>
+			</otherwise>
+		</choice>
+		<error-handler>
+			<on-error-continue enableNotifications="true"
+				logException="true" doc:name="On Error Continue"
+				doc:id="cae3cefe-022f-4e36-bda5-d533db81e55b"
+				type="HTTP:CONNECTIVITY">
+				<logger level="INFO" doc:name="Logger"
+					doc:id="31ca3fd8-ee0c-4e00-bad8-f6838b6a689e"
+					message="Connectivity Error" />
+				<java:invoke-static doc:name="Ping Gateway" doc:id="3a11a98b-8b89-4fca-8dd0-9db75eeefea7" class="com.api.tgif.mobilepos.util.CommonUtil" method="pingGatewayServer(java.lang.String)">
+					<java:args ><![CDATA[#[{
+	ipAddress: vars.storeIpProperties[0].gatewayIp
+}]]]></java:args>
+				</java:invoke-static>
+				<choice doc:name="Choice" doc:id="d3ad62ae-8d33-479f-80f6-4e0213cf03a9" >
+					<when expression="#[payload]">
+						<ee:transform doc:name="Create Failure Response" doc:id="d3fe1d0d-8f45-4781-8891-6194df5b277f">
+					<ee:message>
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"calculatetotals": {
+		"result": {
+			"status": "failure",
+			"message": "Unable to reach store server"
+		}
+	}
+}]]></ee:set-payload>
+					</ee:message>
+							<ee:variables >
+								<ee:set-variable variableName="emailMessage" ><![CDATA[%dw 2.0
+output application/json
+---
+"Store Network reachable and store Server unreachable for store " ++ vars.storeId ++ " in CalculateTotals method"
+]]></ee:set-variable>
+								<ee:set-variable variableName="logData" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	methodName: 'CalculateTotals',
+	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
+	checkNumber: 'Null',
+	checkSequence: 'Null',
+	employeeNumber: 'Null',
+	tableNumber: 'Null',
+	status: '1',
+	message: "Unable to reach store server"
+}]]></ee:set-variable>
+							</ee:variables>
+				</ee:transform>
+					</when>
+					<otherwise >
+						<ee:transform doc:name="Create Failure Response" doc:id="07c9244b-cfd8-4ec3-8cbc-fb4750bca8c5" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"calculatetotals": {
+		"result": {
+			"status": "failure",
+			"message": "Unable to reach store network"
+		}
+	}
+}]]></ee:set-payload>
+							</ee:message>
+							<ee:variables >
+								<ee:set-variable variableName="emailMessage" ><![CDATA[%dw 2.0
+output application/json
+---
+"Store Network unreachable for store " ++ vars.storeId ++ " in CalculateTotals method"]]></ee:set-variable>
+								<ee:set-variable variableName="logData" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	methodName: 'CalculateTotals',
+	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
+	checkNumber: 'Null',
+	checkSequence: 'Null',
+	employeeNumber: 'Null',
+	tableNumber: 'Null',
+	status: '1',
+	message: "Unable to reach store network"
+}]]></ee:set-variable>
+							</ee:variables>
+						</ee:transform>
+					</otherwise>
+				</choice>
+				<flow-ref doc:name="send-email-notification" doc:id="1bba29c1-1bd1-4a2e-b0e5-3a337e13c0c4" name="send-email-notification"/>
+				<flow-ref doc:name="insert-online-ordering-logs"
+					doc:id="6ae77eee-150b-4f58-9045-ae722fa6b0a9"
+					name="insert-online-ordering-logs" />
+				<logger level="INFO" doc:name="INFO: Failure" doc:id="47a76342-0fc4-42bd-abd2-fbf76add9e62" message="Calculate Total Flow completed unsuccessfully"/>
+			</on-error-continue>
 			<on-error-continue enableNotifications="true"
 				logException="true" doc:name="On Error Continue"
 				doc:id="c8261786-fa72-46ad-8332-8b2fbe51cc96">
 				<logger level="INFO" doc:name="Logger"
 					doc:id="ffd77fa8-4e08-4828-ba58-3ce54baece39"
-					message="Schema validation failed" />
+					message="Error Encountered=#[error.description]" />
 				<set-variable
-					value="Following error occurred in CalculateTotals method for Store #[vars.storeId] : #[error]"
+					value='#["Following error occurred in Calculate Totals method for Store " ++ vars.storeId ++ "=" ++ write(error, "application/json")]'
 					doc:name="emailMessage"
 					doc:id="0e9ff840-0e2a-433a-a3e6-8d7abe5c6d8c"
 					variableName="emailMessage" />
@@ -658,14 +828,7 @@ output application/json
 					doc:id="02a8cbe1-395f-4e4e-ace2-33d96c1ea298"
 					name="send-email-notification" />
 				<set-payload
-					value='#[{
-&#10;	calculateTaxAndTotal: {
-&#10;		result: {
-&#10;			status: "Failure",
-&#10;			message: error
-&#10;		}
-&#10;	}
-&#10;}]'
+					value='#[output application/json&#10;---&#10;{&#10;	calculatetotals: {&#10;		result: {&#10;			status: "failure",&#10;			message: error&#10;		}&#10;	}&#10;}]'
 					doc:name="Create Failure Response"
 					doc:id="9a3c8a97-4eaa-4404-b960-6cedb008d3ae" />
 				<logger level="INFO" doc:name="Logger"
@@ -678,6 +841,7 @@ output application/json
 				<flow-ref doc:name="insert-online-ordering-logs"
 					doc:id="65fd898c-1069-4c38-8423-9a2382281a5c"
 					name="insert-online-ordering-logs" />
+			<logger level="INFO" doc:name="INFO: Failure" doc:id="a5c0506f-d518-4d59-a1f5-c24f38635cc0" message="Calculate Total Flow completed unsuccessfully"/>
 			</on-error-continue>
 		</error-handler>
 	</flow>

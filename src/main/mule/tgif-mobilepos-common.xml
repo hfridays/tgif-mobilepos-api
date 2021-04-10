@@ -43,7 +43,7 @@ output application/json
 		<logger level="INFO" doc:name="INFO: Enter"
 			doc:id="688520f8-fa4d-4f94-a8bb-14425d699d9f"
 			message="Enter GetError Code Details from Object Store" />
-		<os:retrieve doc:name="Retrieve Error Message Details" doc:id="2c701452-39a8-4cd9-b981-d5ffe6ad2b80" key="ErrorMessage" target="errorMessageDetails" />
+		<os:retrieve doc:name="Retrieve Error Message Details" doc:id="2c701452-39a8-4cd9-b981-d5ffe6ad2b80" key="errorMessage" target="errorMessageDetails" objectStore="Object_store"/>
 		<ee:transform doc:name="errorDescription" doc:id="1d50a3ca-20f2-4189-8d9b-389b3b9a1812">
 							<ee:message>
 							</ee:message>
@@ -118,7 +118,7 @@ if((size>0)) (arr[0]) else (vars.errorCode ++ " This is a new error code. Kindly
 					<db:stored-procedure
 			doc:name="Send Email Notification"
 			doc:id="7036e2da-a22f-4152-a406-01bf54fc9155"
-			config-ref="Database_Config_Depot">
+			config-ref="Database_Config_Depot" target="emailStatus">
 			<db:sql><![CDATA[{call prc_RemoteMail_RouteMessage(:type, :subject,:body)}]]></db:sql>
 			<db:input-parameters><![CDATA[#[{
 	'type': "MobilePaymentNotification",

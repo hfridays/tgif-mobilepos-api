@@ -1,8 +1,10 @@
 package com.api.tgif.mobilepos.util;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -53,6 +55,20 @@ public class CommonUtil {
 		}
 		socket.close();
 		return jsonstg;
+	}
+
+	public static boolean pingGatewayServer(String ipAddress) {
+		InetAddress inetfirewall;
+		try {
+			inetfirewall = InetAddress.getByName(ipAddress);
+			return inetfirewall.isReachable(2000);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			return false;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	public static String StripesCode(Integer storeNumber, Integer subTotal, Integer month, Integer day,
