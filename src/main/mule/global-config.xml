@@ -1,21 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd">
-    <http:listener-config name="tgif-mobilepos-papi-httpListenerConfig">
-        <http:listener-connection host="0.0.0.0" port="8081" />
-    </http:listener-config>
-    <apikit:config name="tgif-mobilepos-papi-config" api="tgif-mobilepos-papi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
-    <db:config name="Database_Config_Depot" doc:name="Database Config" doc:id="a22595e0-d1f0-4100-991d-f4d4f026e472">
-        <db:generic-connection url="${database.depot.url}" driverClassName="${database.driver}" user="${database.user}" password="${database.password}" />
-    </db:config>
-    <db:config name="Database_Config_Mule_Interface" doc:name="Database Config" doc:id="52dbe492-ac32-436d-a4fb-9430d2d655eb">
-        <db:generic-connection url="${database.muleInterface.url}" driverClassName="${database.driver}" user="${database.user}" password="${database.password}" />
-    </db:config>
-    <os:object-store name="Object_store" doc:name="Object store" doc:id="37e7f8a6-b58b-4952-b71e-e792750684ef" />
-    <wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="db0c9a94-7f77-43a5-a868-8b741a2505d9">
-        <wsc:connection wsdlLocation="wsdl\TGIServer.wsdl" service="Micros" port="BasicHttpBinding_ITGIServer" address="http://#[vars.storeIpProperties.serverIp]:8086/TGIServer/TGIServer.svc" />
-    </wsc:config>
-    <http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="9b7c4448-7e5e-45c4-856b-49963a0309f0">
-        <http:request-connection host="#[vars.storeIpProperties[0].serverIp]" />
-    </http:request-config>
-    <configuration-properties doc:name="Configuration properties" doc:id="5db7c1ef-1f21-47a4-abfa-ab6720d50c2a" file="config/${env}-config.yaml" />
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd">
+	<http:listener-config
+		name="tgif-mobilepos-papi-httpListenerConfig">
+		<http:listener-connection host="0.0.0.0"
+			port="8081" />
+	</http:listener-config>
+	<apikit:config name="tgif-mobilepos-papi-config"
+		api="tgif-mobilepos-papi.raml"
+		outboundHeadersMapName="outboundHeaders"
+		httpStatusVarName="httpStatus" />
+	<db:config name="Database_Config_Depot"
+		doc:name="Database Config"
+		doc:id="a22595e0-d1f0-4100-991d-f4d4f026e472">
+		<db:generic-connection
+			url="${database.depot.url}" driverClassName="${database.driver}"
+			user="${database.user}" password="${database.password}" />
+	</db:config>
+	<db:config name="Database_Config_Mule_Interface"
+		doc:name="Database Config"
+		doc:id="52dbe492-ac32-436d-a4fb-9430d2d655eb">
+		<db:generic-connection
+			url="${database.muleInterface.url}"
+			driverClassName="${database.driver}" user="${database.user}"
+			password="${database.password}" />
+	</db:config>
+	<os:object-store name="Object_store"
+		doc:name="Object store" doc:id="37e7f8a6-b58b-4952-b71e-e792750684ef" />
+	<wsc:config name="Web_Service_Consumer_Config"
+		doc:name="Web Service Consumer Config"
+		doc:id="db0c9a94-7f77-43a5-a868-8b741a2505d9">
+		<wsc:connection wsdlLocation="wsdl\TGIServer.wsdl"
+			service="Micros" port="BasicHttpBinding_ITGIServer"
+			address='#["http://" ++ vars.storeIpProperties[0].serverIp ++ ":8086/TGIServer/TGIServer.svc"]'>
+			<wsc:custom-transport-configuration>
+				<wsc:http-transport-configuration
+					requesterConfig="HTTP_Request_configuration_wsc" />
+			</wsc:custom-transport-configuration>
+		</wsc:connection>
+	</wsc:config>
+	<http:request-config
+		name="HTTP_Request_configuration"
+		doc:name="HTTP Request configuration"
+		doc:id="9b7c4448-7e5e-45c4-856b-49963a0309f0">
+		<http:request-connection
+			host="#[vars.storeIpProperties[0].serverIp]" />
+	</http:request-config>
+	<configuration-properties
+		doc:name="Configuration properties"
+		doc:id="5db7c1ef-1f21-47a4-abfa-ab6720d50c2a"
+		file="config/${env}-config.yaml" />
+	<http:request-config
+		name="HTTP_Request_configuration_wsc"
+		doc:name="HTTP Request configuration" requestStreamingMode="NEVER"
+		doc:id="ee64ec23-5950-48ff-bff6-764755e095c9" />
 </mule>

@@ -45,6 +45,7 @@ http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/jav
 				<flow-ref doc:name="call-respos-api-create-check"
 					doc:id="b0f44bc1-ad05-4617-8e93-889e23622ba1"
 					name="call-respos-api-create-check" />
+				<logger level="INFO" doc:name="INFO: Success" doc:id="90a1a500-637f-4556-ae3b-02f317816176" message="Create Check Flow completed successfully"/>
 			</when>
 			<otherwise>
 				<set-variable
@@ -56,34 +57,30 @@ http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/jav
 					doc:id="48b28b59-9bb8-4809-b029-878bf3ef4108"
 					name="send-email-notification" />
 				<set-variable
-					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CreateCheck',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: &quot;Store server not reachable, able to reach Firewall&quot;&#10;}]"
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CreateCheck',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: &quot;Store server not reachable, able to reach Firewall&quot;&#10;}]"
 					doc:name="logData" doc:id="4046e051-c0d9-401e-832d-367a2ab6264b"
 					variableName="logData" />
 				<flow-ref doc:name="insert-online-ordering-logs"
 					doc:id="8f0db013-2ba9-4548-9df7-bf8489098da2"
 					name="insert-online-ordering-logs" />
-				<choice doc:name="Check Delivery Partner"
-					doc:id="3d9c0dc0-0227-4144-a18f-cf2b45166163">
-					<when
-						expression='#[vars.tenderId.messageSubject != "Grub Hub Delivery" and vars.tenderId.messageSubject != "Uber Eats Delivery" and vars.tenderId.messageSubject != "Postmates Delivery" and vars.tenderId.messageSubject != "Door Dash Delivery"]'>
-						<ee:transform doc:name="Transform Message"
-							doc:id="ab2d42e5-9fe6-48c0-b0ed-b6e3f8a3b1e9">
-							<ee:message>
-								<ee:set-payload><![CDATA[%dw 2.0
+				<ee:transform doc:name="Create Failure Response"
+					doc:id="ab2d42e5-9fe6-48c0-b0ed-b6e3f8a3b1e9">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
 	createcheck: {
 		result: {
 			status: "failure",
-			message: "Unable to find check Bad Response returned from micros"
+			message: "Store server not reachable, able to reach Firewall"
 		}
 	}
 }]]></ee:set-payload>
-							</ee:message>
-							<ee:variables>
-								<ee:set-variable
-									variableName="deliveryOrderDetails"><![CDATA[%dw 2.0
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable
+							variableName="deliveryOrderDetails"><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -101,6 +98,36 @@ output application/json
 	taxTotal: vars.initialPayload.createcheck.payment.taxTotal,
 	agentId: vars.initialPayload.createcheck.agentId default ""
 }]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<choice doc:name="Check Delivery Partner"
+					doc:id="3d9c0dc0-0227-4144-a18f-cf2b45166163">
+					<when
+						expression='#[vars.tenderId.messageSubject != "Grub Hub Delivery" and vars.tenderId.messageSubject != "Uber Eats Delivery" and vars.tenderId.messageSubject != "Postmates Delivery" and vars.tenderId.messageSubject != "Door Dash Delivery"]'>
+						<ee:transform doc:name="Delivery Order Details"
+							doc:id="5ba34b31-778a-49f2-8492-78d762291266">
+							<ee:message>
+							</ee:message>
+							<ee:variables>
+								<ee:set-variable
+									variableName="deliveryOrderDetails"><![CDATA[%dw 2.0
+output application/json
+---
+{
+	deliveryPartnerName: vars.tenderId.messageSubject,
+	storeId: vars.storeId,
+	orderId: vars.createCheckVars.cartId,
+	checkNumber: 'NULL',
+	dayofBusiness: (now() >> "CST") as Date {
+		format: "MM/dd/yyyy"
+	},
+	deliveryMethod: ' Pickup',
+	status: 'failed',
+	subTotal: using(payment = vars.initialPayload.createcheck.payment)if ( payment.subtotalNoDiscountsPlusTaxes == null or payment.taxTotal ==  null ) 'NULL'
+	else (((payment.subtotalNoDiscountsPlusTaxes as Number) - (payment.taxTotal as Number)) as String),
+	taxTotal: vars.initialPayload.createcheck.payment.taxTotal,
+	agentId: vars.initialPayload.createcheck.agentId default ""
+}]]></ee:set-variable>
 							</ee:variables>
 						</ee:transform>
 						<flow-ref doc:name="insert-delivery-order-details"
@@ -108,27 +135,12 @@ output application/json
 							name="insert-delivery-order-details" />
 					</when>
 					<otherwise>
-						<ee:transform doc:name="Transform Message"
-							doc:id="a12fa88f-2bb0-49ff-ac53-8b9564e8ccc1">
-							<ee:message>
-								<ee:set-payload><![CDATA[%dw 2.0
-output application/java
----
-{
-	createcheck: {
-		result: {
-			status: "failure",
-			message: "Store server not reachable, able to reach Firewall"
-		}
-	}
-}]]></ee:set-payload>
-							</ee:message>
-						</ee:transform>
 						<logger level="INFO" doc:name="INFO: Logger"
 							doc:id="d83ff175-bc3f-4943-a598-6c72e9592849"
 							message="Grub Hub delivery or Doordash delivery or UberEats delivery or Postmates delivery" />
 					</otherwise>
 				</choice>
+				<logger level="INFO" doc:name="INFO: Failure" doc:id="290ea036-67ed-41cc-a1d8-846ea0c92635" message="Create Check Flow completed unsuccessfully"/>
 			</otherwise>
 		</choice>
 	</sub-flow>
@@ -137,22 +149,13 @@ output application/java
 		<logger level="INFO" doc:name="DEBUG: Service Request"
 			doc:id="eb404802-8e0c-4d23-9486-0646951bd45f"
 			message="ResposAPI Request=#[vars.postTransactionXML]" />
-		<http:request method="POST" doc:name="Request ResPosApi"
-			doc:id="9fa4edef-5fb2-4177-9679-76587c8c8d44"
-			target="createCheckServiceResponse"
-			config-ref="HTTP_Request_configuration"
-			path="/ResPosApiWeb/ResPosApiWeb.asmx">
-			<reconnect frequency="${resposapi.reconnect.frequency}"
-				count="${resposapi.reconnect.count}" />
-			<http:body><![CDATA[#[%dw 2.0
-output text/xml
----
-vars.postTransactionXML]]]></http:body>
-			<http:response-validator>
-				<http:success-status-code-validator
-					values="200..599" />
-			</http:response-validator>
-		</http:request>
+		 <http:request method="POST" doc:name="Request ResPosApi" doc:id="9fa4edef-5fb2-4177-9679-76587c8c8d44" 
+			target="createCheckServiceResponse" config-ref="HTTP_Request_configuration" 
+			path="/ResPosApiWeb/ResPosApiWeb.asmx"> <reconnect frequency="${resposapi.reconnect.frequency}" 
+			count="${resposapi.reconnect.count}" /> <http:body><![CDATA[#[%dw 2.0 output 
+			text/xml --- vars.postTransactionXML]]]></http:body> <http:response-validator> 
+			<http:success-status-code-validator values="200..599" /> </http:response-validator> 
+			</http:request> 
 		<logger level="INFO" doc:name="DEBUG: Service Response"
 			doc:id="96459f08-2925-4281-933f-1c2178a00978"
 			message="ResposAPI Response=#[vars.createCheckServiceResponse]" />
@@ -182,7 +185,7 @@ if ( vars.createCheckServiceResponse.soapenv#Envelope.soapenv#Body.PostTransacti
 				expression="#[vars.createCheckServiceResponse.status == 'Success']">
 				<logger level="INFO" doc:name="INFO: Success"
 					doc:id="2b8e5f18-b474-40e1-8f3b-cdcff41af5df"
-					message="Web Service call was successfull" />
+					message="ResPos API call was successfull" />
 				<flow-ref doc:name="send-order-to-mail"
 					doc:id="e8492c03-e28e-4955-91e4-ce1ba4689c53"
 					name="send-order-to-mail" />
@@ -192,28 +195,20 @@ if ( vars.createCheckServiceResponse.soapenv#Envelope.soapenv#Body.PostTransacti
 					target="tgifServiceResponse">
 					<wsc:message>
 						<wsc:body><![CDATA[#[%dw 2.0
- 				output application/xml
- 				ns tem http://tempuri.org/ 
- 				--- 
- 				{ 
- 				tem#GetMicrosDOB: {
- 				} 
- 				}]]]></wsc:body>
+output application/xml
+ns tem http://tempuri.org/
+---
+{
+	tem#GetMicrosDOB: {
+	}
+}]]]></wsc:body>
 					</wsc:message>
 				</wsc:consume>
+				<set-variable value="#[output application/json --- vars.tgifServiceResponse]" doc:name="tgifServiceResponse" doc:id="377fff35-3e13-4eeb-997b-06a08455f4a6" variableName="tgifServiceResponse"/>
 				<set-variable
-					value="#[%dw 2.0
- 				&#10;output application/json 
- 				&#10;ns ns0 http://tempuri.org/ 
- 				&#10;
-				&#10;vars.tgifServiceResponse.ns0#GetMicrosDOBResponse.ns0#GetMicrosDOBResult 
-					as String]"
+					value="#[%dw 2.0&#10;output application/json&#10;---&#10;vars.tgifServiceResponse.body.GetMicrosDOBResponse.GetMicrosDOBResult]"
 					doc:name="dayOfBusiness"
 					doc:id="da06fa6e-77cf-4f45-a8f2-d124d1d95952"
-					variableName="dayOfBusiness" />
-				<set-variable value="2021-04-08T00:00:00"
-					doc:name="Set Variable"
-					doc:id="ea2f4b17-a6d0-477d-94b4-a1b66e986485"
 					variableName="dayOfBusiness" />
 				<ee:transform doc:name="Create Check JSON"
 					doc:id="753445b9-e916-4f50-b0fb-54fc4452de97">
@@ -293,7 +288,7 @@ if ( vars.createCheckServiceResponse.soapenv#Envelope.soapenv#Body.PostTransacti
 			<otherwise>
 				<logger level="INFO" doc:name="INFO: Web Service call failed"
 					doc:id="505d87b3-2ebb-4380-9880-466a328cc989"
-					message="Web Service call failed" />
+					message="ResPos API call failed" />
 				<set-variable
 					value="#[vars.createCheckServiceResponse.response]"
 					doc:name="errorCode" doc:id="3db98083-6e17-4a75-a250-bd60e4434406"
@@ -301,71 +296,35 @@ if ( vars.createCheckServiceResponse.soapenv#Envelope.soapenv#Body.PostTransacti
 				<flow-ref doc:name="get-error-code-details"
 					doc:id="292f7a99-1c92-408a-96ca-f819782c8a2d"
 					name="get-error-code-details" />
-				<ee:transform doc:name="Transform Message"
+				<ee:transform doc:name="Create Failure Response"
 					doc:id="5d878d2f-6310-48a3-bcbd-4c1242e84f31">
 					<ee:message>
 						<ee:set-payload
 							resource="dwl/create-check/failure-payload.dwl" />
 					</ee:message>
 					<ee:variables>
-						<ee:set-variable variableName="emailMessage"><![CDATA[%dw 2.0
+						<ee:set-variable variableName="logData"><![CDATA[%dw 2.0
 output application/json
 ---
-if ( vars.createCheckServiceResponse.response == "Store server not reachable, able to reach Firewall" ) "Store server not reachable, able to reach Firewall " ++ vars.storeId ++ " in CreateCheck method"
-else if ( vars.createCheckServiceResponse.response == "Store network unreachable at Firewall" ) "Store network unreachable at Firewall " ++ vars.storeId ++ " in CreateCheck method"
-else ""]]></ee:set-variable>
+{
+	methodName: 'CreateCheck',
+	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
+	checkNumber: 'Null',
+	checkSequence: 'Null',
+	employeeNumber: 'Null',
+	tableNumber: 'Null',
+	status: '0',
+	message: if ( vars.errorCode == "Bad response" ) "Unable to find check Bad Response returned from micros" else vars.errorDescription
+}]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
-				<choice doc:name="Send Email?"
-					doc:id="cb9ed292-6d1a-41c7-b239-f5895451070d">
-					<when
-						expression='#[vars.createCheckServiceResponse.response == "Store server not reachable, able to reach Firewall" or vars.createCheckServiceResponse.response == "Store network unreachable at Firewall"]'>
-						<flow-ref doc:name="send-email-notification"
-							doc:id="5f368275-c3ad-41e1-9900-bd30aa602269"
-							name="send-email-notification" />
-					</when>
-					<otherwise>
-						<logger level="INFO" doc:name="INFO: No email triggered"
-							doc:id="ec716034-6070-4ff0-819b-1c78dbe9c4f9"
-							message="No Email triggered" />
-					</otherwise>
-				</choice>
-				<choice doc:name="Check Delivery Partner"
-					doc:id="7fe5fe57-b43e-4160-9a36-c7d6257382d8">
-					<when
-						expression='#[vars.tenderId.messageSubject != "Grub Hub Delivery" and vars.tenderId.messageSubject != "Uber Eats Delivery" and vars.tenderId.messageSubject != "Postmates Delivery" and vars.tenderId.messageSubject != "Door Dash Delivery"]'>
-						<set-variable
-							value="#[%dw 2.0
-&#10;output application/json
-&#10;---
-&#10;{
-&#10;	deliveryPartnerName: vars.tenderId.messageSubject,
-&#10;	storeId: vars.storeId,
-&#10;	orderId: vars.createCheckVars.cartId,
-&#10;	checkNumber: 'NULL',
-&#10;	dayofBusiness: (now() &gt;&gt; &quot;CST&quot;) as Date {
-&#10;		format: &quot;MM/dd/yyyy&quot;
-&#10;	},
-&#10;	deliveryMethod: ' Pickup',
-&#10;	status: 'success',
-&#10;	subTotal: if ( vars.initialPayload.createcheck.payment.subtotalNoDiscountsPlusTaxes == null or vars.initialPayload.createcheck.payment.taxTotal ==  null ) 'NULL'
-&#10;	else (((vars.initialPayload.createcheck.payment.subtotalNoDiscountsPlusTaxes as Number) - (vars.initialPayload.createcheck.payment.taxTotal as Number)) as String),
-&#10;	taxTotal: vars.initialPayload.createcheck.payment.taxTotal,
-&#10;	agentId: vars.initialPayload.createcheck.agentId default &quot;&quot;
-&#10;}]"
-							doc:name="Delivery Order Log Data"
-							doc:id="c6201516-9d99-4f97-ba6f-262b0bdf448a"
-							variableName="deliveryOrderDetails" />
-						<flow-ref doc:name="insert-delivery-order-details"
-							doc:id="d070b233-1fe4-44d8-ba04-ffafbbeb70b3"
-							name="insert-delivery-order-details" />
-					</when>
-					<otherwise>
-						<logger level="INFO" doc:name="INFO: Logger"
-							doc:id="9f8ad17e-977e-4acf-b204-3f0003d1a0f4"
-							message="Grub Hub delivery or Doordash delivery or UberEats delivery or Postmates delivery" />
-					</otherwise>
-				</choice>
+				<flow-ref doc:name="insert-online-ordering-logs"
+					doc:id="1d1b74e6-d8c5-45d9-afd9-1c00afa90412"
+					name="insert-online-ordering-logs" />
+				<flow-ref
+					doc:name="insert-delivery-order-details-failed-order"
+					doc:id="924a8993-0874-4054-a690-864ae9b6736c"
+					name="insert-delivery-order-details-failed-order" />
 			</otherwise>
 		</choice>
 	</sub-flow>
@@ -385,11 +344,11 @@ output application/json
 import java!com::api::tgif::mobilepos::util::CommonUtil
 fun getMonth(date) = ((date splitBy " ")[0] replace "'" with "-") as Date {format: "MMMdd-yy"} as String {format: "M"} as Number
 fun getDay(date) = ((date splitBy " ")[0] replace "'" with "-") as Date {format: "MMMdd-yy"} as String {format: "d"} as Number
-fun getChkNumber(date) = (date splitBy " ")[1] as Number
+fun getChkNumber(chkDetail) = (chkDetail splitBy " ")[1] as Number
 fun getArgs() = {
-    month: getMonth(trim((vars.createCheckServiceResponse.response.ppCheckPrintLines.string splitBy "\n")[10])),
-    day: getDay(trim((vars.createCheckServiceResponse.response.ppCheckPrintLines.string splitBy "\n")[10])),
-    checkNumber: getChkNumber(trim((vars.createCheckServiceResponse.response.ppCheckPrintLines.string splitBy "\n")[9])) 
+    month: getMonth(trim((vars.createCheckServiceResponse.response.ppCheckPrintLines.*string)[10])),
+    day: getDay(trim((vars.createCheckServiceResponse.response.ppCheckPrintLines.*string)[10])),
+    checkNumber: getChkNumber(trim((vars.createCheckServiceResponse.response.ppCheckPrintLines.*string )[9])) 
 }
 ---
 CommonUtil::StripesCode(vars.storeId as Number, vars.createCheckServiceResponse.response.pTotalsResponse.TotalsSubTotal as Number, getArgs().month,getArgs().day,getArgs().checkNumber)
@@ -398,20 +357,23 @@ CommonUtil::StripesCode(vars.storeId as Number, vars.createCheckServiceResponse.
 		</ee:transform>
 		<async doc:name="Async"
 			doc:id="08f77de5-76c8-4a3e-97bd-d622d587bb6d">
-			<ee:transform doc:name="Set Email Message"
-				doc:id="d6a42f53-8e89-4c2f-afe4-25fc145b50f6">
-				<ee:message>
-				</ee:message>
-				<ee:variables>
-					<ee:set-variable
-						resource="dwl/create-check/email-message.dwl"
-						variableName="emailMessage" />
-				</ee:variables>
-			</ee:transform>
 			<choice doc:name="Check Email Message"
 				doc:id="ce22d4e6-ff91-47de-a122-916d8e0e6343">
 				<when
 					expression='#[vars.emailMessage != "Print Check Lines not found"]'>
+					<ee:transform doc:name="Set Email Message"
+						doc:id="d6a42f53-8e89-4c2f-afe4-25fc145b50f6">
+						<ee:message>
+						</ee:message>
+						<ee:variables>
+							<ee:set-variable
+								resource="dwl/create-check/email-message.dwl"
+								variableName="emailMessage" />
+						</ee:variables>
+					</ee:transform>
+					<logger level="INFO" doc:name="DEBUG: Email Message"
+						doc:id="0603ea89-43c3-486a-925d-d56c59e2758b"
+						message="Email Message=#[vars.emailMessage]" />
 					<flow-ref doc:name="send-create-email-notification"
 						doc:id="69cdc0c1-6b90-4042-a983-97f5e879becb"
 						name="send-create-email-notification" />
@@ -462,18 +424,18 @@ CommonUtil::StripesCode(vars.storeId as Number, vars.createCheckServiceResponse.
 				<ee:set-variable variableName="retrieveKey"><![CDATA[%dw 2.0
 output application/json
 ---
-if(vars.createCheckVars.paymentCardType == "UBE") "uberEatsOrderType"
-else if(vars.createCheckVars.paymentCardType == "DD") "doorDashOrderType"
-else if(vars.createCheckVars.paymentCardType == "GH") "grubHubOrderType"
-else if(vars.createCheckVars.paymentCardType == "PM") "postmatesOrderType"
+if(vars.paymentCardType == "UBE") "uberEatsOrderType"
+else if(vars.paymentCardType == "DD") "doorDashOrderType"
+else if(vars.paymentCardType == "GH") "grubHubOrderType"
+else if(vars.paymentCardType == "PM") "postmatesOrderType"
 else ""]]></ee:set-variable>
 				<ee:set-variable variableName="deliveryPartner"><![CDATA[%dw 2.0
 output application/json
 ---
-if(vars.createCheckVars.paymentCardType == "UBE") "UberEats"
-else if(vars.createCheckVars.paymentCardType == "DD") "DoorDash"
-else if(vars.createCheckVars.paymentCardType == "GH") "GrubHub"
-else if(vars.createCheckVars.paymentCardType == "PM") "Postmates"
+if(vars.paymentCardType == "UBE") "UberEats"
+else if(vars.paymentCardType == "DD") "DoorDash"
+else if(vars.paymentCardType == "GH") "GrubHub"
+else if(vars.paymentCardType == "PM") "Postmates"
 else ""]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
@@ -504,6 +466,49 @@ else ""]]></ee:set-variable>
 		<logger level="INFO" doc:name="INFO: Exit"
 			doc:id="35defe16-3907-4c9f-963f-b50c2e5b09d2"
 			message="Exit Get Tender details from Object Store" />
+	</sub-flow>
+	<sub-flow name="insert-delivery-order-details-failed-order"
+		doc:id="fd0f193a-ebbe-4014-8451-26ebdfff3348">
+		<choice doc:name="Check Delivery Partner"
+			doc:id="00f1ec78-7ffa-4fca-b0ac-12f9c389a8a0">
+			<when
+				expression='#[vars.tenderId.messageSubject != "Grub Hub Delivery" and vars.tenderId.messageSubject != "Uber Eats Delivery" and vars.tenderId.messageSubject != "Postmates Delivery" and vars.tenderId.messageSubject != "Door Dash Delivery"]'>
+				<ee:transform doc:name="Delivery Order Details"
+					doc:id="21a88eaa-478b-4a31-8577-241e91efaabc">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable
+							variableName="deliveryOrderDetails"><![CDATA[%dw 2.0
+output application/json
+---
+{
+	deliveryPartnerName: vars.tenderId.messageSubject,
+	storeId: vars.storeId,
+	orderId: vars.createCheckVars.cartId,
+	checkNumber: 'NULL',
+	dayofBusiness: (now() >> "CST") as Date {
+		format: "MM/dd/yyyy"
+	},
+	deliveryMethod: ' Pickup',
+	status: 'failed',
+	subTotal: using(payment = vars.initialPayload.createcheck.payment)if ( payment.subtotalNoDiscountsPlusTaxes == null or payment.taxTotal ==  null ) 'NULL'
+	else (((payment.subtotalNoDiscountsPlusTaxes as Number) - (payment.taxTotal as Number)) as String),
+	taxTotal: vars.initialPayload.createcheck.payment.taxTotal,
+	agentId: vars.initialPayload.createcheck.agentId default ""
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="insert-delivery-order-details"
+					doc:id="cc785245-55e1-4751-af8f-9dde3ccc7df4"
+					name="insert-delivery-order-details" />
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="INFO: Logger"
+					doc:id="5ad7e231-5b1d-4703-a8ef-17cd89af2091"
+					message="Grub Hub delivery or Doordash delivery or UberEats delivery or Postmates delivery" />
+			</otherwise>
+		</choice>
 	</sub-flow>
 	<sub-flow name="insert-duplicate-orders"
 		doc:id="2e4a93df-ea30-4df5-bc02-c25701e92a61">
@@ -571,65 +576,4 @@ else ""]]></ee:set-variable>
 }]]]></db:input-parameters>
 		</db:stored-procedure>
 	</sub-flow>
-	<!-- <sub-flow name="serialized-coupon-sub-flow" doc:id="5db58ee3-d2b3-4a87-9b75-eca067665cff" 
-		> <logger level="INFO" doc:name="INFO: Start" doc:id="513cc75d-a817-4074-aa82-95c0dcde8ce5" 
-		message="#[vars.storeId] - Create Check Validate Serialized Coupon"/> <ee:transform 
-		doc:name="Transform Message" doc:id="2416746b-49bc-467f-a82b-9d92ef40f3b8" 
-		> <ee:message > </ee:message> <ee:variables > <ee:set-variable variableName="lookupData" 
-		><![CDATA[%dw 2.0 output application/json -&#45;&#45; { requestCode: 'SV_ACCEPT_COUPON', 
-		retransmit: 'N', terminalId: '1', siteId: 1, employeeId: '98008', posPlatform: 
-		'3700', amount: '0.00', localDate: now() as Date { format: "yyyyMMdd" }, 
-		localTime: now() as DateTime { format:"HHmmss" }, revenueCenter: '5', terminalType: 
-		'1', version: '8', timeOut: '120', language: 'en_US', currency: 'USD', sequence: 
-		'01', quantity: '1' }]]></ee:set-variable> <ee:set-variable variableName="couponStoreId" 
-		><![CDATA[%dw 2.0 output application/json -&#45;&#45; vars.storeId]]></ee:set-variable> 
-		</ee:variables> </ee:transform> <choice doc:name="Choice" doc:id="a491ed30-77d0-453b-92e7-211e45d7003e" 
-		> <when expression="#[vars.createCheckVars.orderDiscountNum == null and vars.orderDiscountNum.serializedCouponCode 
-		!= null]"> <logger level="INFO" doc:name="INFO: Coupon Found" doc:id="c118af9e-4a79-4fc5-ac55-b8e3ec8f43b3" 
-		message="Serialized Coupon Found"/> <ee:transform doc:name="Transform Message" 
-		doc:id="e9e5224b-1a95-4d1a-b216-556d9f23915c" > <ee:message > </ee:message> 
-		<ee:variables > <ee:set-variable variableName="couponMetadata" ><![CDATA[%dw 
-		2.0 output application/json fun getCheckNumber() = "9" ++ now().millisecond 
-		fun getMonthString() = using(month = now().month as String) if(sizeOf(month) 
-		== 1) ("00" ++ month) else "0" ++ month fun getDayString() = using(day = 
-		now().day as String) if(sizeOf(day) == 1) ("00" ++ day) else "0" ++ day fun 
-		getHourString() = using(hour = now().hour as String) if(sizeOf(hour) == 1) 
-		("00" ++ hour) else "0" ++ hour fun getMinString() = using(min = now().minutes 
-		as String) if(sizeOf(min) == 1) ("00" ++ min) else "0" ++ min fun getSecString() 
-		= using(sec = now().seconds as String) if(sizeOf(sec) == 1) ("00" ++ sec) 
-		else "0" ++ sec -&#45;&#45; { checkNumber: getCheckNumber(), checkSequence: 
-		"8" ++ now().milliseconds, traceId: now() as DateTime {format: "yyMMddHHmmss"}, 
-		//(now().year) ++ getMonthString() ++ getDayString() ++ getHourString() ++ 
-		getMinString() ++ getSecString() ++ "N01" ++ getCheckNumber(), localTime: 
-		now() as DateTime {format: "HHmmss"} }]]></ee:set-variable> </ee:variables> 
-		</ee:transform> <ee:transform doc:name="acceptCouponXML" doc:id="a189fc92-34ee-40e2-a21c-0bb8ebe42f64" 
-		> <ee:message > </ee:message> <ee:variables > <ee:set-variable variableName="acceptCouponXML" 
-		><![CDATA[%dw 2.0 output application/xml -&#45;&#45; { SVCMessage @(version: 
-		vars.lookupData.version as Number , timeout: vars.lookupData.timeOut as Number 
-		, language: vars.lookupData.language , currency: vars.lookupData.currency 
-		, sequence: vars.lookupData.sequence as Number): { RequestCode: vars.lookupData.requestCode, 
-		CouponCode: payload.createcheck.serializedCoupon.couponCode, CheckSummary: 
-		{ MenuItems: { (payload.createcheck.menuItems.resposapiMenuItem map ((value 
-		, index) -> { MI @(ID: (value.menuItem.miAltItemId replace "a" with "") as 
-		Number , QTY: vars.lookupData.quantity as Number): { "text()": value.menuItem.miPrice 
-		} })) }, Totals @(ttlDue: payload.createcheck.payment.subtotalNoDiscountsPlusTaxes 
-		as Number , ttlTax: payload.createcheck.payment.taxTotal as Number , ttlSvc: 
-		vars.lookupData.amount as Number , ttlPay: vars.lookupData.amount as Number): 
-		{ } }, TraceID: vars.couponMetadata.traceId, TerminalID: vars.lookupData.terminalId 
-		as Number, TerminalType: vars.lookupData.terminalType, TipAmount: vars.lookupData.amount 
-		as Number, Amount: vars.lookupData.amount as Number, LocalCurrency: vars.lookupData.currency, 
-		LocalDate: vars.lookupData.localDate as Number, LocalTime: vars.couponMetadata.localTime, 
-		PosPlatform: vars.lookupData.posPlatform as Number, BusinessDate: vars.lookupData.localDate 
-		as Number, CheckNumber: vars.couponMetadata.checkNum as Number, CheckSequence: 
-		vars.couponMetadata.checkSeq as Number, TransactionEmployee: vars.lookupData.employeeId 
-		as Number, RevenueCenter: vars.lookupData.revenueCenter as Number, Site: 
-		vars.lookupData.siteId } }]]></ee:set-variable> </ee:variables> </ee:transform> 
-		</when> <otherwise > <set-variable value="#[{ &#10; methodName: 'CreateCheck', 
-		&#10; storeId: if(vars.storeId != null) vars.storeId else vars.vrStoreId,, 
-		&#10; checkNumber: 'Null', &#10; checkSequence: 'Null', &#10; employeeNumber: 
-		'Null', &#10; tableNumber: 'Null', &#10; status: '1', &#10; message: &quot;No 
-		serialized coupon found&quot; &#10;}]" doc:name="logData" doc:id="85919a9e-1292-486a-866a-2fc3259ed2d3" 
-		variableName="logData"/> <flow-ref doc:name="insert-online-ordering-logs" 
-		doc:id="84fb7aad-5e26-4ad9-aa87-0191ef2163eb" name="insert-online-ordering-logs" 
-		/> </otherwise> </choice> </sub-flow> -->
 </mule>

@@ -1,6 +1,6 @@
 %dw 2.0
 output application/json
-var cardType = vars.paymentCard
+var cardType = vars.paymentCardType
 var fullfillmentType = vars.createCheckVars.fullfillmentType default "Delivery"
 var payInArray = ["MC", "VI", "DI", "AX", "AZ", "PayInStore"]
 fun getEmployeeObjectNumber(cardType, fullfillmentType) = if ( cardType == "GH" and fullfillmentType == "pickup" ) "96013"
@@ -30,7 +30,7 @@ else if ( cardType == "DD" ) "Door Dash Delivery"
 else "Online Orders"
 ---
 {
-	employeeObjectNum: if ( vars.brandId != "NULL" ) getEmployeeObjectNumber(cardType, fullfillmentType) else vars.employeeObjectNumber,
+	employeeObjectNum: if ( vars.brandId == "NULL" ) getEmployeeObjectNumber(cardType, fullfillmentType) else vars.employeeObjectNumber,
 	orderTypeId: if ( (["UBE", "GH", "DD", "PM"] contains cardType) and !(isEmpty(vars.orderType)) ) vars.orderType else getOrderTypeIdforMicros(cardType),
 	tenderObjectNum: if ( (["UBE", "GH", "DD", "PM"] contains cardType) and !(isEmpty(vars.tenderMedia)) ) vars.tenderMedia else getTenderMediaObjectNumberforMicros(cardType),
 	revenueCenterObjectNumber: getRevenueCenterObjectNumforMicros(cardType),

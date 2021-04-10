@@ -5,12 +5,20 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+import java.security.GeneralSecurityException;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import org.bouncycastle.util.encoders.Base64;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.lang3.StringUtils;
 
 public class CommonUtil {
 
-	public static String checkConnectivity(String ipAddress, String port) throws Exception {
+	public static String pingServer(String ipAddress, String port) throws Exception {
 		String jsonstg = "";
 
 		int flag = 0;
@@ -69,6 +77,27 @@ public class CommonUtil {
 			e.printStackTrace();
 			return false;
 		}
+	}
+
+	public static String getPaymentCard(String value, String paymentCard) throws GeneralSecurityException {
+		
+		  byte[] key = value.getBytes();
+		  key = value.getBytes(Charset.forName("UTF-8"));
+		  key = value.getBytes(StandardCharsets.UTF_8);
+
+		// Argument validation.
+		if (key.length != 16) {
+			throw new IllegalArgumentException("Invalid key size.");
+		}
+
+		// Setup AES tool.
+		SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
+		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+		cipher.init(Cipher.DECRYPT_MODE, skeySpec, new IvParameterSpec(new byte[16]));
+
+		byte[] binary = Base64.decode(paymentCard);
+		byte[] original = cipher.doFinal(binary);
+		return new String(original, Charset.forName("UTF-8"));
 	}
 
 	public static String StripesCode(Integer storeNumber, Integer subTotal, Integer month, Integer day,

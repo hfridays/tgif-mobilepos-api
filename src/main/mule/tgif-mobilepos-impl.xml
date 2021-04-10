@@ -17,7 +17,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd
 http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd">
-	<flow name="ms-heartbeat-flow"
+		<flow name="ms-heartbeat-flow"
 		doc:id="075f2d62-90a3-4246-80e6-519f938ff54c">
 		<logger level="INFO" doc:name="INFO: Start"
 			doc:id="d006150b-3d3e-4c70-99d1-710e5840dfec"
@@ -98,7 +98,7 @@ output application/json
 				<java:invoke-static doc:name="Ping IP Address"
 					doc:id="f69dc9aa-5316-49be-bae2-739cd28cbb5d"
 					class="com.api.tgif.mobilepos.util.CommonUtil"
-					method="checkConnectivity(java.lang.String, java.lang.String)">
+					method="pingServer(java.lang.String, java.lang.String)">
 					<java:args><![CDATA[#[{
 	ipAddress: vars.reqDetails.ipAddess,
 	port: vars.ipAddess.port
@@ -196,15 +196,11 @@ output application/json
 					doc:name="Validate Request schema"
 					doc:id="19fed3fb-1fe3-456e-ad0e-55c0f6e5fa26"
 					schema="schema/createCheck.json" />
-				<ee:transform doc:name="Payment Card"
+				<ee:transform doc:name="Create Check Vars"
 					doc:id="cd73378b-e0e2-45fa-b216-a01092557007">
 					<ee:message>
 					</ee:message>
 					<ee:variables>
-						<ee:set-variable variableName="paymentCard"><![CDATA[%dw 2.0
-output application/json
----
-"UBE"]]></ee:set-variable>
 						<ee:set-variable
 							resource="dwl/create-check/createCheckVars.dwl"
 							variableName="createCheckVars" />
@@ -212,6 +208,18 @@ output application/json
 output application/json
 ---
 vars.initialPayload.createcheck.brandId default "NULL"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<ee:transform doc:name="Get Payment Card" doc:id="1636b720-9ec3-4e6d-a23c-1810eb463f4e">
+					<ee:message>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="paymentCardType" ><![CDATA[%dw 2.0
+output application/json
+import java!com::api::tgif::mobilepos::util::CommonUtil
+---
+using(cardType = vars.createCheckVars.paymentCardType)if(cardType != null and !(isEmpty(cardType)) ) CommonUtil::getPaymentCard(p("key"),cardType)
+else ""]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
 				<flow-ref doc:name="get-tender-media-details"
@@ -365,6 +373,103 @@ output application/json
 			</otherwise>
 		</choice>
 		<error-handler>
+			<on-error-continue enableNotifications="true"
+				logException="true" doc:name="On Error Continue"
+				doc:id="76ff6f51-91c0-4f8c-bac4-b7524531e603"
+				type="HTTP:CONNECTIVITY">
+				<logger level="INFO" doc:name="Logger"
+					doc:id="4b1f9bd5-325e-4aa2-9ce6-99e86fcd1caa"
+					message="Connectivity Error" />
+				<java:invoke-static doc:name="Ping Gateway" doc:id="f7ffe13d-a56f-42ed-b291-4767d5c1c87d" class="com.api.tgif.mobilepos.util.CommonUtil" method="pingGatewayServer(java.lang.String)">
+					<java:args ><![CDATA[#[{
+	ipAddress: vars.storeIpProperties[0].gatewayIp
+}]]]></java:args>
+				</java:invoke-static>
+				<choice doc:name="Choice" doc:id="78d3a61e-a245-4fbe-815a-26fe4611cca4" >
+					<when expression="#[payload]">
+						<ee:transform doc:name="Create Failure Response" doc:id="d89cd087-92be-4403-87f2-01c451eae808">
+					<ee:message>
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"createcheck": {
+		"result": {
+			"status": "failure",
+			"message": "Store server not reachable, able to reach Firewall"
+		}
+	}
+}]]></ee:set-payload>
+					</ee:message>
+							<ee:variables >
+								<ee:set-variable variableName="emailMessage" ><![CDATA[%dw 2.0
+output application/json
+---
+"Store server not reachable, able to reach Firewall " ++ vars.storeId ++ " in CreateCheck method"
+
+
+]]></ee:set-variable>
+								<ee:set-variable variableName="logData" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	methodName: 'CreateCheck',
+	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
+	checkNumber: 'Null',
+	checkSequence: 'Null',
+	employeeNumber: 'Null',
+	tableNumber: 'Null',
+	status: '0',
+	message: "Store server not reachable, able to reach Firewall"
+}]]></ee:set-variable>
+							</ee:variables>
+				</ee:transform>
+					</when>
+					<otherwise >
+						<ee:transform doc:name="Create Failure Response" doc:id="72e6f47d-ad25-4b03-9f5f-56f16c29378d" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"createcheck": {
+		"result": {
+			"status": "failure",
+			"message": "Store network unreachable at Firewall"
+		}
+	}
+}]]></ee:set-payload>
+							</ee:message>
+							<ee:variables >
+								<ee:set-variable variableName="emailMessage" ><![CDATA[%dw 2.0
+output application/json
+---
+"Store network unreachable at Firewall " ++ vars.storeId ++ " in CreateCheck method"
+
+]]></ee:set-variable>
+								<ee:set-variable variableName="logData" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	methodName: 'CreateCheck',
+	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
+	checkNumber: 'Null',
+	checkSequence: 'Null',
+	employeeNumber: 'Null',
+	tableNumber: 'Null',
+	status: '0',
+	message: "Store network unreachable at Firewall"
+}]]></ee:set-variable>
+							</ee:variables>
+						</ee:transform>
+					</otherwise>
+				</choice>
+				<flow-ref doc:name="send-email-notification" doc:id="f733d920-7ee0-4b3f-a958-b0a113199cbb" name="send-email-notification"/>
+	
+				<flow-ref doc:name="insert-online-ordering-logs" doc:id="46a3de3c-682c-46c3-ad33-27f267174b11" name="insert-online-ordering-logs"/>
+				<flow-ref doc:name="insert-delivery-order-details-failed-order" doc:id="8d30c8fd-d090-4cc8-83fc-c232402f5653" name="insert-delivery-order-details-failed-order" />
+				<logger level="INFO" doc:name="INFO: Failure" doc:id="76684c01-3980-4eb1-92a2-fb03e68a2e7d" message="Create Check Flow completed unsuccessfully"/>
+			</on-error-continue>
 			<on-error-continue enableNotifications="true"
 				logException="true" doc:name="On Error Continue"
 				doc:id="cf5cb7d2-3a22-43ce-a326-2cacc67feef8">
@@ -764,7 +869,7 @@ output application/json
 	checkSequence: 'Null',
 	employeeNumber: 'Null',
 	tableNumber: 'Null',
-	status: '1',
+	status: '0',
 	message: "Unable to reach store server"
 }]]></ee:set-variable>
 							</ee:variables>
@@ -800,7 +905,7 @@ output application/json
 	checkSequence: 'Null',
 	employeeNumber: 'Null',
 	tableNumber: 'Null',
-	status: '1',
+	status: '0',
 	message: "Unable to reach store network"
 }]]></ee:set-variable>
 							</ee:variables>

@@ -1,0 +1,47 @@
+<ns0:Envelope
+	xmlns:ns0="http://www.w3.org/2003/05/soap-envelope">
+	<ns0:Body>
+		<ns1:PostTransactionEx
+			xmlns:ns1="http://schemas.micros.com/RESPOS">
+			<ns1:pGuestCheck>
+				<ns1:CheckRevenueCenterObjectNum>6</ns1:CheckRevenueCenterObjectNum>
+				<ns1:CheckOrderType>4</ns1:CheckOrderType>
+				<ns1:CheckEmployeeObjectNum>96002</ns1:CheckEmployeeObjectNum>
+				<ns1:CheckID>Anubhav_801</ns1:CheckID>
+				<ns1:pCheckInfoLines>
+					<ns1:string>******* DELIVERY ORDER *******</ns1:string>
+					<ns1:string />
+					<ns1:string>Name: Anubhav Mangla</ns1:string>
+					<ns1:string />
+					<ns1:string>GrubHub Order 003314788439801</ns1:string>
+					<ns1:string>Support Phone 1-877-866-4482</ns1:string>
+					<ns1:string>Email elitecare@grubhub.com</ns1:string>
+				</ns1:pCheckInfoLines>
+			</ns1:pGuestCheck>
+			<ns1:ppMenuItems>
+				<ns1:ResPosAPI_MenuItem>
+					<ns1:MenuItem>
+						<ns1:MiObjectNum>40006</ns1:MiObjectNum>
+						<ns1:MiMenuLevel>4</ns1:MiMenuLevel>
+						<ns1:MiReference />
+						<ns1:ItemDiscount>
+							<ns1:DiscReference>1</ns1:DiscReference>
+						</ns1:ItemDiscount>
+					</ns1:MenuItem>
+				</ns1:ResPosAPI_MenuItem>
+			</ns1:ppMenuItems>
+			<ns1:pServiceChg>
+				<ns1:SvcChgObjectNum>1</ns1:SvcChgObjectNum>
+				<ns1:SvcChgAmountOrPercent>0</ns1:SvcChgAmountOrPercent>
+			</ns1:pServiceChg>
+			<ns1:pTmedDetail>
+				<ns1:TmedObjectNum>12</ns1:TmedObjectNum>
+				<ns1:TmedPartialPayment>3.31</ns1:TmedPartialPayment>
+				<ns1:TmedReference>003314788439801</ns1:TmedReference>
+				<ns1:TmedEPayment />
+			</ns1:pTmedDetail>
+			<ns1:ppCheckPrintLines />
+			<ns1:ppVoucherOutput />
+		</ns1:PostTransactionEx>
+	</ns0:Body>
+</ns0:Envelope>

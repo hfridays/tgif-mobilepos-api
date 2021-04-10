@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope
+	xmlns:soap="http://www.w3.org/2003/05/soap-envelope"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<soap:Body>
+		<PostTransactionExResponse
+			xmlns="http://schemas.micros.com/RESPOS">
+			<pGuestCheck>
+				<CheckID>Anubhav_801</CheckID>
+				<CheckTableObjectNum>0</CheckTableObjectNum>
+				<CheckRevenueCenterObjectNum>6</CheckRevenueCenterObjectNum>
+				<CheckOrderType>4</CheckOrderType>
+				<CheckEmployeeObjectNum>96002</CheckEmployeeObjectNum>
+				<CheckSeq>488</CheckSeq>
+				<CheckNum>9022</CheckNum>
+				<CheckDateToFire>1899-12-30T00:00:00</CheckDateToFire>
+				<CheckGuestCount>0</CheckGuestCount>
+				<pCheckInfoLines>
+					<string>******* DELIVERY ORDER *******</string>
+					<string />
+					<string>Name: Anubhav Mangla</string>
+					<string />
+					<string>GrubHub Order 003314788439801</string>
+					<string>Support Phone 1-877-866-4482</string>
+					<string>Email elitecare@grubhub.com</string>
+				</pCheckInfoLines>
+				<CheckStatusBits>0</CheckStatusBits>
+				<pPrintJobIds>
+					<int>5</int>
+					<int>6</int>
+				</pPrintJobIds>
+			</pGuestCheck>
+			<ppMenuItems>
+				<ResPosAPI_MenuItem>
+					<MenuItem>
+						<MiObjectNum>40006</MiObjectNum>
+						<MiMenuLevel>4</MiMenuLevel>
+						<MiOverridePrice>3.09</MiOverridePrice>
+						<MiReference />
+						<ItemDiscount>
+							<DiscObjectNum>0</DiscObjectNum>
+							<DiscReference>1</DiscReference>
+						</ItemDiscount>
+					</MenuItem>
+				</ResPosAPI_MenuItem>
+			</ppMenuItems>
+			<pServiceChg>
+				<SvcChgObjectNum>1</SvcChgObjectNum>
+				<SvcChgAmountOrPercent>0</SvcChgAmountOrPercent>
+			</pServiceChg>
+			<pSubTotalDiscount>
+				<DiscObjectNum>0</DiscObjectNum>
+			</pSubTotalDiscount>
+			<pTmedDetail>
+				<TmedObjectNum>12</TmedObjectNum>
+				<TmedPartialPayment>3.31</TmedPartialPayment>
+				<TmedReference>003314788439801</TmedReference>
+				<TmedEPayment>
+					<PaymentCommand>NO_E_PAYMENT</PaymentCommand>
+					<AccountDataSource>SOURCE_UNDEFINED</AccountDataSource>
+					<AccountType>ACCOUNT_TYPE_UNDEFINED</AccountType>
+					<ExpirationDate>1899-12-30T00:00:00</ExpirationDate>
+					<StartDate>1899-12-30T00:00:00</StartDate>
+					<IssueNumber>0</IssueNumber>
+				</TmedEPayment>
+			</pTmedDetail>
+			<pTotalsResponse>
+				<TotalsSubTotal>3.09</TotalsSubTotal>
+				<TotalsTaxTotals>0.22</TotalsTaxTotals>
+				<TotalsOtherTotals>0.00</TotalsOtherTotals>
+				<TotalsAutoSvcChgTotals>0.00</TotalsAutoSvcChgTotals>
+				<TotalsTotalDue>0.00</TotalsTotalDue>
+			</pTotalsResponse>
+			<ppCheckPrintLines>
+				<string>******* DELIVERY ORDER ******* </string>
+				<string> Name: Anubhav Mangla      </string>
+				<string> GrubHub Order 003314788439801  </string>
+				<string> Support Phone 1-877-866-4482  </string>
+				<string> Email elitecare@grubhub.com   </string>
+				<string> ** Store #0529              </string>
+				<string> VALLEY STREAM, NY  </string>
+				<string> 96002 GRUB G</string>
+				<string>----------------------------------------</string>
+				<string>Chk 9022 Anubhav_ Gst 0</string>
+				<string> Apr10'21 09:25AM            </string>
+				<string>----------------------------------------</string>
+				<string> *DELIVERY    </string>
+				<string> 1 __SD BREDSTIX6 3.09</string>
+				<string> Charge Tip 0.00</string>
+				<string> HOUSE ACCT 3.31</string>
+				<string></string>
+				<string> Subtotal 3.09</string>
+				<string> Sales/MB Tax 0.22</string>
+				<string> Amt. Paid 3.31</string>
+				<string>-----------96002 Check Closed-----------</string>
+				<string>------------Apr10'21 09:25AM------------</string>
+				<string />
+				<string />
+				<string />
+				<string />
+				<string />
+			</ppCheckPrintLines>
+			<ppVoucherOutput />
+		</PostTransactionExResponse>
+	</soap:Body>
+</soap:Envelope>

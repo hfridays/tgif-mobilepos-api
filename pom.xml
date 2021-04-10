@@ -108,6 +108,12 @@
 			<artifactId>sqljdbc4-4.0</artifactId>
 			<version>0.1</version>
 		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk16</artifactId>
+			<version>1.45</version>
+		</dependency>
+
 
 	</dependencies>
 
