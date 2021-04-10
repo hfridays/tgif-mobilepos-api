@@ -45,7 +45,7 @@ http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/jav
 				<flow-ref doc:name="call-respos-api-create-check"
 					doc:id="b0f44bc1-ad05-4617-8e93-889e23622ba1"
 					name="call-respos-api-create-check" />
-				<logger level="INFO" doc:name="INFO: Success" doc:id="90a1a500-637f-4556-ae3b-02f317816176" message="Create Check Flow completed successfully"/>
+				
 			</when>
 			<otherwise>
 				<set-variable
@@ -284,6 +284,7 @@ ns tem http://tempuri.org/
 							message="Grub Hub delivery or Doordash delivery or UberEats delivery or Postmates delivery" />
 					</otherwise>
 				</choice>
+				<logger level="INFO" doc:name="INFO: Success" doc:id="a8b80766-3bd8-4641-bcf8-a1cd1449257c" message="Create Check Flow completed successfully"/>
 			</when>
 			<otherwise>
 				<logger level="INFO" doc:name="INFO: Web Service call failed"
@@ -325,6 +326,7 @@ output application/json
 					doc:name="insert-delivery-order-details-failed-order"
 					doc:id="924a8993-0874-4054-a690-864ae9b6736c"
 					name="insert-delivery-order-details-failed-order" />
+				<logger level="INFO" doc:name="INFO: Failure" doc:id="7a7ea360-1ec3-40cf-9a4d-2808b718ca6a" message="Create Check Flow completed unsuccessfully"/>
 			</otherwise>
 		</choice>
 	</sub-flow>
