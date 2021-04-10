@@ -100,46 +100,7 @@ output application/json
 }]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
-				<choice doc:name="Check Delivery Partner"
-					doc:id="3d9c0dc0-0227-4144-a18f-cf2b45166163">
-					<when
-						expression='#[vars.tenderId.messageSubject != "Grub Hub Delivery" and vars.tenderId.messageSubject != "Uber Eats Delivery" and vars.tenderId.messageSubject != "Postmates Delivery" and vars.tenderId.messageSubject != "Door Dash Delivery"]'>
-						<ee:transform doc:name="Delivery Order Details"
-							doc:id="5ba34b31-778a-49f2-8492-78d762291266">
-							<ee:message>
-							</ee:message>
-							<ee:variables>
-								<ee:set-variable
-									variableName="deliveryOrderDetails"><![CDATA[%dw 2.0
-output application/json
----
-{
-	deliveryPartnerName: vars.tenderId.messageSubject,
-	storeId: vars.storeId,
-	orderId: vars.createCheckVars.cartId,
-	checkNumber: 'NULL',
-	dayofBusiness: (now() >> "CST") as Date {
-		format: "MM/dd/yyyy"
-	},
-	deliveryMethod: ' Pickup',
-	status: 'failed',
-	subTotal: using(payment = vars.initialPayload.createcheck.payment)if ( payment.subtotalNoDiscountsPlusTaxes == null or payment.taxTotal ==  null ) 'NULL'
-	else (((payment.subtotalNoDiscountsPlusTaxes as Number) - (payment.taxTotal as Number)) as String),
-	taxTotal: vars.initialPayload.createcheck.payment.taxTotal,
-	agentId: vars.initialPayload.createcheck.agentId default ""
-}]]></ee:set-variable>
-							</ee:variables>
-						</ee:transform>
-						<flow-ref doc:name="insert-delivery-order-details"
-							doc:id="70f4a97f-6b4e-45fe-9660-89171b457e2d"
-							name="insert-delivery-order-details" />
-					</when>
-					<otherwise>
-						<logger level="INFO" doc:name="INFO: Logger"
-							doc:id="d83ff175-bc3f-4943-a598-6c72e9592849"
-							message="Grub Hub delivery or Doordash delivery or UberEats delivery or Postmates delivery" />
-					</otherwise>
-				</choice>
+				<flow-ref doc:name="insert-delivery-order-details-failed-order" doc:id="98e610b7-2a35-4c56-b763-edcbd9bcd274" name="insert-delivery-order-details-failed-order"/>
 				<logger level="INFO" doc:name="INFO: Failure" doc:id="290ea036-67ed-41cc-a1d8-846ea0c92635" message="Create Check Flow completed unsuccessfully"/>
 			</otherwise>
 		</choice>

@@ -8,10 +8,10 @@ output application/json
 			message: "Success"
 		},
 		check: {
-			checkSeq: vars.createCheckServiceResponse.response.pGuestCheck.CheckSeq,
+			checkSeq: vars.createCheckServiceResponse.response.pGuestCheck.CheckSeq as Number,
 			checkId: vars.createCheckServiceResponse.response.pGuestCheck.CheckNum as String,
-			tableNumber: vars.createCheckServiceResponse.response.pGuestCheck.CheckTableObjectNum,
-			employeeNumber: vars.createCheckServiceResponse.response.pGuestCheck.CheckEmployeeObjectNum,
+			tableNumber: vars.createCheckServiceResponse.response.pGuestCheck.CheckTableObjectNum as Number,
+			employeeNumber: vars.createCheckServiceResponse.response.pGuestCheck.CheckEmployeeObjectNum as Number,
 			(menuItems: vars.createCheckServiceResponse.response.ppMenuItems.ResPosAPI_MenuItem map ((value , index) -> {
 				miObjectNum: value.MenuItem.MiObjectNum as String,
 				miAltItemId: value.MenuItem.MiObjectNum as String,
@@ -51,20 +51,20 @@ output application/json
 			}) if (vars.createCheckServiceResponse.response.pSubTotalDiscount.DiscObjectNum != 0),
 			payments: {
 				paymentReference: vars.createCheckServiceResponse.response.pTmedDetail.TmedReference,
-				paymentAmount: vars.createCheckServiceResponse.response.pTmedDetail.TmedPartialPayment
+				paymentAmount: vars.createCheckServiceResponse.response.pTmedDetail.TmedPartialPayment as Number
 			},
 			totals: {
-				subTotal: vars.createCheckServiceResponse.response.pTotalsResponse.TotalsSubTotal,
+				subTotal: vars.createCheckServiceResponse.response.pTotalsResponse.TotalsSubTotal as Number,
 				taxTotal: vars.createCheckServiceResponse.response.pTotalsResponse.TotalsTaxTotals as String,
 				tipTotal: vars.createCheckServiceResponse.response.pTotalsResponse.TotalsOtherTotals,
-				amtPaid: vars.createCheckServiceResponse.response.pTmedDetail.TmedPartialPayment,
+				amtPaid: vars.createCheckServiceResponse.response.pTmedDetail.TmedPartialPayment as Number,
 				totalDue: vars.createCheckServiceResponse.response.pTotalsResponse.TotalsTotalDue
 			},
 			checkPrintLines: {
-				printLines: vars.createCheckServiceResponse.response.ppCheckPrintLines.string
-			},
-			dayOfBusiness: vars.dayOfBusiness,
-			stripesCode: vars.stripesCode
-		}
+				printLines: vars.createCheckServiceResponse.response.ppCheckPrintLines.*string map if ( $ == null ) "" else trim($)
+			}
+		},
+		dayOfBusiness: vars.dayOfBusiness as Date,
+		stripesCode: vars.stripesCode
 	}
 }
