@@ -737,7 +737,7 @@ output application/json
 output application/json
 ---
 payload.calculatetotals.authenticationSystem]]></ee:set-variable>
-						<ee:set-variable resource="dwl\calculate-total\tender-id.dwl" variableName="tenderId" />
+						<ee:set-variable resource="dwl\calculate-totals\tender-id.dwl" variableName="tenderId" />
 					</ee:variables>
 				</ee:transform>
 				<set-variable
