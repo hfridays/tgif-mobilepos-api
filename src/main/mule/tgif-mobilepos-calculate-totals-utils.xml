@@ -39,18 +39,7 @@ output application/json
 			</ee:variables>
 		</ee:transform>
 		<set-variable
-			value="#[output application/json
-&#10;---
-&#10;{
-&#10;	methodName: 'CalculateTotals',
-&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
-&#10;	checkNumber: 'Null',
-&#10;	checkSequence: 'Null',
-&#10;	employeeNumber: 'Null',
-&#10;	tableNumber: 'Null',
-&#10;	status: '1',
-&#10;	message: vars.calculateTotalXML
-&#10;}]"
+			value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTotals - POS API Request',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: write(vars.calculateTotalXML, &quot;application/xml&quot;, {writeDeclaration: false})&#10;}]"
 			doc:name="logData" doc:id="54ff07de-456e-47fa-bddb-d42e998969c7"
 			variableName="logData" />
 		<flow-ref doc:name="insert-online-ordering-logs"
@@ -73,9 +62,9 @@ output application/json
 					message="Calculate Total Flow completed successfully" />
 			</when>
 			<otherwise>
-				<logger level="INFO" doc:name="INFO: ResPos API call failed"
+				<logger level="INFO" doc:name="INFO: POS API call failed"
 					doc:id="90b0ade7-ec25-40b1-a9b0-b291961931d1"
-					message="ResPos API call failed, Invalid Menu Items=#[vars.invalidMenuItems]" />
+					message="POS API call failed, Invalid Menu Items=#[vars.invalidMenuItems]" />
 				<flow-ref doc:name="get-error-code-details"
 					doc:id="454fbf8d-5f40-4f13-8f4e-0db6400e6347"
 					name="get-error-code-details" />
@@ -104,13 +93,13 @@ getPayload()]]></ee:set-payload>
 output application/json
 ---
 {
-	methodName: 'CalculateTotals',
+	methodName: 'CalculateTotals - Failure',
 	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
 	checkNumber: 'Null',
 	checkSequence: 'Null',
 	employeeNumber: 'Null',
 	tableNumber: 'Null',
-	status: '1',
+	status: '0',
 	message: "CalculateTotals - Input contains bad menu items"
 }]]></ee:set-variable>
 					</ee:variables>
@@ -152,24 +141,35 @@ ns0#Envelope: {
 ]]></ee:set-variable>
 				</ee:variables>
 			</ee:transform>
-			<logger level="INFO" doc:name="DEBUG: Service Request"
-				doc:id="8511d249-bbcd-48d2-bd40-5e00a328dc34"
-				message="ResPos Api Request for menu item=#[vars.resPosRequest]" />
-	 		<http:request method="POST" doc:name="Request ResPos Api" doc:id="7455a603-cb45-447b-ad5f-edddf6b15860" config-ref="HTTP_Request_configuration" path="/ResPosApiWeb/ResPosApiWeb.asmx" target="calculateTotalServiceResponse" sendCorrelationId="AUTO" responseTimeout="${microsApi.connectionTimeout}">
-				<reconnect frequency="${resposapi.reconnect.frequency}" count="${resposapi.reconnect.count}" />
+			<set-variable
+				value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTotals - POS API Request for each Menu Item',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: write(vars.resPosRequest, &quot;application/xml&quot;, {writeDeclaration: false})&#10;}]"
+				doc:name="logData" doc:id="11486ed5-56bf-40a7-abb1-d8c5b7984b0e"
+				variableName="logData" />
+			<flow-ref doc:name="insert-online-ordering-logs"
+				doc:id="eb25c66f-10df-411f-9ef1-8c16e7ce06d8"
+				name="insert-online-ordering-logs" />
+			<http:request method="POST" doc:name="Request POS Api"
+				doc:id="7455a603-cb45-447b-ad5f-edddf6b15860"
+				config-ref="HTTP_Request_configuration"
+				path="/ResPosApiWeb/ResPosApiWeb.asmx"
+				target="calculateTotalServiceResponse" sendCorrelationId="AUTO"
+				responseTimeout="${microsApi.connectionTimeout}">
+				<reconnect frequency="${resposapi.reconnect.frequency}"
+					count="${resposapi.reconnect.count}" />
 				<http:body><![CDATA[#[%dw 2.0
 output text/xml
 ---
 vars.resPosRequest]]]></http:body>
-				<http:response-validator >
-					<http:success-status-code-validator values="200..599" />
+				<http:response-validator>
+					<http:success-status-code-validator
+						values="200..599" />
 				</http:response-validator>
-			
-</http:request>
-<!-- 			<set-variable value='#["&lt;?xml version=\"1.0\" encoding=\"UTF-8\"?&gt;&lt;soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"&gt;&lt;soap:Body&gt;&lt;soap:Fault&gt;&lt;soap:Code&gt;&lt;soap:Value&gt;soap:Receiver&lt;/soap:Value&gt;&lt;/soap:Code&gt;&lt;soap:Reason&gt;&lt;soap:Text xml:lang=\"en\"&gt;[-956234774] Invalid database object detected.&lt;/soap:Text&gt;&lt;/soap:Reason&gt;&lt;detail&gt;&lt;hresult&gt;-956234774&lt;/hresult&gt;&lt;/detail&gt;&lt;/soap:Fault&gt;&lt;/soap:Body&gt;&lt;/soap:Envelope&gt;"]' doc:name="Set Variable" doc:id="97785ad2-47db-4de0-bb9d-22738004f48f" variableName="calculateTotalServiceResponse" mimeType="application/xml"/> -->
-			<logger level="INFO" doc:name="DEBUG: Service Response"
-				doc:id="fed4eb62-e80f-45af-aa68-eb8e50008b27"
-				message="ResPos Api Response for menu item=#[vars.calculateTotalServiceResponse]" />
+			</http:request>
+			<set-variable
+				value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTotals - POS API Response for each Menu Item',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: write(vars.calculateTotalServiceResponse, &quot;application/xml&quot;, {writeDeclaration: false})&#10;}]"
+				doc:name="logData" doc:id="2f0c73a2-62fa-48ff-999b-f2bc492cbe09"
+				variableName="logData" />
+			<flow-ref doc:name="insert-online-ordering-logs" doc:id="363da939-b04c-4a96-bcf7-129c5390b94e" name="insert-online-ordering-logs" />
 			<ee:transform doc:name="Create ResPos Response"
 				doc:id="5aa04e7b-5199-4227-a48f-57fc986aed3d">
 				<ee:message>
@@ -196,19 +196,18 @@ if ( vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.CalculateT
 				else getReason()
 }
 ]]></ee:set-variable>
-					<ee:set-variable variableName="invalidMenuItems" ><![CDATA[%dw 2.0
+					<ee:set-variable variableName="invalidMenuItems"><![CDATA[%dw 2.0
 output application/java
 ---
 []]]></ee:set-variable>
-				
-</ee:variables>
+				</ee:variables>
 			</ee:transform>
 			<ee:transform doc:name="Invalid Menu Items"
 				doc:id="86cbac72-ae6c-4f86-b1f9-3beaf9bf53d4">
 				<ee:message>
 				</ee:message>
 				<ee:variables>
-					<ee:set-variable variableName="invalidMenuItems" ><![CDATA[%dw 2.0
+					<ee:set-variable variableName="invalidMenuItems"><![CDATA[%dw 2.0
 output application/json
 fun addErrMsg() =  {
 	"MiObjectNum": payload.ResPosAPI_MenuItem.MenuItem.MiObjectNum,
@@ -222,17 +221,12 @@ fun addErrMsg() =  {
 if ( vars.calculateTotalServiceResponse.status == "Failed" ) vars.invalidMenuItems << (ResPosAPI_MenuItem: MenuItem: addErrMsg())
 else vars.invalidMenuItems
 ]]></ee:set-variable>
-				
-</ee:variables>
+				</ee:variables>
 			</ee:transform>
 		</foreach>
-		<logger level="INFO" doc:name="INFO: Invalid Menu Items" doc:id="c109390a-fc3c-486a-a717-e62aa2f577d4" message='#[vars.invalidMenuItems]'/>
 		<choice doc:name="Any Invalid Menu Item?"
 			doc:id="0a0e239a-f86a-49f8-b4ee-6e660a92e5b8">
 			<when expression="#[sizeOf(vars.invalidMenuItems) == 0]">
-				<logger level="INFO" doc:name="DEBUG: Service Request"
-					doc:id="cb6a1a7e-12b8-4b3b-b24d-55a05467aef5"
-					message="ResPosAPI Request=#[vars.calculateTotalXML]" />
 				<http:request method="POST"
 					doc:name="Request ResPos Api"
 					doc:id="7fcc1feb-44db-4899-ae6e-a12910df9a87"
@@ -245,14 +239,13 @@ else vars.invalidMenuItems
 output text/xml
 ---
 vars.calculateTotalXML]]]></http:body>
-					<http:response-validator >
-						<http:success-status-code-validator values="200..599" />
+					<http:response-validator>
+						<http:success-status-code-validator
+							values="200..599" />
 					</http:response-validator>
-				
-</http:request>
-				<logger level="INFO" doc:name="DEBUG: Service Response"
-					doc:id="c83cda3c-3fe7-4467-b499-fc1df859130e"
-					message="ResPosAPI Response=#[payload]" />
+				</http:request>
+				<set-variable value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTotals - POS API Response',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: write(vars.payload, &quot;application/xml&quot;, {writeDeclaration: false})&#10;}]" doc:name="logData" doc:id="41a76f8d-9bd9-4433-8fec-0c4278cdd97b" variableName="logData" />
+			<flow-ref doc:name="insert-online-ordering-logs" doc:id="ee9cd253-9236-4354-b2d9-bfc7f676a948" name="insert-online-ordering-logs" />
 				<ee:transform doc:name="Transform Message"
 					doc:id="c1c2e71d-7b37-452f-9390-b66c6ee7870e">
 					<ee:message>

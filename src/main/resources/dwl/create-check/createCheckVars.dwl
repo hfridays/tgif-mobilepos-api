@@ -10,7 +10,7 @@ output application/json
 	paymentCardNum: payload.createcheck.payment.paymentCardNum,
 	authCode: payload.createcheck.payment.authorizationCode,
 	orderId: payload.createcheck.payment.referenceNumber,
-	cartId: payload.createcheck.cartId,
+	cartId: payload.createcheck.payment.referenceNumber,
 	fullfillmentType: payload.createcheck.fulfillmentType,
 	posFlag: "Micros"
 }

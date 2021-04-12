@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+<mule
+	xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
 	xmlns:java="http://www.mulesoft.org/schema/mule/java"
 	xmlns:http="http://www.mulesoft.org/schema/mule/http"
 	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
@@ -9,7 +10,8 @@
 	xmlns:db="http://www.mulesoft.org/schema/mule/db"
 	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
@@ -30,16 +32,13 @@ http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mul
 			</ee:variables>
 		</ee:transform>
 		<set-variable
-			value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.taxAndTotalXml&#10;}]"
+			value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal  - POS API Request',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: write(vars.taxAndTotalXml, &quot;application/xml&quot;, {writeDeclaration: false})&#10;}]"
 			doc:name="logData" doc:id="955487dd-dc6b-4032-9e20-9b107a90975d"
 			variableName="logData" />
 		<flow-ref doc:name="insert-online-ordering-logs"
 			doc:id="6f7f9c87-fc62-428d-8594-51bd4f35cbc1"
 			name="insert-online-ordering-logs" />
-		<logger level="DEBUG" doc:name="DEBUG: Service Request"
-			doc:id="55fc6d0d-14b8-4326-a9bd-298efc51fa0e"
-			message="ResPosAPI Request=#[vars.taxAndTotalXml]" />
-		<http:request method="POST" doc:name="Request ResPos Api"
+		<http:request method="POST" doc:name="Request POS Api"
 			doc:id="29d455c3-28cb-4859-8104-7046e281c76f"
 			config-ref="HTTP_Request_configuration"
 			path="/ResPosApiWeb/ResPosApiWeb.asmx"
@@ -51,14 +50,18 @@ http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mul
 output text/xml
 ---
 vars.taxAndTotalXml]]]></http:body>
-			<http:response-validator >
-				<http:success-status-code-validator values="200..599"/>
+			<http:response-validator>
+				<http:success-status-code-validator
+					values="200..599" />
 			</http:response-validator>
-		
-</http:request>
-		<logger level="DEBUG" doc:name="DEBUG: Service Response"
-			doc:id="2a5e8015-6c1d-4493-9fc9-bd2731177ac4"
-			message="ResPosAPI Response=#[vars.calculateTotalServiceResponse]" />
+		</http:request>
+		<set-variable
+			value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal  - POS API Response',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: write(vars.calculateTotalServiceResponse, &quot;application/xml&quot;, {&#10;		writeDeclaration: false&#10;	})&#10;}]"
+			doc:name="logData" doc:id="a3c0c6c5-9d51-45a3-8fb2-4279c8d69d85"
+			variableName="logData" />
+		<flow-ref doc:name="insert-online-ordering-logs"
+			doc:id="e447f9b2-2511-4e85-894b-f16b39c8a9b2"
+			name="insert-online-ordering-logs" />
 		<ee:transform doc:name="Calculate Total Service Response"
 			doc:id="4060ed51-709a-42ed-b814-93361717cab0">
 			<ee:message>
@@ -91,7 +94,7 @@ if ( vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.CalculateT
 					</ee:message>
 				</ee:transform>
 				<set-variable
-					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: 'CalculateTotals completed with Serialized Coupons applied'&#10;}]"
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal - Success',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: 'CalculateTotals completed with Serialized Coupons applied'&#10;}]"
 					doc:name="logData" doc:id="b3cb8864-2e14-4165-abaa-e40b32c23fac"
 					variableName="logData" />
 				<flow-ref doc:name="insert-online-ordering-logs"
@@ -120,7 +123,7 @@ output application/json
 					</ee:message>
 				</ee:transform>
 				<set-variable
-					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: payload&#10;}]"
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal - Failure',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: payload&#10;}]"
 					doc:name="logData" doc:id="f07f9093-c721-4bc7-a280-a42e838d3862"
 					variableName="logData" />
 				<flow-ref doc:name="insert-online-ordering-logs"

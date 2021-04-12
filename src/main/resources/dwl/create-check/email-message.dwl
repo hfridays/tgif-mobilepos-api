@@ -17,8 +17,8 @@ else if ( cardType == "DD" ) "Door Dash"
 else if ( cardType == "GH" ) "GrubHub"
 else if ( cardType == "PayInStore" ) "PayInStore"
 else ""
-fun getLastFourDigits() = using ( cardNum = vars.createCheckVars.paymentCardNum) if(cardNum != null and !(isEmpty(cardNum))) java!com::api::tgif::mobilepos::util::CommonUtil::getPaymentCard(p("key"),cardNum) else ""
-fun getAuthCode() = using ( authCode = vars.createCheckVars.authCode ) if (authCode != null and !(isEmpty(authCode)) and getPaymentCardTypeName() == "AmazonPay") trim(authCode splitBy("-")[3]) else if ( getPaymentCardTypeName == "AmazonPay" ) "" else authCode
+fun getLastFourDigits() = using ( cardNum = vars.createCheckVars.paymentCardNum ) if ( cardNum != null and !(isEmpty(cardNum)) ) java!com::api::tgif::mobilepos::util::CommonUtil::getPaymentCard(p("key"),cardNum) else ""
+fun getAuthCode() = using ( authCode = vars.createCheckVars.authCode ) if ( authCode != null and !(isEmpty(authCode)) and getPaymentCardTypeName() == "AmazonPay" ) trim(authCode splitBy("-")[3]) else if ( getPaymentCardTypeName == "AmazonPay" ) "" else authCode
 fun getOnlineOrderStore() = using ( cardTypeName = getPaymentCardTypeName() ) if ( cardTypeName == "Uber Eats" ) "--UBER EATS--"
 else if ( ["GrubHub", "Door Dash", "Amazon Restaurants", "Grab","Postmates", "Pay In Store"] contains cardTypeName ) "--" ++ cardTypeName ++ "--"
 else if ( cardTypeName == "PayInStore" ) "--Pay In Store--"
@@ -46,19 +46,29 @@ fun getChkIndex() = ((ppCheckPrintLines map(item, index) -> if ( item contains "
 fun getTimestampIndex() = getChkIndex() + 1
 fun getTime() = (((trim(ppCheckPrintLines[getTimestampIndex()]) splitBy " ")[1]) splitBy /[A,P,M]/)[0]
 fun getTimezone() = (((trim(ppCheckPrintLines[getTimestampIndex()]) splitBy " ")[1]) splitBy /[\d]/)[4]
-var seconds = using (sec = now().seconds as String) if(sizeOf(sec) == 1) (0 ++ sec) else sec 
-fun getCheckCreatedTime() = getTime() ++ ":" ++ seconds ++ " " ++ getTimezone()
-fun getPickupTime() = ((getCheckCreatedTime() as LocalTime {
+fun getHour() = (getTime() splitBy ":")[0]
+var seconds = using ( sec = now().seconds as String ) if ( sizeOf(sec) == 1 ) (0 ++ sec) else sec
+fun getConvertedTime(hour, timezone) = (if ( (["01","02","03","04","05","06","07","08","09","10","11"] contains hour) and (timezone == "PM") ) ((((hour as Number + 12) ++ ":" ++ (getTime() splitBy ":")[1] ++ ":" ++ seconds ++ " " ++ getTimezone()) as LocalTime {
 	format: "HH:mm:ss a"
-}) + |PT20M|) as LocalTime {
+} + |PT20M|) as LocalTime {
+	format: "HH:mm:ss a"
+}) else (((getTime() ++ ":" ++ seconds ++ " " ++ getTimezone()) as LocalTime {
+	format: "HH:mm:ss a"
+} + |PT20M|) as LocalTime {
+	format: "HH:mm:ss a"
+}))
+fun getCheckCreatedTime() = getTime() ++ ":" ++ seconds ++ " " ++ getTimezone()
+fun getTimeString() = getConvertedTime(getHour(), getTimezone()) as String {
 	format: "HH:mm:ss a"
 }
+fun getPickupTime() = using ( tArr = (getTimeString() splitBy (":")) ) (if ( ["13", "14","15", "16", "17", "18", "19", "20", "21"] contains tArr[0] ) "0" ++ tArr[0] - 12 
+else tArr[0]) ++ ":$(tArr[1]):$(tArr[2]) "
 fun mailHeaderFooter() = if ( getPaymentCardTypeName() == "PayInStore" ) "################\n################\n!! NOT PAID !!\n################\n################\n" 
 else ""
 fun getStripeCode() = vars.stripesCode
 ---
-if ( ppCheckPrintLines != null ) mailHeaderFooter() ++ "****************\n" ++ getOnlineOrderStore() ++ "\n" ++ getCheckCreatedTime() ++ "\n\n" ++ vars.fullfillmentOrder ++ "\n****************\n" ++ 
-getPickupTime() ++ "\n****************" ++ ((ppCheckPrintLines map if ( $$ == getChkIndex() ) getCheckDetails().checkNumberWithTimestamp else if ( $$ == getTimestampIndex() ) getAmtPaidDetails() else if($ == null) "" else $) joinBy "\n") ++ 
+if ( ppCheckPrintLines != null ) mailHeaderFooter() ++ "****************\n" ++ getOnlineOrderStore() ++ "\n" ++ getCheckCreatedTime() ++ "\n\n" ++ vars.fullfillmentOrder ++ "\n****************\nReady for Pickup: " ++ 
+getPickupTime() ++ "\n****************" ++ ((ppCheckPrintLines map if ( $$ == getChkIndex() ) getCheckDetails().checkNumberWithTimestamp else if ( $$ == getTimestampIndex() ) getAmtPaidDetails() else if ( $ == null ) "" else $) joinBy "\n") ++ 
 "\nCard Type: " ++  getPaymentCardTypeName() ++ "\nCard # " ++ getLastFourDigits() ++ "\nAuthorization Code: " ++ getAuthCode() ++ "\nTransaction Type: Purchase\n" ++ 
 "Cardmember acknowledges receipt of goods\nand/or services in the amount of the total\nshown hereon and agrees to perform the\n" ++
 "obligations set forth by cardmembers\nagreement with issuer\nX------------------------------------\n" ++ getPayStatus() ++ "\n" ++ vars.createCheckVars.customerName ++

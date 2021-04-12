@@ -18,6 +18,14 @@ import org.apache.commons.lang3.StringUtils;
 
 public class CommonUtil {
 
+	
+	/**
+	 * Pings store server
+	 * @param ipAddress
+	 * @param port
+	 * @return
+	 * @throws Exception
+	 */
 	public static String pingServer(String ipAddress, String port) throws Exception {
 		String jsonstg = "";
 
@@ -65,6 +73,11 @@ public class CommonUtil {
 		return jsonstg;
 	}
 
+	/**
+	 * Pings store gateway
+	 * @param ipAddress
+	 * @return
+	 */
 	public static boolean pingGatewayServer(String ipAddress) {
 		InetAddress inetfirewall;
 		try {
@@ -79,6 +92,13 @@ public class CommonUtil {
 		}
 	}
 
+	/**
+	 * Decrypts payment card value from request
+	 * @param value
+	 * @param paymentCard
+	 * @return
+	 * @throws GeneralSecurityException
+	 */
 	public static String getPaymentCard(String value, String paymentCard) throws GeneralSecurityException {
 		
 		  byte[] key = value.getBytes();
@@ -100,6 +120,15 @@ public class CommonUtil {
 		return new String(original, Charset.forName("UTF-8"));
 	}
 
+	/**
+	 * Generates stripes code by converting passes args to Base 36
+	 * @param storeNumber
+	 * @param subTotal
+	 * @param month
+	 * @param day
+	 * @param checkNumber
+	 * @return
+	 */
 	public static String StripesCode(Integer storeNumber, Integer subTotal, Integer month, Integer day,
 			Integer checkNumber) {
 		String monthBase36Encoded = Integer.toString(month, 36).toUpperCase();

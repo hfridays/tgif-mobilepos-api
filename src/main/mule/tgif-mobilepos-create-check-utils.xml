@@ -30,7 +30,18 @@ http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/jav
 			</ee:variables>
 		</ee:transform>
 		<set-variable
-			value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CreateCheck',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.postTransactionXML&#10;}]"
+			value="#[output application/json
+&#10;---
+&#10;{
+&#10;	methodName: 'CreateCheck - POS API Request',
+&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
+&#10;	checkNumber: 'Null',
+&#10;	checkSequence: 'Null',
+&#10;	employeeNumber: 'Null',
+&#10;	tableNumber: 'Null',
+&#10;	status: '1',
+&#10;	message: write(vars.postTransactionXML, &quot;applcation/xml&quot;, {writeDeclaration: false})
+&#10;}]"
 			doc:name="logData" doc:id="9f8e1fa9-a382-41d5-b644-40be1d39fedb"
 			variableName="logData" />
 		<flow-ref doc:name="insert-online-ordering-logs"
@@ -45,7 +56,7 @@ http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/jav
 				<flow-ref doc:name="call-respos-api-create-check"
 					doc:id="b0f44bc1-ad05-4617-8e93-889e23622ba1"
 					name="call-respos-api-create-check" />
-				
+
 			</when>
 			<otherwise>
 				<set-variable
@@ -57,7 +68,18 @@ http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/jav
 					doc:id="48b28b59-9bb8-4809-b029-878bf3ef4108"
 					name="send-email-notification" />
 				<set-variable
-					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CreateCheck',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: &quot;Store server not reachable, able to reach Firewall&quot;&#10;}]"
+					value="#[output application/json
+&#10;---
+&#10;{
+&#10;	methodName: 'CreateCheck - IP Addres is null',
+&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
+&#10;	checkNumber: 'Null',
+&#10;	checkSequence: 'Null',
+&#10;	employeeNumber: 'Null',
+&#10;	tableNumber: 'Null',
+&#10;	status: '0',
+&#10;	message: &quot;Store server not reachable, able to reach Firewall&quot;
+&#10;}]"
 					doc:name="logData" doc:id="4046e051-c0d9-401e-832d-367a2ab6264b"
 					variableName="logData" />
 				<flow-ref doc:name="insert-online-ordering-logs"
@@ -100,26 +122,50 @@ output application/json
 }]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
-				<flow-ref doc:name="insert-delivery-order-details-failed-order" doc:id="98e610b7-2a35-4c56-b763-edcbd9bcd274" name="insert-delivery-order-details-failed-order"/>
-				<logger level="INFO" doc:name="INFO: Failure" doc:id="290ea036-67ed-41cc-a1d8-846ea0c92635" message="Create Check Flow completed unsuccessfully"/>
+				<flow-ref
+					doc:name="insert-delivery-order-details-failed-order"
+					doc:id="98e610b7-2a35-4c56-b763-edcbd9bcd274"
+					name="insert-delivery-order-details-failed-order" />
+				<logger level="INFO" doc:name="INFO: Failure"
+					doc:id="290ea036-67ed-41cc-a1d8-846ea0c92635"
+					message="Create Check Flow completed unsuccessfully" />
 			</otherwise>
 		</choice>
 	</sub-flow>
 	<sub-flow name="call-respos-api-create-check"
 		doc:id="35273ee0-bf9f-4cc6-8db6-8ec4ef20b8c3">
-		<logger level="INFO" doc:name="DEBUG: Service Request"
-			doc:id="eb404802-8e0c-4d23-9486-0646951bd45f"
-			message="ResposAPI Request=#[vars.postTransactionXML]" />
-		 <http:request method="POST" doc:name="Request ResPosApi" doc:id="9fa4edef-5fb2-4177-9679-76587c8c8d44" 
-			target="createCheckServiceResponse" config-ref="HTTP_Request_configuration" 
-			path="/ResPosApiWeb/ResPosApiWeb.asmx"> <reconnect frequency="${resposapi.reconnect.frequency}" 
-			count="${resposapi.reconnect.count}" /> <http:body><![CDATA[#[%dw 2.0 output 
-			text/xml --- vars.postTransactionXML]]]></http:body> <http:response-validator> 
-			<http:success-status-code-validator values="200..599" /> </http:response-validator> 
-			</http:request> 
-		<logger level="INFO" doc:name="DEBUG: Service Response"
-			doc:id="96459f08-2925-4281-933f-1c2178a00978"
-			message="ResposAPI Response=#[vars.createCheckServiceResponse]" />
+		<http:request method="POST" doc:name="Request POS Api"
+			doc:id="9fa4edef-5fb2-4177-9679-76587c8c8d44"
+			target="createCheckServiceResponse"
+			config-ref="HTTP_Request_configuration"
+			path="/ResPosApiWeb/ResPosApiWeb.asmx">
+			<reconnect frequency="${resposapi.reconnect.frequency}"
+				count="${resposapi.reconnect.count}" />
+			<http:body><![CDATA[#[%dw 2.0 output 
+			text/xml --- vars.postTransactionXML]]]></http:body>
+			<http:response-validator>
+				<http:success-status-code-validator
+					values="200..599" />
+			</http:response-validator>
+		</http:request>
+		<set-variable
+			value="#[output application/json
+&#10;---
+&#10;{
+&#10;	methodName: 'CreateCheck - POS API Response',
+&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
+&#10;	checkNumber: 'Null',
+&#10;	checkSequence: 'Null',
+&#10;	employeeNumber: 'Null',
+&#10;	tableNumber: 'Null',
+&#10;	status: '1',
+&#10;	message: write(vars.createCheckServiceResponse, &quot;application/xml&quot;, {writeDeclaration: false})
+&#10;}]"
+			doc:name="logData" doc:id="5ea4e457-3a29-4e3c-afa1-d71e5be6797c"
+			variableName="logData" />
+		<flow-ref doc:name="insert-online-ordering-logs"
+			doc:id="e37a3a99-9be2-4da7-94b5-c8b019f8581f"
+			name="insert-online-ordering-logs" />
 		<ee:transform doc:name="Create Check Service Response"
 			doc:id="8c2b1e09-2dd5-4384-b90c-1e8da97eb771">
 			<ee:message>
@@ -146,7 +192,7 @@ if ( vars.createCheckServiceResponse.soapenv#Envelope.soapenv#Body.PostTransacti
 				expression="#[vars.createCheckServiceResponse.status == 'Success']">
 				<logger level="INFO" doc:name="INFO: Success"
 					doc:id="2b8e5f18-b474-40e1-8f3b-cdcff41af5df"
-					message="ResPos API call was successfull" />
+					message="POS API call was successfull" />
 				<flow-ref doc:name="send-order-to-mail"
 					doc:id="e8492c03-e28e-4955-91e4-ce1ba4689c53"
 					name="send-order-to-mail" />
@@ -165,9 +211,16 @@ ns tem http://tempuri.org/
 }]]]></wsc:body>
 					</wsc:message>
 				</wsc:consume>
-				<set-variable value="#[output application/json --- vars.tgifServiceResponse]" doc:name="tgifServiceResponse" doc:id="377fff35-3e13-4eeb-997b-06a08455f4a6" variableName="tgifServiceResponse"/>
 				<set-variable
-					value="#[%dw 2.0&#10;output application/json&#10;---&#10;vars.tgifServiceResponse.body.GetMicrosDOBResponse.GetMicrosDOBResult]"
+					value="#[output application/json --- vars.tgifServiceResponse]"
+					doc:name="tgifServiceResponse"
+					doc:id="377fff35-3e13-4eeb-997b-06a08455f4a6"
+					variableName="tgifServiceResponse" />
+				<set-variable
+					value="#[%dw 2.0
+&#10;output application/json
+&#10;---
+&#10;vars.tgifServiceResponse.body.GetMicrosDOBResponse.GetMicrosDOBResult]"
 					doc:name="dayOfBusiness"
 					doc:id="da06fa6e-77cf-4f45-a8f2-d124d1d95952"
 					variableName="dayOfBusiness" />
@@ -181,18 +234,7 @@ ns tem http://tempuri.org/
 					</ee:variables>
 				</ee:transform>
 				<set-variable
-					value="#[output application/json
-&#10;---
-&#10;{
-&#10;	methodName: 'CreateCheck',
-&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
-&#10;	checkNumber: vars.createCheck.createcheck.check.checkId,
-&#10;	checkSequence: vars.createCheck.createcheck.check.checkSeq,
-&#10;	employeeNumber: vars.createCheck.createcheck.check.employeeNumber,
-&#10;	tableNumber: vars.createCheck.createcheck.check.tableNumber,
-&#10;	status: '1',
-&#10;	message: vars.createCheck
-&#10;}]"
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CreateCheck - Response',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: payload.createcheck.check.checkId,&#10;	checkSequence: payload.createcheck.check.checkSeq,&#10;	employeeNumber: payload.createcheck.check.employeeNumber,&#10;	tableNumber: payload.createcheck.check.tableNumber,&#10;	status: '1',&#10;	message: payload&#10;}]"
 					doc:name="logData" doc:id="501687fc-4c6d-4bff-8caf-236325c19453"
 					variableName="logData" />
 				<flow-ref doc:name="insert-online-ordering-logs"
@@ -207,7 +249,7 @@ ns tem http://tempuri.org/
 &#10;	storeId: vars.storeId,
 &#10;	cartId: vars.createCheckVars.cartId,
 &#10;	payload: vars.createCheck,
-&#10;	dayofBusiness: vars.createCheck.dayOfBusiness
+&#10;	dayofBusiness: payload.dayOfBusiness
 &#10;}]"
 							doc:name="Cart Log Data"
 							doc:id="ed51ac30-1a59-4f9b-b5b2-2ea898ce2922"
@@ -223,12 +265,11 @@ ns tem http://tempuri.org/
 &#10;	deliveryPartnerName: vars.tenderId.messageSubject,
 &#10;	storeId: vars.storeId,
 &#10;	orderId: vars.createCheckVars.cartId,
-&#10;	checkNumber: vars.createCheck.createcheck.check.checkId,
-&#10;	dayofBusiness:vars.createCheck.createcheck.dayOfBusiness,
+&#10;	checkNumber: payload.createcheck.check.checkId,
+&#10;	dayofBusiness: payload.createcheck.dayOfBusiness,
 &#10;	deliveryMethod: ' Pickup',
 &#10;	status: 'success',
-&#10;	subTotal: if ( vars.initialPayload.createcheck.payment.subtotalNoDiscountsPlusTaxes == null or vars.initialPayload.createcheck.payment.taxTotal ==  null ) 'NULL'
-&#10;	else (((vars.initialPayload.createcheck.payment.subtotalNoDiscountsPlusTaxes as Number) - (vars.initialPayload.createcheck.payment.taxTotal as Number)) as String),
+&#10;	subTotal: if ( vars.initialPayload.createcheck.payment.subtotalNoDiscountsPlusTaxes == null or vars.initialPayload.createcheck.payment.taxTotal ==  null ) 'NULL'&#10;&#10;	else (((vars.initialPayload.createcheck.payment.subtotalNoDiscountsPlusTaxes as Number) - (vars.initialPayload.createcheck.payment.taxTotal as Number)) as String),
 &#10;	taxTotal: vars.initialPayload.createcheck.payment.taxTotal,
 &#10;	agentId: vars.initialPayload.createcheck.agentId default &quot;&quot;
 &#10;}]"
@@ -245,7 +286,9 @@ ns tem http://tempuri.org/
 							message="Grub Hub delivery or Doordash delivery or UberEats delivery or Postmates delivery" />
 					</otherwise>
 				</choice>
-				<logger level="INFO" doc:name="INFO: Success" doc:id="a8b80766-3bd8-4641-bcf8-a1cd1449257c" message="Create Check Flow completed successfully"/>
+				<logger level="INFO" doc:name="INFO: Success"
+					doc:id="a8b80766-3bd8-4641-bcf8-a1cd1449257c"
+					message="Create Check Flow completed successfully" />
 			</when>
 			<otherwise>
 				<logger level="INFO" doc:name="INFO: Web Service call failed"
@@ -269,7 +312,7 @@ ns tem http://tempuri.org/
 output application/json
 ---
 {
-	methodName: 'CreateCheck',
+	methodName: 'CreateCheck - POS API Call failed',
 	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
 	checkNumber: 'Null',
 	checkSequence: 'Null',
@@ -287,7 +330,9 @@ output application/json
 					doc:name="insert-delivery-order-details-failed-order"
 					doc:id="924a8993-0874-4054-a690-864ae9b6736c"
 					name="insert-delivery-order-details-failed-order" />
-				<logger level="INFO" doc:name="INFO: Failure" doc:id="7a7ea360-1ec3-40cf-9a4d-2808b718ca6a" message="Create Check Flow completed unsuccessfully"/>
+				<logger level="INFO" doc:name="INFO: Failure"
+					doc:id="7a7ea360-1ec3-40cf-9a4d-2808b718ca6a"
+					message="Create Check Flow completed unsuccessfully" />
 			</otherwise>
 		</choice>
 	</sub-flow>
@@ -334,9 +379,6 @@ CommonUtil::StripesCode(vars.storeId as Number, vars.createCheckServiceResponse.
 								variableName="emailMessage" />
 						</ee:variables>
 					</ee:transform>
-					<logger level="INFO" doc:name="DEBUG: Email Message"
-						doc:id="0603ea89-43c3-486a-925d-d56c59e2758b"
-						message="Email Message=#[vars.emailMessage]" />
 					<flow-ref doc:name="send-create-email-notification"
 						doc:id="69cdc0c1-6b90-4042-a983-97f5e879becb"
 						name="send-create-email-notification" />
@@ -344,7 +386,7 @@ CommonUtil::StripesCode(vars.storeId as Number, vars.createCheckServiceResponse.
 						doc:id="115eb29a-50e2-4584-91b9-18d761393e42"
 						message="Email Online Order Check Lines to store Method Completed" />
 					<set-variable
-						value="#[output application/json&#10;---&#10;{&#10;	methodName: 'SendOrdertoEmail',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.emailMessage&#10;}]"
+						value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CreateCheck - SendOrdertoEmail',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.emailMessage&#10;}]"
 						doc:name="logData" doc:id="d8b12544-fd38-461a-a21a-a3982dd8d164"
 						variableName="logData" />
 					<flow-ref doc:name="insert-online-ordering-logs"
@@ -353,7 +395,8 @@ CommonUtil::StripesCode(vars.storeId as Number, vars.createCheckServiceResponse.
 				</when>
 				<otherwise>
 					<set-variable
-						value="#[if(vars.emailMessage == &quot;Print Check Lines not found&quot;) &quot;No print check lines received from micros for store &quot; ++ vars.storeId ++ &quot; in CreateCheck method&quot;&#10;else 'Error occurred while reading Print Check Lines for store ' + vars.storeId ++ &quot; in CreateCheck method. Error message : Exception in Print Check Lines&quot;]"
+						value="#[if(vars.emailMessage == &quot;Print Check Lines not found&quot;) &quot;No print check lines received from micros for store &quot; ++ vars.storeId ++ &quot; in CreateCheck method&quot;
+&#10;else 'Error occurred while reading Print Check Lines for store ' + vars.storeId ++ &quot; in CreateCheck method. Error message : Exception in Print Check Lines&quot;]"
 						doc:name="emailMessage"
 						doc:id="026a1fbc-73a0-4962-8a4e-0044dad162be"
 						variableName="emailMessage" />
@@ -364,7 +407,18 @@ CommonUtil::StripesCode(vars.storeId as Number, vars.createCheckServiceResponse.
 						doc:id="5c5d5a2a-cdd6-45a3-bdc8-4957f6838b56"
 						message="Read Print Check Lines Method Completed with Errors" />
 					<set-variable
-						value="#[output application/json&#10;---&#10;{&#10;	methodName: 'SendOrdertoEmail',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: vars.emailMessage&#10;}]"
+						value="#[output application/json
+&#10;---
+&#10;{
+&#10;	methodName: 'CreateCheck - SendOrdertoEmail',
+&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
+&#10;	checkNumber: 'Null',
+&#10;	checkSequence: 'Null',
+&#10;	employeeNumber: 'Null',
+&#10;	tableNumber: 'Null',
+&#10;	status: '0',
+&#10;	message: vars.emailMessage
+&#10;}]"
 						doc:name="logData" doc:id="67298980-ed1d-4cc3-842c-9970212fb860"
 						variableName="logData" />
 					<flow-ref doc:name="insert-online-ordering-logs"

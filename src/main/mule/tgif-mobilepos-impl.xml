@@ -17,7 +17,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd
 http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd">
-		<flow name="ms-heartbeat-flow"
+	<flow name="ms-heartbeat-flow"
 		doc:id="075f2d62-90a3-4246-80e6-519f938ff54c">
 		<logger level="INFO" doc:name="INFO: Start"
 			doc:id="d006150b-3d3e-4c70-99d1-710e5840dfec"
@@ -95,7 +95,7 @@ output application/json
 				<logger level="INFO" doc:name="INFO: Request Details"
 					doc:id="a27b7755-33cc-406a-9024-846afa5adfe4"
 					message="Request Details #[vars.reqDetails]" />
-				<java:invoke-static doc:name="Ping IP Address"
+				<java:invoke-static doc:name="Ping Server"
 					doc:id="f69dc9aa-5316-49be-bae2-739cd28cbb5d"
 					class="com.api.tgif.mobilepos.util.CommonUtil"
 					method="pingServer(java.lang.String, java.lang.String)">
@@ -186,7 +186,7 @@ output application/json
 					doc:name="storeId" doc:id="c640bf56-2c67-488d-918a-d498216055db"
 					variableName="storeId" />
 				<set-variable
-					value="#[output application/json ---&#10;{&#10;	methodName: 'CreateCheck',&#10;	storeId: if(vars.storeId != null) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.initialPayload&#10;}]"
+					value="#[output application/json ---&#10;{&#10;	methodName: 'CreateCheck - Initial Payload',&#10;	storeId: if(vars.storeId != null) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.initialPayload&#10;}]"
 					doc:name="logData" doc:id="212719cb-9a90-4da6-8dfa-609ccf0cbfc4"
 					variableName="logData" />
 				<flow-ref doc:name="insert-online-ordering-logs"
@@ -210,11 +210,12 @@ output application/json
 vars.initialPayload.createcheck.brandId default "NULL"]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
-				<ee:transform doc:name="Get Payment Card" doc:id="1636b720-9ec3-4e6d-a23c-1810eb463f4e">
+				<ee:transform doc:name="Get Payment Card"
+					doc:id="1636b720-9ec3-4e6d-a23c-1810eb463f4e">
 					<ee:message>
 					</ee:message>
-					<ee:variables >
-						<ee:set-variable variableName="paymentCardType" ><![CDATA[%dw 2.0
+					<ee:variables>
+						<ee:set-variable variableName="paymentCardType"><![CDATA[%dw 2.0
 output application/json
 import java!com::api::tgif::mobilepos::util::CommonUtil
 ---
@@ -275,6 +276,13 @@ output application/json
 					</ee:variables>
 				</ee:transform>
 				<set-variable
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CreateCheck - Tender ID',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.tenderId&#10;}]"
+					doc:name="logData" doc:id="ce7784db-61fc-46eb-8a5c-dab0dcda2d4b"
+					variableName="logData" />
+				<flow-ref doc:name="insert-online-ordering-logs"
+					doc:id="ff3d6fa2-212a-483a-91b9-bdb889f72294"
+					name="insert-online-ordering-logs" />
+				<set-variable
 					value='#[using(empObjNum = vars.tenderId.employeeObjectNum) if( empObjNum== "98008" and empObjNum == "96010" and empObjNum == "96011" and empObjNum == "96012") "Pickup" else "Delivery"]'
 					doc:name="fullfillmentOrder"
 					doc:id="d58c5b1a-f071-43cd-a4a1-c271c305cb31"
@@ -321,6 +329,7 @@ AND day_of_business = :currentDate AND delivery_partner_name in ('OLO', 'PayInSt
 											message="#[vars.storeId]  - get duplicate olo payload from db Completed" />
 									</when>
 									<otherwise>
+										<logger level="INFO" doc:name="Logger" doc:id="adfcce53-a284-4db5-97d7-fd07b01a4625" />
 										<flow-ref doc:name="create-process-sub-flow"
 											doc:id="27683f87-ea3a-467c-bad7-7d6ed034f29f"
 											name="create-process-sub-flow" />
@@ -380,16 +389,21 @@ output application/json
 				<logger level="INFO" doc:name="Logger"
 					doc:id="4b1f9bd5-325e-4aa2-9ce6-99e86fcd1caa"
 					message="Connectivity Error" />
-				<java:invoke-static doc:name="Ping Gateway" doc:id="f7ffe13d-a56f-42ed-b291-4767d5c1c87d" class="com.api.tgif.mobilepos.util.CommonUtil" method="pingGatewayServer(java.lang.String)">
-					<java:args ><![CDATA[#[{
+				<java:invoke-static doc:name="Ping Gateway"
+					doc:id="f7ffe13d-a56f-42ed-b291-4767d5c1c87d"
+					class="com.api.tgif.mobilepos.util.CommonUtil"
+					method="pingGatewayServer(java.lang.String)">
+					<java:args><![CDATA[#[{
 	ipAddress: vars.storeIpProperties[0].gatewayIp
 }]]]></java:args>
 				</java:invoke-static>
-				<choice doc:name="Choice" doc:id="78d3a61e-a245-4fbe-815a-26fe4611cca4" >
+				<choice doc:name="Choice"
+					doc:id="78d3a61e-a245-4fbe-815a-26fe4611cca4">
 					<when expression="#[payload]">
-						<ee:transform doc:name="Create Failure Response" doc:id="d89cd087-92be-4403-87f2-01c451eae808">
-					<ee:message>
-								<ee:set-payload ><![CDATA[%dw 2.0
+						<ee:transform doc:name="Create Failure Response"
+							doc:id="d89cd087-92be-4403-87f2-01c451eae808">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -400,20 +414,20 @@ output application/json
 		}
 	}
 }]]></ee:set-payload>
-					</ee:message>
-							<ee:variables >
-								<ee:set-variable variableName="emailMessage" ><![CDATA[%dw 2.0
+							</ee:message>
+							<ee:variables>
+								<ee:set-variable variableName="emailMessage"><![CDATA[%dw 2.0
 output application/json
 ---
 "Store server not reachable, able to reach Firewall " ++ vars.storeId ++ " in CreateCheck method"
 
 
 ]]></ee:set-variable>
-								<ee:set-variable variableName="logData" ><![CDATA[%dw 2.0
+								<ee:set-variable variableName="logData"><![CDATA[%dw 2.0
 output application/json
 ---
 {
-	methodName: 'CreateCheck',
+	methodName: 'CreateCheck - Connectivity Error',
 	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
 	checkNumber: 'Null',
 	checkSequence: 'Null',
@@ -423,12 +437,13 @@ output application/json
 	message: "Store server not reachable, able to reach Firewall"
 }]]></ee:set-variable>
 							</ee:variables>
-				</ee:transform>
+						</ee:transform>
 					</when>
-					<otherwise >
-						<ee:transform doc:name="Create Failure Response" doc:id="72e6f47d-ad25-4b03-9f5f-56f16c29378d" >
-							<ee:message >
-								<ee:set-payload ><![CDATA[%dw 2.0
+					<otherwise>
+						<ee:transform doc:name="Create Failure Response"
+							doc:id="72e6f47d-ad25-4b03-9f5f-56f16c29378d">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -440,18 +455,18 @@ output application/json
 	}
 }]]></ee:set-payload>
 							</ee:message>
-							<ee:variables >
-								<ee:set-variable variableName="emailMessage" ><![CDATA[%dw 2.0
+							<ee:variables>
+								<ee:set-variable variableName="emailMessage"><![CDATA[%dw 2.0
 output application/json
 ---
 "Store network unreachable at Firewall " ++ vars.storeId ++ " in CreateCheck method"
 
 ]]></ee:set-variable>
-								<ee:set-variable variableName="logData" ><![CDATA[%dw 2.0
+								<ee:set-variable variableName="logData"><![CDATA[%dw 2.0
 output application/json
 ---
 {
-	methodName: 'CreateCheck',
+	methodName: 'CreateCheck - Connectivity Error',
 	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
 	checkNumber: 'Null',
 	checkSequence: 'Null',
@@ -464,11 +479,20 @@ output application/json
 						</ee:transform>
 					</otherwise>
 				</choice>
-				<flow-ref doc:name="send-email-notification" doc:id="f733d920-7ee0-4b3f-a958-b0a113199cbb" name="send-email-notification"/>
-	
-				<flow-ref doc:name="insert-online-ordering-logs" doc:id="46a3de3c-682c-46c3-ad33-27f267174b11" name="insert-online-ordering-logs"/>
-				<flow-ref doc:name="insert-delivery-order-details-failed-order" doc:id="8d30c8fd-d090-4cc8-83fc-c232402f5653" name="insert-delivery-order-details-failed-order" />
-				<logger level="INFO" doc:name="INFO: Failure" doc:id="76684c01-3980-4eb1-92a2-fb03e68a2e7d" message="Create Check Flow completed unsuccessfully"/>
+				<flow-ref doc:name="send-email-notification"
+					doc:id="f733d920-7ee0-4b3f-a958-b0a113199cbb"
+					name="send-email-notification" />
+
+				<flow-ref doc:name="insert-online-ordering-logs"
+					doc:id="46a3de3c-682c-46c3-ad33-27f267174b11"
+					name="insert-online-ordering-logs" />
+				<flow-ref
+					doc:name="insert-delivery-order-details-failed-order"
+					doc:id="8d30c8fd-d090-4cc8-83fc-c232402f5653"
+					name="insert-delivery-order-details-failed-order" />
+				<logger level="INFO" doc:name="INFO: Failure"
+					doc:id="76684c01-3980-4eb1-92a2-fb03e68a2e7d"
+					message="Create Check Flow completed unsuccessfully" />
 			</on-error-continue>
 			<on-error-continue enableNotifications="true"
 				logException="true" doc:name="On Error Continue"
@@ -485,19 +509,17 @@ output application/json
 					doc:id="ab8a7543-4495-4c2a-a456-8d9990738347"
 					name="send-email-notification" />
 				<set-payload
-					value='#[output application/json&#10;---&#10;{&#10;	createcheck: {&#10;		result: {&#10;			status: "Failure",&#10;			message: error&#10;		}&#10;	}&#10;}]'
+					value='#[output application/json&#10;---&#10;{&#10;	createcheck: {&#10;		result: {&#10;			status: "Failure",&#10;			message: error.description&#10;		}&#10;	}&#10;}]'
 					doc:name="Create Failure Response"
 					doc:id="88c6d5ca-07be-4bb6-8e87-bc949dfa545f" />
-				<logger level="INFO" doc:name="Logger"
-					doc:id="0f87e0a7-1950-469e-9263-e40df88a3819"
-					message="Create Check Flow Completed with Errors" />
 				<set-variable
-					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CreateCheck',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: error&#10;}]"
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CreateCheck  - Error',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: error.description&#10;}]"
 					doc:name="logData" doc:id="015b42f7-4148-496b-8846-fa1392b93486"
 					variableName="logData" />
 				<flow-ref doc:name="insert-online-ordering-logs"
 					doc:id="6f61bfff-248d-486c-a3e8-0b4a6afaf9a7"
 					name="insert-online-ordering-logs" />
+				<logger level="INFO" doc:name="INFO: Failure" doc:id="0f87e0a7-1950-469e-9263-e40df88a3819" message="Create Check Flow Completed with Errors" />
 
 			</on-error-continue>
 		</error-handler>
@@ -520,7 +542,7 @@ output application/json
 					doc:name="storeId" doc:id="57d8c305-e445-45f3-8a92-e77d51a9ec7d"
 					variableName="storeId" />
 				<set-variable
-					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.initialPayload&#10;}]"
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal - Initial Payload',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.initialPayload&#10;}]"
 					doc:name="logData" doc:id="8d731c8a-83ab-4c2e-a985-ec7aa780f1d0"
 					variableName="logData" />
 				<flow-ref doc:name="insert-online-ordering-logs"
@@ -579,7 +601,9 @@ output application/json
 				logException="true" doc:name="On Error Continue"
 				doc:id="1c51311b-aac4-4dfe-8785-5e6514a30f9f"
 				type="HTTP:CONNECTIVITY">
-				<logger level="INFO" doc:name="Logger" doc:id="40aad7c5-5143-42cd-b8d9-2b659fbaab45" message="Connectivity Error"/>
+				<logger level="INFO" doc:name="Logger"
+					doc:id="40aad7c5-5143-42cd-b8d9-2b659fbaab45"
+					message="Connectivity Error" />
 				<java:invoke-static doc:name="Ping Gateway"
 					doc:id="2b565535-6a38-44e2-98ce-766bd65a29a6"
 					class="com.api.tgif.mobilepos.util.CommonUtil"
@@ -662,7 +686,7 @@ output application/json
 					doc:id="d5c0987f-d2ae-404f-baba-d1ba1263d4fd"
 					message="Caluclate Tax And Total Flow Completed with Errors" />
 				<set-variable
-					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: error&#10;}]"
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: error.description&#10;}]"
 					doc:name="logData" doc:id="2c8fa8bf-f6d8-46c8-8c67-eb6fe4dacfcd"
 					variableName="logData" />
 				<flow-ref doc:name="insert-online-ordering-logs"
@@ -693,7 +717,7 @@ output application/json
 					doc:name="storeId" doc:id="79bcb464-af82-4631-b65f-5d1039395692"
 					variableName="storeId" />
 				<set-variable
-					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTotals',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.initialPayload&#10;}]"
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTotals - Initial Payload',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.initialPayload&#10;}]"
 					doc:name="logData" doc:id="07a46914-2035-4b34-8c79-8efb244c8aed"
 					variableName="logData" />
 				<flow-ref doc:name="insert-online-ordering-logs"
@@ -709,39 +733,20 @@ output application/json
 					<ee:message>
 					</ee:message>
 					<ee:variables>
-						<ee:set-variable variableName="tenderId"><![CDATA[%dw 2.0
-output application/json
-var fullfillmentType = "Delivery"
-fun getPaymentCardType(authSystem) = if ( authSystem == "amazon_rws" ) "RWS" else authSystem
-fun getEmployeeObjectNumber(cardType, fullfillmentType) =  if ( cardType == "GH" and fullfillmentType == "pickup" ) "96013"
-else if ( cardType == "GH" ) "96002"
-else if ( cardType == "GB" ) "96008"
-else if ( cardType == "RWS" ) "96003"
-else if ( cardType == "UBE" and fullfillmentType == "pickup" ) "96012"
-else if ( cardType == "UBE" ) "96004"
-else if ( cardType == "PM" ) "96009"
-else if ( cardType == "DD" and fullfillmentType == "pickup" ) "96011"
-else if ( cardType == "DD" ) "96005"
-else "98008"
-fun getTenderMediaObjectNumberforMicros(cardType)= if ( ["GB", "GH","RWS","UBE","PM","DD"] contains cardType ) "12"
-else "58"
-fun getOrderTypeIDforMicros(cardType) =  if ( ["GH","RWS","UBE","PM","DD"] contains cardType ) "4"
-else "5"
-fun getRevenueCenterObjectNumforMicros(cardType) =  if ( ["GB", "GH","RWS","UBE","PM","DD"] contains cardType ) "6"
-else "5"
----
-{
-	calcTotalsEmployeeObjectNum: getEmployeeObjectNumber(getPaymentCardType(vars.authSystem), fullfillmentType),
-	calcTotalsTenderObjectNum: getTenderMediaObjectNumberforMicros(getPaymentCardType(vars.authSystem)),
-	calcTotalsOrderTypeID: getOrderTypeIDforMicros(getPaymentCardType(vars.authSystem)),
-	calcTotalsRevenueCenterObjectNumber: getRevenueCenterObjectNumforMicros(getPaymentCardType(vars.authSystem))
-}]]></ee:set-variable>
 						<ee:set-variable variableName="authSystem"><![CDATA[%dw 2.0
 output application/json
 ---
 payload.calculatetotals.authenticationSystem]]></ee:set-variable>
+						<ee:set-variable resource="dwl\calculate-total\tender-id.dwl" variableName="tenderId" />
 					</ee:variables>
 				</ee:transform>
+				<set-variable
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTotals - Tender ID',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.tenderId&#10;}]"
+					doc:name="logData" doc:id="cef249c3-cf62-4152-8223-01228bfdee9e"
+					variableName="logData" />
+				<flow-ref doc:name="insert-online-ordering-logs"
+					doc:id="d4fdf850-23d3-441a-bf81-c846ec6b44da"
+					name="insert-online-ordering-logs" />
 				<flow-ref doc:name="get-store-ip-properties"
 					doc:id="30bad4d9-214e-4212-970a-cbc89cf7a780"
 					name="get-store-ip-properties" />
@@ -777,7 +782,7 @@ output application/json
 output application/json
 ---
 {
-	methodName: 'CalculateTotals',
+	methodName: 'CalculateTotals - IP Address is null',
 	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
 	checkNumber: 'Null',
 	checkSequence: 'Null',
@@ -832,16 +837,21 @@ output application/json
 				<logger level="INFO" doc:name="Logger"
 					doc:id="31ca3fd8-ee0c-4e00-bad8-f6838b6a689e"
 					message="Connectivity Error" />
-				<java:invoke-static doc:name="Ping Gateway" doc:id="3a11a98b-8b89-4fca-8dd0-9db75eeefea7" class="com.api.tgif.mobilepos.util.CommonUtil" method="pingGatewayServer(java.lang.String)">
-					<java:args ><![CDATA[#[{
+				<java:invoke-static doc:name="Ping Gateway"
+					doc:id="3a11a98b-8b89-4fca-8dd0-9db75eeefea7"
+					class="com.api.tgif.mobilepos.util.CommonUtil"
+					method="pingGatewayServer(java.lang.String)">
+					<java:args><![CDATA[#[{
 	ipAddress: vars.storeIpProperties[0].gatewayIp
 }]]]></java:args>
 				</java:invoke-static>
-				<choice doc:name="Choice" doc:id="d3ad62ae-8d33-479f-80f6-4e0213cf03a9" >
+				<choice doc:name="Choice"
+					doc:id="d3ad62ae-8d33-479f-80f6-4e0213cf03a9">
 					<when expression="#[payload]">
-						<ee:transform doc:name="Create Failure Response" doc:id="d3fe1d0d-8f45-4781-8891-6194df5b277f">
-					<ee:message>
-								<ee:set-payload ><![CDATA[%dw 2.0
+						<ee:transform doc:name="Create Failure Response"
+							doc:id="d3fe1d0d-8f45-4781-8891-6194df5b277f">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -852,14 +862,14 @@ output application/json
 		}
 	}
 }]]></ee:set-payload>
-					</ee:message>
-							<ee:variables >
-								<ee:set-variable variableName="emailMessage" ><![CDATA[%dw 2.0
+							</ee:message>
+							<ee:variables>
+								<ee:set-variable variableName="emailMessage"><![CDATA[%dw 2.0
 output application/json
 ---
 "Store Network reachable and store Server unreachable for store " ++ vars.storeId ++ " in CalculateTotals method"
 ]]></ee:set-variable>
-								<ee:set-variable variableName="logData" ><![CDATA[%dw 2.0
+								<ee:set-variable variableName="logData"><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -873,12 +883,13 @@ output application/json
 	message: "Unable to reach store server"
 }]]></ee:set-variable>
 							</ee:variables>
-				</ee:transform>
+						</ee:transform>
 					</when>
-					<otherwise >
-						<ee:transform doc:name="Create Failure Response" doc:id="07c9244b-cfd8-4ec3-8cbc-fb4750bca8c5" >
-							<ee:message >
-								<ee:set-payload ><![CDATA[%dw 2.0
+					<otherwise>
+						<ee:transform doc:name="Create Failure Response"
+							doc:id="07c9244b-cfd8-4ec3-8cbc-fb4750bca8c5">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -890,12 +901,12 @@ output application/json
 	}
 }]]></ee:set-payload>
 							</ee:message>
-							<ee:variables >
-								<ee:set-variable variableName="emailMessage" ><![CDATA[%dw 2.0
+							<ee:variables>
+								<ee:set-variable variableName="emailMessage"><![CDATA[%dw 2.0
 output application/json
 ---
 "Store Network unreachable for store " ++ vars.storeId ++ " in CalculateTotals method"]]></ee:set-variable>
-								<ee:set-variable variableName="logData" ><![CDATA[%dw 2.0
+								<ee:set-variable variableName="logData"><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -912,11 +923,15 @@ output application/json
 						</ee:transform>
 					</otherwise>
 				</choice>
-				<flow-ref doc:name="send-email-notification" doc:id="1bba29c1-1bd1-4a2e-b0e5-3a337e13c0c4" name="send-email-notification"/>
+				<flow-ref doc:name="send-email-notification"
+					doc:id="1bba29c1-1bd1-4a2e-b0e5-3a337e13c0c4"
+					name="send-email-notification" />
 				<flow-ref doc:name="insert-online-ordering-logs"
 					doc:id="6ae77eee-150b-4f58-9045-ae722fa6b0a9"
 					name="insert-online-ordering-logs" />
-				<logger level="INFO" doc:name="INFO: Failure" doc:id="47a76342-0fc4-42bd-abd2-fbf76add9e62" message="Calculate Total Flow completed unsuccessfully"/>
+				<logger level="INFO" doc:name="INFO: Failure"
+					doc:id="47a76342-0fc4-42bd-abd2-fbf76add9e62"
+					message="Calculate Total Flow completed unsuccessfully" />
 			</on-error-continue>
 			<on-error-continue enableNotifications="true"
 				logException="true" doc:name="On Error Continue"
@@ -940,13 +955,15 @@ output application/json
 					doc:id="bb6263aa-3a29-40b2-9ffc-871ff773af7c"
 					message="Caluclate Total Flow Completed with Errors" />
 				<set-variable
-					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTotals',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: error&#10;}]"
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTotals',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: error.description&#10;}]"
 					doc:name="logData" doc:id="8d728ad8-fada-4a59-bebe-93e0eb14e258"
 					variableName="logData" />
 				<flow-ref doc:name="insert-online-ordering-logs"
 					doc:id="65fd898c-1069-4c38-8423-9a2382281a5c"
 					name="insert-online-ordering-logs" />
-			<logger level="INFO" doc:name="INFO: Failure" doc:id="a5c0506f-d518-4d59-a1f5-c24f38635cc0" message="Calculate Total Flow completed unsuccessfully"/>
+				<logger level="INFO" doc:name="INFO: Failure"
+					doc:id="a5c0506f-d518-4d59-a1f5-c24f38635cc0"
+					message="Calculate Total Flow completed unsuccessfully" />
 			</on-error-continue>
 		</error-handler>
 	</flow>
