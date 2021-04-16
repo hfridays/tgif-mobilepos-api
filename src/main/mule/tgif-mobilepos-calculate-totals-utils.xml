@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:java="http://www.mulesoft.org/schema/mule/java"
+<mule
+	xmlns:module-logger="http://www.mulesoft.org/schema/mule/module-logger"
+	xmlns:error-handler-plugin="http://www.mulesoft.org/schema/mule/error-handler-plugin"
+	xmlns:java="http://www.mulesoft.org/schema/mule/java"
 	xmlns:http="http://www.mulesoft.org/schema/mule/http"
 	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
 	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
@@ -15,8 +18,10 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
-http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
-	<sub-flow name="call-respos-api-tax-calculation"
+http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd
+http://www.mulesoft.org/schema/mule/error-handler-plugin http://www.mulesoft.org/schema/mule/error-handler-plugin/current/mule-error-handler-plugin.xsd
+http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema/mule/module-logger/current/mule-module-logger.xsd">
+	<sub-flow name="call-pos-api-tax-calculation"
 		doc:id="16ce5e34-b00f-4ff7-ba52-3866c6c5cdc7">
 		<ee:transform doc:name="Calculate Total Request XML"
 			doc:id="5d1e4be2-e560-4e56-bdf5-86ad9a9d8068">
@@ -45,8 +50,8 @@ output application/json
 		<flow-ref doc:name="insert-online-ordering-logs"
 			doc:id="ae4aa838-c882-4d8a-ad72-bc3280a5e8cb"
 			name="insert-online-ordering-logs" />
-		<flow-ref doc:name="call-respos-api"
-			doc:id="8194b696-2ec8-433e-9a9f-8dc2a26b6c0b" name="call-respos-api" />
+		<flow-ref doc:name="call-pos-api"
+			doc:id="8194b696-2ec8-433e-9a9f-8dc2a26b6c0b" name="call-pos-api" />
 		<choice doc:name="Check Response"
 			doc:id="7007317a-c3c8-4feb-95a8-43fe52080abf">
 			<when expression='#[payload.status == "Success"]'>
@@ -57,14 +62,14 @@ output application/json
 							resource="dwl/calculate-totals/calculata-totals-success-reponse.dwl" />
 					</ee:message>
 				</ee:transform>
-				<logger level="INFO" doc:name="INFO: Success"
-					doc:id="b73eeda8-d205-45c8-882d-49eeffe73454"
-					message="Calculate Total Flow completed successfully" />
+				<module-logger:console-logging
+					doc:name="Success" doc:id="619414d6-7165-4b4f-a35d-c117b37ecc8f"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="COMPLETED" apiName='#[p("api.name")]'
+					message="Process Completed" flowName="Calculate Totals Flow"
+					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 			</when>
 			<otherwise>
-				<logger level="INFO" doc:name="INFO: POS API call failed"
-					doc:id="90b0ade7-ec25-40b1-a9b0-b291961931d1"
-					message="POS API call failed, Invalid Menu Items=#[vars.invalidMenuItems]" />
 				<flow-ref doc:name="get-error-code-details"
 					doc:id="454fbf8d-5f40-4f13-8f4e-0db6400e6347"
 					name="get-error-code-details" />
@@ -107,128 +112,32 @@ output application/json
 				<flow-ref doc:name="insert-online-ordering-logs"
 					doc:id="d584017b-98e8-4f66-b6f6-99641e63c3a9"
 					name="insert-online-ordering-logs" />
-				<logger level="INFO" doc:name="INFO: Failure"
-					doc:id="62bf96ee-8eb0-41eb-9f18-11d6e384ff0e"
-					message="Calculate Total Flow completed unsuccessfully" />
+				<module-logger:console-logging
+					doc:name="Failed" doc:id="aa6b6098-564d-4d99-b997-c8fc308bf04d"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="COMPLETED" apiName='#[p("api.name")]'
+					message="POS API call failed, Invalid Menu Items"
+					flowName="Calculate Totals Flow" env='#[p("mule.env")]'
+					payload='#[vars.invalidMenuItems]' startTime="#[vars.startTime]" />
 			</otherwise>
 		</choice>
 	</sub-flow>
-	<sub-flow name="call-respos-api"
+	<sub-flow name="call-pos-api"
 		doc:id="6c849360-805c-42ac-8207-49b19b205ca0">
-		<foreach doc:name="For Each"
-			doc:id="44a90a9c-cea1-43ad-af95-e8e7d6a0a663"
-			collection="#[vars.calculateTotalXML.Envelope.Body.CalculateTransactionTotals.ppMenuItems]">
-			<ee:transform doc:name="Create Respos Request"
-				doc:id="9c26f72e-278c-4933-9158-4a716b4a086e">
-				<ee:message>
-				</ee:message>
-				<ee:variables>
-					<ee:set-variable variableName="resPosRequest"><![CDATA[%dw 2.0
-output application/xml
-ns ns0 http://www.w3.org/2003/05/soap-envelope
-ns ns1 http://schemas.micros.com/RESPOS
----
-ns0#Envelope: {
-	ns0#Body : {
-		ns1#CalculateTransactionTotals: {
-		ns1#ppMenuItems: payload,
-		ns1#revenueCenter: vars.calculateTotalXMLVars.revenueCenter,
-		ns1#orderType: vars.calculateTotalXMLVars.orderType,
-		ns1#employeeNumber: vars.calculateTotalXMLVars.employeeNumber}
-		
-	}
-}
-]]></ee:set-variable>
-				</ee:variables>
-			</ee:transform>
-			<set-variable
-				value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTotals - POS API Request for each Menu Item',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: write(vars.resPosRequest, &quot;application/xml&quot;, {writeDeclaration: false})&#10;}]"
-				doc:name="logData" doc:id="11486ed5-56bf-40a7-abb1-d8c5b7984b0e"
-				variableName="logData" />
-			<flow-ref doc:name="insert-online-ordering-logs"
-				doc:id="eb25c66f-10df-411f-9ef1-8c16e7ce06d8"
-				name="insert-online-ordering-logs" />
-			<http:request method="POST" doc:name="Request POS Api"
-				doc:id="7455a603-cb45-447b-ad5f-edddf6b15860"
-				config-ref="HTTP_Request_configuration"
-				path="/ResPosApiWeb/ResPosApiWeb.asmx"
-				target="calculateTotalServiceResponse" sendCorrelationId="AUTO"
-				responseTimeout="${microsApi.connectionTimeout}">
-				<reconnect frequency="${resposapi.reconnect.frequency}"
-					count="${resposapi.reconnect.count}" />
-				<http:body><![CDATA[#[%dw 2.0
-output text/xml
----
-vars.resPosRequest]]]></http:body>
-				<http:response-validator>
-					<http:success-status-code-validator
-						values="200..599" />
-				</http:response-validator>
-			</http:request>
-			<set-variable
-				value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTotals - POS API Response for each Menu Item',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: write(vars.calculateTotalServiceResponse, &quot;application/xml&quot;, {writeDeclaration: false})&#10;}]"
-				doc:name="logData" doc:id="2f0c73a2-62fa-48ff-999b-f2bc492cbe09"
-				variableName="logData" />
-			<flow-ref doc:name="insert-online-ordering-logs" doc:id="363da939-b04c-4a96-bcf7-129c5390b94e" name="insert-online-ordering-logs" />
-			<ee:transform doc:name="Create ResPos Response"
-				doc:id="5aa04e7b-5199-4227-a48f-57fc986aed3d">
-				<ee:message>
-				</ee:message>
-				<ee:variables>
-					<ee:set-variable
-						variableName="calculateTotalServiceResponse"><![CDATA[%dw 2.0
-output application/json
-ns soapenv http://www.w3.org/2003/05/soap-envelope
-ns respos http://schemas.micros.com/RESPOS
-fun getErrDetail() = using ( faultBody = vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.soapenv#Fault ) faultBody.detail.hresult replace "-" with "" 
-fun getReason() = using ( faultBody = vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.soapenv#Fault ) if ( faultBody.faultstring? ) faultBody.faultstring as String 
-else faultBody.soapenv#Reason.soapenv#Text
----
-if ( vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.CalculateTransactionTotalsResponse != null ) {
-	status: "Success",
-	response: vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.CalculateTransactionTotalsResponse
-} else {
-	status: "Failed",
-	response: if ( getErrDetail() == "956234774" ) "Menu item or Condiment not found in POS"
-				else if ( getErrDetail() == "956235772" ) "The menu level passed is out of range"
-				else if ( getErrDetail() == "956235748" ) "Discount Object num is not an Item discount"
-				else if ( getErrDetail() == "2147024809" ) "Not a valid Order discount object num"
-				else getReason()
-}
-]]></ee:set-variable>
-					<ee:set-variable variableName="invalidMenuItems"><![CDATA[%dw 2.0
-output application/java
----
-[]]]></ee:set-variable>
-				</ee:variables>
-			</ee:transform>
-			<ee:transform doc:name="Invalid Menu Items"
-				doc:id="86cbac72-ae6c-4f86-b1f9-3beaf9bf53d4">
-				<ee:message>
-				</ee:message>
-				<ee:variables>
-					<ee:set-variable variableName="invalidMenuItems"><![CDATA[%dw 2.0
-output application/json
-fun addErrMsg() =  {
-	"MiObjectNum": payload.ResPosAPI_MenuItem.MenuItem.MiObjectNum,
-	"MiMenuLevel": payload.ResPosAPI_MenuItem.MenuItem.MiMenuLevel,
-	"ItemDiscount": {
-		"DiscReference": payload.ResPosAPI_MenuItem.MenuItem.ItemDiscount.DiscReference
-	},
-	MiErrorMsg: vars.calculateTotalServiceResponse.response
-}
----
-if ( vars.calculateTotalServiceResponse.status == "Failed" ) vars.invalidMenuItems << (ResPosAPI_MenuItem: MenuItem: addErrMsg())
-else vars.invalidMenuItems
-]]></ee:set-variable>
-				</ee:variables>
-			</ee:transform>
-		</foreach>
+		<flow-ref doc:name="call-pos-api-per-menu-item"
+			doc:id="7da8fffa-63d6-49d0-aef8-ecf3e90d96a4"
+			name="call-pos-api-per-menu-item" />
 		<choice doc:name="Any Invalid Menu Item?"
 			doc:id="0a0e239a-f86a-49f8-b4ee-6e660a92e5b8">
 			<when expression="#[sizeOf(vars.invalidMenuItems) == 0]">
-				<http:request method="POST"
-					doc:name="Request ResPos Api"
+				<module-logger:database-logging
+					doc:name="POS API Request"
+					doc:id="46bbf55a-ede1-476f-8a10-c0128b4870d1"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="IN PROCESS" message="#[vars.calculateTotalXML]"
+					flowStartDate="#[vars.startTime]" flowName="Calculate Totals Flow"
+					status="Before POS Call" transactionType="HTTP Request" apiName='#[p("api.name")]' apiVersion='#[p("api.version")]'/>
+				<http:request method="POST" doc:name="Request POS Api"
 					doc:id="7fcc1feb-44db-4899-ae6e-a12910df9a87"
 					config-ref="HTTP_Request_configuration"
 					path="/ResPosApiWeb/ResPosApiWeb.asmx" sendCorrelationId="AUTO"
@@ -244,8 +153,20 @@ vars.calculateTotalXML]]]></http:body>
 							values="200..599" />
 					</http:response-validator>
 				</http:request>
-				<set-variable value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTotals - POS API Response',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: write(vars.payload, &quot;application/xml&quot;, {writeDeclaration: false})&#10;}]" doc:name="logData" doc:id="41a76f8d-9bd9-4433-8fec-0c4278cdd97b" variableName="logData" />
-			<flow-ref doc:name="insert-online-ordering-logs" doc:id="ee9cd253-9236-4354-b2d9-bfc7f676a948" name="insert-online-ordering-logs" />
+				<module-logger:database-logging
+					doc:name="POS API Response"
+					doc:id="daef8dc4-5f14-4510-94a7-bc518ed109db"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="IN PROCESS" message="#[payload]"
+					flowStartDate="#[vars.startTime]" flowName="Calculate Totals Flow"
+					status="Before POS Call" transactionType="HTTP Response" apiName='#[p("api.name")]' apiVersion='#[p("api.version")]'/>
+				<set-variable
+					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTotals - POS API Response',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: write(payload, &quot;application/xml&quot;, {writeDeclaration: false})&#10;}]"
+					doc:name="logData" doc:id="41a76f8d-9bd9-4433-8fec-0c4278cdd97b"
+					variableName="logData" />
+				<flow-ref doc:name="insert-online-ordering-logs"
+					doc:id="ee9cd253-9236-4354-b2d9-bfc7f676a948"
+					name="insert-online-ordering-logs" />
 				<ee:transform doc:name="Transform Message"
 					doc:id="c1c2e71d-7b37-452f-9390-b66c6ee7870e">
 					<ee:message>
@@ -274,4 +195,116 @@ if ( payload.soapenv#Envelope.soapenv#Body.CalculateTransactionTotalsResponse !=
 			</otherwise>
 		</choice>
 	</sub-flow>
+	<sub-flow name="call-pos-api-per-menu-item" doc:id="64aae3e6-21ef-4715-b30e-a576134bf4ea" >
+		<foreach doc:name="For Each" doc:id="8092b5c9-131f-4ce9-8024-a760060da159" collection="#[vars.calculateTotalXML.Envelope.Body.CalculateTransactionTotals.ppMenuItems]">
+			<ee:transform doc:name="Create Respos Request" doc:id="ec646035-556a-4bc3-a565-b54b098cdca5">
+				<ee:message>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="resPosRequest"><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://www.w3.org/2003/05/soap-envelope
+ns ns1 http://schemas.micros.com/RESPOS
+---
+ns0#Envelope: {
+	ns0#Body : {
+		ns1#CalculateTransactionTotals: {
+		ns1#ppMenuItems: payload,
+		ns1#revenueCenter: vars.calculateTotalXMLVars.revenueCenter,
+		ns1#orderType: vars.calculateTotalXMLVars.orderType,
+		ns1#employeeNumber: vars.calculateTotalXMLVars.employeeNumber}
+		
+	}
+}
+]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<set-variable value="#[output application/json
+&#10;---
+&#10;{
+&#10;	methodName: 'CalculateTotals - POS API Request for each Menu Item',
+&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
+&#10;	checkNumber: 'Null',
+&#10;	checkSequence: 'Null',
+&#10;	employeeNumber: 'Null',
+&#10;	tableNumber: 'Null',
+&#10;	status: '1',
+&#10;	message: write(vars.resPosRequest, &quot;application/xml&quot;, {writeDeclaration: false})
+&#10;}]" doc:name="logData" doc:id="03000fcc-717b-4be3-8fa3-e665bd0e854c" variableName="logData" />
+			<flow-ref doc:name="insert-online-ordering-logs" doc:id="57e2756e-6d74-4cc7-bbd0-a78cb210573d" name="insert-online-ordering-logs" />
+			<module-logger:database-logging doc:name="POS API Request" doc:id="b528d628-5537-48ef-bb1f-a08e99be82f2" config-ref="TGIF_Logger_Config" traceId="#[correlationId]" stage="IN PROCESS" message="#[vars.resPosRequest]" flowStartDate="#[vars.startTime]" flowName="Calculate Totals Flow" status="Before POS Call" transactionType="HTTP Request" apiName='#[p("api.name")]' apiVersion='#[p("api.version")]'/>
+			<http:request method="POST" doc:name="Request POS Api" doc:id="a2e270e2-147a-42ad-be1f-54243bc14060" config-ref="HTTP_Request_configuration" path="/ResPosApiWeb/ResPosApiWeb.asmx" target="calculateTotalServiceResponse" sendCorrelationId="AUTO" responseTimeout="${microsApi.connectionTimeout}">
+				<reconnect frequency="${resposapi.reconnect.frequency}" count="${resposapi.reconnect.count}" />
+				<http:body><![CDATA[#[%dw 2.0 output text/xml --- vars.resPosRequest]]]></http:body>
+				<http:response-validator>
+					<http:success-status-code-validator values="200..599" />
+				</http:response-validator>
+			</http:request>
+			<module-logger:database-logging doc:name="POS API Response" doc:id="f4b32b3e-ec5a-4c3a-9d12-29ebe6f349b1" config-ref="TGIF_Logger_Config" traceId="#[correlationId]" stage="IN PROCESS" message="#[vars.calculateTotalServiceResponse]" flowStartDate="#[vars.startTime]" flowName="Calculate Totals Flow" status="Before POS Call" transactionType="HTTP Response" apiName='#[p("api.name")]' apiVersion='#[p("api.version")]'/>
+			<set-variable value="#[output application/json
+&#10;---
+&#10;{
+&#10;	methodName: 'CalculateTotals - POS API Response for each Menu Item',
+&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
+&#10;	checkNumber: 'Null',
+&#10;	checkSequence: 'Null',
+&#10;	employeeNumber: 'Null',
+&#10;	tableNumber: 'Null',
+&#10;	status: '1',
+&#10;	message: write(vars.calculateTotalServiceResponse, &quot;application/xml&quot;, {writeDeclaration: false})
+&#10;}]" doc:name="logData" doc:id="fbc4bc9c-eccd-4e27-9e32-1b523231158a" variableName="logData" />
+			<flow-ref doc:name="insert-online-ordering-logs" doc:id="425d5097-e0a0-4026-9e64-1d71ecfd6b3c" name="insert-online-ordering-logs" />
+			<ee:transform doc:name="Create ResPos Response" doc:id="cbd7ec59-f51e-4b32-b667-3e464fd4c342">
+				<ee:message>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="calculateTotalServiceResponse"><![CDATA[%dw 2.0
+output application/json
+ns soapenv http://www.w3.org/2003/05/soap-envelope
+ns respos http://schemas.micros.com/RESPOS
+fun getErrDetail() = using ( faultBody = vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.soapenv#Fault ) faultBody.detail.hresult replace "-" with "" 
+fun getReason() = using ( faultBody = vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.soapenv#Fault ) if ( faultBody.faultstring? ) faultBody.faultstring as String 
+else faultBody.soapenv#Reason.soapenv#Text
+---
+if ( vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.CalculateTransactionTotalsResponse != null ) {
+	status: "Success",
+	response: vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.CalculateTransactionTotalsResponse
+} else {
+	status: "Failed",
+	response: if ( getErrDetail() == "956234774" ) "Menu item or Condiment not found in POS"
+				else if ( getErrDetail() == "956235772" ) "The menu level passed is out of range"
+				else if ( getErrDetail() == "956235748" ) "Discount Object num is not an Item discount"
+				else if ( getErrDetail() == "2147024809" ) "Not a valid Order discount object num"
+				else getReason()
+}
+]]></ee:set-variable>
+					<ee:set-variable variableName="invalidMenuItems"><![CDATA[%dw 2.0
+output application/java
+---
+[]]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<ee:transform doc:name="Invalid Menu Items" doc:id="30eec9a1-e8c9-4a2a-879e-95eb341c6d9a">
+				<ee:message>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="invalidMenuItems"><![CDATA[%dw 2.0
+output application/json
+fun addErrMsg() =  {
+	"MiObjectNum": payload.ResPosAPI_MenuItem.MenuItem.MiObjectNum,
+	"MiMenuLevel": payload.ResPosAPI_MenuItem.MenuItem.MiMenuLevel,
+	"ItemDiscount": {
+		"DiscReference": payload.ResPosAPI_MenuItem.MenuItem.ItemDiscount.DiscReference
+	},
+	MiErrorMsg: vars.calculateTotalServiceResponse.response
+}
+---
+if ( vars.calculateTotalServiceResponse.status == "Failed" ) vars.invalidMenuItems << (ResPosAPI_Invalid_MenuItem: MenuItem: addErrMsg())
+else vars.invalidMenuItems
+]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</foreach>
+	</sub-flow>
+	
 </mule>

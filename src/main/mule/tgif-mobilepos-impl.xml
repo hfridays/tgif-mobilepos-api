@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+<mule
+	xmlns:module-logger="http://www.mulesoft.org/schema/mule/module-logger"
+	xmlns:error-handler-plugin="http://www.mulesoft.org/schema/mule/error-handler-plugin"
+	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
 	xmlns:java="http://www.mulesoft.org/schema/mule/java"
 	xmlns:os="http://www.mulesoft.org/schema/mule/os"
 	xmlns:json="http://www.mulesoft.org/schema/mule/json"
@@ -16,12 +19,21 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd
-http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd">
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/error-handler-plugin http://www.mulesoft.org/schema/mule/error-handler-plugin/current/mule-error-handler-plugin.xsd
+http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema/mule/module-logger/current/mule-module-logger.xsd">
 	<flow name="ms-heartbeat-flow"
 		doc:id="075f2d62-90a3-4246-80e6-519f938ff54c">
-		<logger level="INFO" doc:name="INFO: Start"
-			doc:id="d006150b-3d3e-4c70-99d1-710e5840dfec"
-			message="Mulesoft Heartbeat Flow Started" />
+		<set-variable value="#[now()]" doc:name="startTime"
+			doc:id="c4befc5f-78c2-4260-aae7-99d6574c36a8"
+			variableName="startTime" />
+		<module-logger:console-logging
+			doc:name="Start"
+			doc:id="32f02a59-3bd4-4997-b6f0-7208ee93029b"
+			traceId="#[correlationId]" stage="START" apiName='#[p("api.name")]'
+			message="Started Processing" flowName="MS Heartbeat Flow"
+			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
+			startTime="#[vars.startTime]" />
 		<flow-ref doc:name="get-access-token"
 			doc:id="8275a8b9-d447-4637-8cd5-652c6460a3ce" name="get-access-token" />
 		<choice doc:name="Check if access token valid"
@@ -42,9 +54,12 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-				<logger level="INFO" doc:name="INFO: Success"
-					doc:id="9f1e0575-c769-4d53-808b-542c2c3b6dc1"
-					message="Mulesoft Heartbeat flow completed successfully" />
+				<module-logger:console-logging
+					doc:name="Success" doc:id="78d33720-f1b5-4567-b323-44e7370627eb"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="COMPLETED" apiName='#[p("api.name")]'
+					message="Process Completed" flowName="MS Heartbeat Flow"
+					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 			</when>
 			<otherwise>
 				<ee:transform doc:name="Create Failure Response"
@@ -61,18 +76,28 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-				<logger level="INFO" doc:name="INFO: Failure"
-					doc:id="a625eacd-dca5-42d8-ad89-77c8913f8aa0"
-					message="Mulesoft Heartbeat flow completed unsuccessfully" />
+				<module-logger:console-logging
+					doc:name="Failed" doc:id="2124bcd0-4b3a-488b-bfe9-f927135ed4d4"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="COMPLETED" apiName='#[p("api.name")]'
+					message="Invalid Access Token" flowName="MS Heartbeat Flow"
+					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 			</otherwise>
 		</choice>
 	</flow>
 
 	<flow name="ping-ip-addess-flow"
 		doc:id="ac4813e9-3497-409c-8210-397551f48da4">
-		<logger level="INFO" doc:name="INFO: Start"
-			doc:id="b15f5ef2-16b7-48f8-8909-c544c42cabcc"
-			message="Ping IP Addess Flow Started" />
+		<set-variable value="#[now()]" doc:name="startTime"
+			doc:id="7ce347de-eed5-4415-b00e-e1924c5dfdb0"
+			variableName="startTime" />
+		<module-logger:console-logging
+			doc:name="Start"
+			doc:id="2487796d-bbab-4b2c-bea9-0ccad41e293d"
+			traceId="#[correlationId]" stage="START" apiName='#[p("api.name")]'
+			message="Started Processing" flowName="Ping IP Address Flow"
+			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
+			startTime="#[vars.startTime]" />
 		<flow-ref doc:name="get-access-token"
 			doc:id="da274a5e-6c3d-481e-9a1c-883ab3676136" name="get-access-token" />
 		<choice doc:name="Check if access token valid"
@@ -121,9 +146,12 @@ output application/json
 }]]></ee:set-payload>
 							</ee:message>
 						</ee:transform>
-						<logger level="INFO" doc:name="INFO: Success"
-							doc:id="477b6687-7cb5-4fdb-a6c3-afe5b1489529"
-							message="Ping IP Addess flow completed successfully" />
+						<module-logger:console-logging
+							doc:name="Success" doc:id="8b0ea29c-5840-4c34-bb81-7a4676b6806b"
+							config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+							stage="COMPLETED" apiName='#[p("api.name")]'
+							flowName="Ping IP Address Flow" message="Host is reachable"
+							startTime="#[vars.startTime]" />
 					</when>
 					<otherwise>
 						<ee:transform doc:name="Create Failure Response"
@@ -134,15 +162,18 @@ output application/json
 ---
 {
 	result: {
-		status: "success",
+		status: "failure",
 		message: "Host is not reachable"
 	}
 }]]></ee:set-payload>
 							</ee:message>
 						</ee:transform>
-						<logger level="INFO" doc:name="INFO: Failure"
-							doc:id="d2613135-3e19-45ff-bd5c-7496d2d023e3"
-							message="Ping IP Addess flow completed unsuccessfully" />
+						<module-logger:console-logging
+							doc:name="Failed" doc:id="31af0760-6474-4f44-b109-a7a89f5e9505"
+							config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+							stage="COMPLETED" apiName='#[p("api.name")]'
+							flowName="Ping IP Address Flow" message="Host is not reachable"
+							startTime="#[vars.startTime]" />
 					</otherwise>
 				</choice>
 			</when>
@@ -161,30 +192,48 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-				<logger level="INFO" doc:name="INFO: Failure"
-					doc:id="88e72d62-b9e0-4586-a938-ba75a03d2a87"
-					message="Ping IP Addess flow completed unsuccessfully" />
+				<module-logger:console-logging
+					doc:name="Failed" doc:id="d79c06e3-69dd-43bb-83a4-d4c6c452edfe"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="COMPLETED" apiName='#[p("api.name")]'
+					message="Invalid Access Token" flowName="Ping IP Address Flow"
+					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 			</otherwise>
 		</choice>
 
 	</flow>
 	<flow name="create-check-flow"
 		doc:id="e4418744-2ac3-4758-b54d-72de9812ef5a">
-		<logger level="INFO" doc:name="INFO: Start"
-			doc:id="ef0f8f55-50d6-4fa9-a166-3252ad1e7bba"
-			message="Create Check Flow Started" />
+		<set-variable value="#[now()]" doc:name="startTime"
+			doc:id="98eaed87-4104-4552-9be0-fad36626dab8"
+			variableName="startTime" />
+		<module-logger:console-logging
+			doc:name="Start"
+			doc:id="0d36658b-4e75-438c-91d8-fcf11b4e6b95"
+			traceId="#[correlationId]" stage="START" apiName='#[p("api.name")]'
+			message="Started Processing" flowName="Create Check Flow"
+			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
+			startTime="#[vars.startTime]" />
 		<flow-ref doc:name="get-access-token"
 			doc:id="27360d2e-5861-4b2a-bab7-d84d907e6922" name="get-access-token" />
 		<choice doc:name="Check if access token valid"
 			doc:id="6fe0cfcd-8170-47cd-b3b6-e44ff7274bb6">
 			<when expression="#[vars.reqAccessToken == vars.accessToken]">
-				<set-variable value="#[payload]"
-					doc:name="initialPayload"
-					doc:id="ce72adbb-2279-4c7b-9f99-f77322e41d5e"
-					variableName="initialPayload" />
-				<set-variable value="#[attributes.queryParams.storeId]"
-					doc:name="storeId" doc:id="c640bf56-2c67-488d-918a-d498216055db"
-					variableName="storeId" />
+				<ee:transform doc:name="Initial Payload"
+					doc:id="3ea97334-c097-42ae-9e09-9b6029629e26">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="initialPayload"><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+						<ee:set-variable variableName="storeId"><![CDATA[%dw 2.0
+output application/json
+---
+attributes.queryParams.storeId]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
 				<set-variable
 					value="#[output application/json ---&#10;{&#10;	methodName: 'CreateCheck - Initial Payload',&#10;	storeId: if(vars.storeId != null) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.initialPayload&#10;}]"
 					doc:name="logData" doc:id="212719cb-9a90-4da6-8dfa-609ccf0cbfc4"
@@ -196,7 +245,7 @@ output application/json
 					doc:name="Validate Request schema"
 					doc:id="19fed3fb-1fe3-456e-ad0e-55c0f6e5fa26"
 					schema="schema/createCheck.json" />
-				<ee:transform doc:name="Create Check Vars"
+				<ee:transform doc:name="Get Payment Card"
 					doc:id="cd73378b-e0e2-45fa-b216-a01092557007">
 					<ee:message>
 					</ee:message>
@@ -208,18 +257,11 @@ output application/json
 output application/json
 ---
 vars.initialPayload.createcheck.brandId default "NULL"]]></ee:set-variable>
-					</ee:variables>
-				</ee:transform>
-				<ee:transform doc:name="Get Payment Card"
-					doc:id="1636b720-9ec3-4e6d-a23c-1810eb463f4e">
-					<ee:message>
-					</ee:message>
-					<ee:variables>
 						<ee:set-variable variableName="paymentCardType"><![CDATA[%dw 2.0
 output application/json
 import java!com::api::tgif::mobilepos::util::CommonUtil
 ---
-using(cardType = vars.createCheckVars.paymentCardType)if(cardType != null and !(isEmpty(cardType)) ) CommonUtil::getPaymentCard(p("key"),cardType)
+using(cardType = payload.createcheck.payment.paymentCardType)if(cardType != null and !(isEmpty(cardType)) ) CommonUtil::getPaymentCard(p("key"),cardType)
 else ""]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
@@ -229,43 +271,8 @@ else ""]]></ee:set-variable>
 				<flow-ref doc:name="get-delivery-partner-orders"
 					doc:id="18998350-9f5d-45eb-a2ee-5563535f524b"
 					name="get-delivery-partner-orders" />
-				<choice doc:name="Check BrandId"
-					doc:id="98dee45c-287c-4055-ba25-32df407cec52">
-					<when expression='#[vars.brandId != "NULL"]'>
-						<os:retrieve doc:name="Retrieve VR Details"
-							doc:id="774ab75b-1bce-445f-b786-4c4e83e2a300" key="vrDetails"
-							objectStore="Object_store" target="vrDetails" />
-						<ee:transform doc:name="Transform Message"
-							doc:id="ee58be1c-1f24-40a3-b399-04543f9b65ac">
-							<ee:message>
-							</ee:message>
-							<ee:variables>
-								<ee:set-variable variableName="vrStoreId"><![CDATA[%dw 2.0
-output application/json
----
-((vars.vrDetails filter ( ($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String) )).vr_store_id)[0] default "NULL"]]></ee:set-variable>
-								<ee:set-variable variableName="brandName"><![CDATA[%dw 2.0
-output application/java
----
-((vars.vrDetails filter (($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String))).brand_name)[0] default ""]]></ee:set-variable>
-								<ee:set-variable variableName="orderType"><![CDATA[%dw 2.0
-output application/json
----
-((vars.vrDetails filter ( ($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String) )).order_type_id)[0] default ""]]></ee:set-variable>
-								<ee:set-variable
-									variableName="employeeObjectNumber"><![CDATA[%dw 2.0
-output application/json
----
-((vars.vrDetails filter ( ($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String) )).employee_object_number)[0] default ""]]></ee:set-variable>
-							</ee:variables>
-						</ee:transform>
-					</when>
-					<otherwise>
-						<logger level="INFO" doc:name="INFO: Default"
-							doc:id="09fd54a4-7331-46c1-9f2b-1735725a6b53"
-							message="Its a Fridays Store" />
-					</otherwise>
-				</choice>
+				<flow-ref doc:name="get-vr-details"
+					doc:id="2cf4aefb-4ff3-4d99-bc05-7eece5a55ecb" name="get-vr-details" />
 				<ee:transform doc:name="tenderId"
 					doc:id="15e7acf7-25eb-40b7-a17d-4c3649a49682">
 					<ee:message>
@@ -275,81 +282,41 @@ output application/json
 							resource="dwl/create-check/tender-id.dwl" variableName="tenderId" />
 					</ee:variables>
 				</ee:transform>
-				<set-variable
-					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CreateCheck - Tender ID',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.tenderId&#10;}]"
-					doc:name="logData" doc:id="ce7784db-61fc-46eb-8a5c-dab0dcda2d4b"
-					variableName="logData" />
+				<ee:transform doc:name="fullfillmentOrder"
+					doc:id="2a98f346-e4aa-4ea2-ab0f-752bf4af3dec">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="fullfillmentOrder"><![CDATA[%dw 2.0
+output application/json
+---
+using ( empObjNum = vars.tenderId.employeeObjectNum ) if ( empObjNum== "98008" and empObjNum == "96010" and empObjNum == "96011" and empObjNum == "96012" ) "Pickup" else "Delivery"]]></ee:set-variable>
+						<ee:set-variable variableName="logData"><![CDATA[%dw 2.0
+output application/json
+---
+{
+	methodName: 'CreateCheck - Tender ID',
+	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
+	checkNumber: 'Null',
+	checkSequence: 'Null',
+	employeeNumber: 'Null',
+	tableNumber: 'Null',
+	status: '1',
+	message: vars.tenderId
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
 				<flow-ref doc:name="insert-online-ordering-logs"
 					doc:id="ff3d6fa2-212a-483a-91b9-bdb889f72294"
 					name="insert-online-ordering-logs" />
-				<set-variable
-					value='#[using(empObjNum = vars.tenderId.employeeObjectNum) if( empObjNum== "98008" and empObjNum == "96010" and empObjNum == "96011" and empObjNum == "96012") "Pickup" else "Delivery"]'
-					doc:name="fullfillmentOrder"
-					doc:id="d58c5b1a-f071-43cd-a4a1-c271c305cb31"
-					variableName="fullfillmentOrder" />
 				<choice doc:name="Check Delivery Partner"
 					doc:id="d8ea47ea-d697-4167-9599-fef7e0d44b58">
 					<when
 						expression='#[using(subject = vars.tenderId.messageSubject) subject != "Grub Hub Delivery" and subject != "Uber Eats Delivery" and subject != "Postmates Delivery" and subject != "Door Dash Delivery"]'>
-						<db:select doc:name="Select CartId"
-							doc:id="89e8def7-a87a-48e9-ba18-1b3753b236b9" target="cartIdList"
-							config-ref="Database_Config_Mule_Interface">
-							<db:sql><![CDATA[SELECT distinct cart_id FROM [dbo].[validate_olo_duplicate_orders] with (Nolock) WHERE store_id = :storeId AND cart_id = :cartId
-AND day_of_business = :currentDate AND delivery_partner_name in ('OLO', 'PayInStore','Online Orders')]]></db:sql>
-							<db:input-parameters><![CDATA[#[{
-	storeId: vars.storeId,
-	cartId: vars.createCheckVars.cartId,
-	currentDate: (now() >> "CST") as Date {
-		format: "MM/dd/yyyy"
-	}
-}]]]></db:input-parameters>
-						</db:select>
-						<choice doc:name="Check for duplicate olo orders"
-							doc:id="16f29ab2-b118-4d50-9a03-780f0c35fa4b">
-							<when expression="#[!(isEmpty(vars.cartIdList))]">
-								<db:select doc:name="Select Check Payload"
-									doc:id="47d6a0ae-8c74-4efb-93cc-c36e69afcb87"
-									target="checkPayload"
-									config-ref="Database_Config_Mule_Interface">
-									<db:sql><![CDATA[SELECT check_payload from [dbo].[olo_cart_id_details] with (Nolock) WHERE store_id =:storeId AND cart_id = :cartId]]></db:sql>
-									<db:input-parameters><![CDATA[#[{
-	storeId: vars.storeId,
-	cartId: vars.createCheckVars.cartId
-}]]]></db:input-parameters>
-								</db:select>
-								<choice doc:name="CheckPayload"
-									doc:id="cc032eb2-0a05-4fe9-b239-ea4f499234c5">
-									<when expression="#[!(isEmpty(vars.checkPayload))]">
-										<set-payload
-											value="#[vars.checkPayload[0].check_payload]"
-											doc:name="Set Payload"
-											doc:id="5138fc16-57e9-4712-a573-8316f7617cb5" />
-										<logger level="INFO" doc:name="INFO: Success"
-											doc:id="0d374f88-4a5c-437e-823f-eb8463814569"
-											message="#[vars.storeId]  - get duplicate olo payload from db Completed" />
-									</when>
-									<otherwise>
-										<logger level="INFO" doc:name="Logger" doc:id="adfcce53-a284-4db5-97d7-fd07b01a4625" />
-										<flow-ref doc:name="create-process-sub-flow"
-											doc:id="27683f87-ea3a-467c-bad7-7d6ed034f29f"
-											name="create-process-sub-flow" />
-									</otherwise>
-								</choice>
-							</when>
-							<otherwise>
-								<set-variable
-									value="#[{&#10;	storeId: if(vars.storeId != null) vars.storeId else vars.vrStoreId,&#10;	cartId: vars.createCheckVars.cartId,&#10;	orderId: vars.createCheckVars.authCode,&#10;	dayofBusiness: (now() &gt;&gt; &quot;CST&quot;) as Date {&#10;		format: &quot;MM/dd/yyyy&quot;&#10;	},&#10;	payload: 'NULL'&#10;}]"
-									doc:name="logData"
-									doc:id="79633757-dd87-4fdf-9f55-299e8064fd01"
-									variableName="logData" />
-								<flow-ref doc:name="insert-duplicate-orders"
-									doc:id="7cbb3e4a-1c30-4906-8d3c-6a29752128e9"
-									name="insert-duplicate-orders" />
-								<flow-ref doc:name="create-process-sub-flow"
-									doc:id="05b2f653-b718-4dc7-a163-933d8c413d8d"
-									name="create-process-sub-flow" />
-							</otherwise>
-						</choice>
+						<flow-ref
+							doc:name="check-delivery-partners-for-duplicate-orders"
+							doc:id="a3036852-7c63-4c52-8cfa-ddc4149e2285"
+							name="check-delivery-partners-for-duplicate-orders" />
 					</when>
 					<otherwise>
 						<flow-ref doc:name="create-process-sub-flow"
@@ -376,9 +343,12 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-				<logger level="INFO" doc:name="INFO: Failure"
-					doc:id="0099b281-f5d1-4f03-8727-cd44f17b1355"
-					message="Create Check Flow completed unsuccessfully" />
+				<module-logger:console-logging
+					doc:name="Failed" doc:id="8bf5a137-d7e6-4054-b2e7-26790d2f00d2"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="COMPLETED" apiName='#[p("api.name")]'
+					message="Invalid Access Token" flowName="Calculate Totals Flow"
+					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 			</otherwise>
 		</choice>
 		<error-handler>
@@ -386,9 +356,9 @@ output application/json
 				logException="true" doc:name="On Error Continue"
 				doc:id="76ff6f51-91c0-4f8c-bac4-b7524531e603"
 				type="HTTP:CONNECTIVITY">
-				<logger level="INFO" doc:name="Logger"
-					doc:id="4b1f9bd5-325e-4aa2-9ce6-99e86fcd1caa"
-					message="Connectivity Error" />
+				<error-handler-plugin:on-error
+					doc:name="Process Error"
+					doc:id="dbca2836-374a-45e5-81bd-e8b2dc67bd50" target="errorPayload" />
 				<java:invoke-static doc:name="Ping Gateway"
 					doc:id="f7ffe13d-a56f-42ed-b291-4767d5c1c87d"
 					class="com.api.tgif.mobilepos.util.CommonUtil"
@@ -410,7 +380,8 @@ output application/json
 	"createcheck": {
 		"result": {
 			"status": "failure",
-			"message": "Store server not reachable, able to reach Firewall"
+			"message": "Store server not reachable, able to reach Firewall",
+			error: vars.errorPayload
 		}
 	}
 }]]></ee:set-payload>
@@ -450,7 +421,8 @@ output application/json
 	"createcheck": {
 		"result": {
 			"status": "failure",
-			"message": "Store network unreachable at Firewall"
+			"message": "Store network unreachable at Firewall",
+			error: vars.errorPayload
 		}
 	}
 }]]></ee:set-payload>
@@ -490,18 +462,23 @@ output application/json
 					doc:name="insert-delivery-order-details-failed-order"
 					doc:id="8d30c8fd-d090-4cc8-83fc-c232402f5653"
 					name="insert-delivery-order-details-failed-order" />
-				<logger level="INFO" doc:name="INFO: Failure"
-					doc:id="76684c01-3980-4eb1-92a2-fb03e68a2e7d"
-					message="Create Check Flow completed unsuccessfully" />
+				<module-logger:console-logging
+					doc:name="Console logging"
+					doc:id="4e063fa1-eb24-4b2f-999a-156b663cf902"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="EXCEPTION" apiName='#[p("api.name")]'
+					message="Processing Failed due to connectivity error"
+					flowName="Create Check Flow" env='#[p("mule.env")]'
+					startTime="#[vars.startTime]" error="#[error]" />
 			</on-error-continue>
 			<on-error-continue enableNotifications="true"
 				logException="true" doc:name="On Error Continue"
 				doc:id="cf5cb7d2-3a22-43ce-a326-2cacc67feef8">
-				<logger level="INFO" doc:name="Logger"
-					doc:id="dd128c3d-eecb-4e97-a635-fee58e87333f"
-					message="Error Encountered=#[error.description]" />
+				<error-handler-plugin:on-error
+					doc:name="Process Error"
+					doc:id="09e20c79-ed27-47fa-90c7-a67784be0872" target="errorPayload" />
 				<set-variable
-					value='#["Following error occurred in Create Check method for Store " ++ vars.storeId ++ "=" ++ write(error, "application/json")]'
+					value='#[output application/json --- "Following error occurred in Create Check method for Store " ++ vars.storeId default "" ++ "=" ++ write(error, "application/json")]'
 					doc:name="emailMessage"
 					doc:id="e83d36a1-a29f-4154-8cc7-ee4d21033626"
 					variableName="emailMessage" />
@@ -509,7 +486,7 @@ output application/json
 					doc:id="ab8a7543-4495-4c2a-a456-8d9990738347"
 					name="send-email-notification" />
 				<set-payload
-					value='#[output application/json&#10;---&#10;{&#10;	createcheck: {&#10;		result: {&#10;			status: "Failure",&#10;			message: error.description&#10;		}&#10;	}&#10;}]'
+					value='#[output application/json&#10;---&#10;{&#10;	createcheck: {&#10;		result: {&#10;			status: "Failure",&#10;			message: error.description,&#10;			error: vars.errorPayload&#10;		}&#10;	}&#10;}]'
 					doc:name="Create Failure Response"
 					doc:id="88c6d5ca-07be-4bb6-8e87-bc949dfa545f" />
 				<set-variable
@@ -519,28 +496,50 @@ output application/json
 				<flow-ref doc:name="insert-online-ordering-logs"
 					doc:id="6f61bfff-248d-486c-a3e8-0b4a6afaf9a7"
 					name="insert-online-ordering-logs" />
-				<logger level="INFO" doc:name="INFO: Failure" doc:id="0f87e0a7-1950-469e-9263-e40df88a3819" message="Create Check Flow Completed with Errors" />
+				<module-logger:console-logging
+					doc:name="Console logging"
+					doc:id="9c471a9c-72d8-466f-83aa-37894caa4c86"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="EXCEPTION" apiName='#[p("api.name")]'
+					message="Processing Failed due to error"
+					flowName="Create Check Flow" env='#[p("mule.env")]'
+					startTime="#[vars.startTime]" error="#[error]" />
 
 			</on-error-continue>
 		</error-handler>
 	</flow>
 	<flow name="calculate-tax-and-total-flow"
 		doc:id="506d3351-e46c-4706-b6a8-677b9bbf352a">
-		<logger level="INFO" doc:name="INFO: Start"
-			doc:id="14fff35b-14a3-4176-8cab-385d0bf235a3"
-			message="Calculate Tax And Total Flow Started" />
+		<set-variable value="#[now()]" doc:name="startTime"
+			doc:id="34d4b4a4-5222-4d67-b14e-511a9e0c7369"
+			variableName="startTime" />
+		<module-logger:console-logging
+			doc:name="Start"
+			doc:id="1e1d7a81-fdf8-4b4c-8a57-ce68fe6907a3"
+			traceId="#[correlationId]" stage="START" apiName='#[p("api.name")]'
+			message="Started Processing"
+			flowName="Calculate Taxt and Totals Flow" env='#[p("mule.env")]'
+			config-ref="TGIF_Logger_Config" startTime="#[vars.startTime]" />
 		<flow-ref doc:name="get-access-token"
 			doc:id="76a5d86f-e805-4f54-aa4d-2e0eabb11c79" name="get-access-token" />
 		<choice doc:name="Check if access token valid"
 			doc:id="3effe04c-b008-45d5-831f-265c9d49cbae">
 			<when expression="#[vars.reqAccessToken == vars.accessToken]">
-				<set-variable value="#[payload]"
-					doc:name="initialPayload"
-					doc:id="8c4b36a9-253a-4a95-9bbc-7755fa9e40d9"
-					variableName="initialPayload" />
-				<set-variable value="#[attributes.queryParams.storeId]"
-					doc:name="storeId" doc:id="57d8c305-e445-45f3-8a92-e77d51a9ec7d"
-					variableName="storeId" />
+				<ee:transform doc:name="Initial Payload"
+					doc:id="75e05d9d-09f3-4fbd-9d39-a5fc00e2c426">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="initialPayload"><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+						<ee:set-variable variableName="storeId"><![CDATA[%dw 2.0
+output application/json
+---
+attributes.queryParams.storeId]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
 				<set-variable
 					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal - Initial Payload',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.initialPayload&#10;}]"
 					doc:name="logData" doc:id="8d731c8a-83ab-4c2e-a985-ec7aa780f1d0"
@@ -570,9 +569,9 @@ payload.calculateTaxAndTotal.authenticationSystem]]></ee:set-variable>
 				<flow-ref doc:name="get-store-ip-properties"
 					doc:id="058d401e-aab4-483f-aa72-0c2140e0cb41"
 					name="get-store-ip-properties" />
-				<flow-ref doc:name="call-respos-api-for-tax-and-total"
+				<flow-ref doc:name="call-pos-api-for-tax-and-total"
 					doc:id="219b2c6b-5ed1-49dc-9e82-aa6ceb7d4ca4"
-					name="call-respos-api-for-tax-and-total" />
+					name="call-pos-api-for-tax-and-total" />
 			</when>
 			<otherwise>
 				<ee:transform doc:name="Create Failure Response"
@@ -591,9 +590,13 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-				<logger level="INFO" doc:name="INFO: Failure"
-					doc:id="c7763aa3-c153-4f09-88c0-6f341a8e5f94"
-					message="Caluclate Tax And Total Flow flow completed unsuccessfully" />
+				<module-logger:console-logging
+					doc:name="Failed" doc:id="1a2f26db-b2bf-48ee-9304-5c231e09fd93"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="COMPLETED" apiName='#[p("api.name")]'
+					message="Invalid Access Token"
+					flowName="Calculate Tax and Totals Flow" env='#[p("mule.env")]'
+					startTime="#[vars.startTime]" />
 			</otherwise>
 		</choice>
 		<error-handler>
@@ -601,9 +604,10 @@ output application/json
 				logException="true" doc:name="On Error Continue"
 				doc:id="1c51311b-aac4-4dfe-8785-5e6514a30f9f"
 				type="HTTP:CONNECTIVITY">
-				<logger level="INFO" doc:name="Logger"
-					doc:id="40aad7c5-5143-42cd-b8d9-2b659fbaab45"
-					message="Connectivity Error" />
+				<error-handler-plugin:on-error
+					doc:name="Process Error"
+					doc:id="323668bf-064f-4464-8ef0-f870117dcc2b"
+					config-ref="Error_Handler_Plugin_Config" target="errorPayload" />
 				<java:invoke-static doc:name="Ping Gateway"
 					doc:id="2b565535-6a38-44e2-98ce-766bd65a29a6"
 					class="com.api.tgif.mobilepos.util.CommonUtil"
@@ -625,7 +629,8 @@ output application/json
 	"calculateTaxAndTotal": {
 		"result": {
 			"status": "failure",
-			"message": "Store server not reachable, able to reach Firewall"
+			"message": "Store server not reachable, able to reach Firewall",
+			error: vars.errorPayload
 		}
 	}
 }]]></ee:set-payload>
@@ -645,7 +650,8 @@ output application/json
 	"calculateTaxAndTotal": {
 		"result": {
 			"status": "failure",
-			"message": "Store network unreachable at Firewall"
+			"message": "Store network unreachable at Firewall",
+			error: vars.errorPayload
 		}
 	}
 }]]></ee:set-payload>
@@ -660,18 +666,24 @@ output application/json
 				<flow-ref doc:name="insert-online-ordering-logs"
 					doc:id="000b39ea-86df-4ef7-8585-1193fcdb4c27"
 					name="insert-online-ordering-logs" />
-				<logger level="INFO" doc:name="INFO: Failure"
-					doc:id="a15ef7a2-7c67-4e5b-8301-80034d2ac8ab"
-					message="Caluclate Tax And Total Flow flow completed unsuccessfully" />
+				<module-logger:console-logging
+					doc:name="Failed" doc:id="0648c0f7-562e-4810-a211-fc3ca4f66557"
+					config-ref="TGIF_Logger_Config"
+					message="Processing Failed due to connectivity error"
+					stage="EXCEPTION" traceId="#[correaltionId]"
+					flowName="Calculate Tax and Totals Flow" apiName='#[p("api.name")]'
+					env='#[p("mule.env")]' startTime="#[vars.startTime]"
+					error="#[error]" />
 			</on-error-continue>
 			<on-error-continue enableNotifications="true"
 				logException="true" doc:name="On Error Continue"
 				doc:id="29705788-19cd-45e8-a838-051f674447ef">
-				<logger level="INFO" doc:name="Logger"
-					doc:id="0bce7609-f300-4e11-9c4b-a2f375aa4c12"
-					message="Error Encountered=#[error.description]" />
+				<error-handler-plugin:on-error
+					doc:name="Process Error"
+					doc:id="0de54435-05c5-4c1a-b7a5-8521aa46d9e7"
+					config-ref="Error_Handler_Plugin_Config" target="errorPayload" />
 				<set-variable
-					value='#["Following error occurred in CalculateTaxAndTotal method for Store " ++ vars.storeId ++ "=" ++ write(error, "application/json")]'
+					value='#[output application/json --- "Following error occurred in CalculateTaxAndTotal method for Store " ++ vars.storeId default "" ++ "=" ++ write(error, "application/json")]'
 					doc:name="emailMessage"
 					doc:id="12e56814-d59d-4bd7-8287-a092217c9f53"
 					variableName="emailMessage" />
@@ -679,12 +691,9 @@ output application/json
 					doc:id="934d7cab-1418-4622-8947-dfded90777b4"
 					name="send-email-notification" />
 				<set-payload
-					value='#[output application/json&#10;---&#10;{&#10;	calculateTaxAndTotal: {&#10;		result: {&#10;			status: "Failure",&#10;			message: error&#10;		}&#10;	}&#10;}]'
+					value='#[output application/json&#10;---&#10;{&#10;	calculateTaxAndTotal: {&#10;		result: {&#10;			status: "Failure",&#10;			message: error,&#10;			error: vars.errorPayload&#10;		}&#10;	}&#10;}]'
 					doc:name="Create Failure Response"
 					doc:id="755d4971-1efa-4d16-8aac-1351f6764db8" />
-				<logger level="INFO" doc:name="Logger"
-					doc:id="d5c0987f-d2ae-404f-baba-d1ba1263d4fd"
-					message="Caluclate Tax And Total Flow Completed with Errors" />
 				<set-variable
 					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: error.description&#10;}]"
 					doc:name="logData" doc:id="2c8fa8bf-f6d8-46c8-8c67-eb6fe4dacfcd"
@@ -692,30 +701,49 @@ output application/json
 				<flow-ref doc:name="insert-online-ordering-logs"
 					doc:id="6e01941e-07fc-4733-aaf9-e6cf3dd7d6ae"
 					name="insert-online-ordering-logs" />
-				<logger level="INFO" doc:name="INFO: Failure"
-					doc:id="f6bdcef1-1c6c-4eab-863f-68d599736db1"
-					message="Caluclate Tax And Total Flow flow completed unsuccessfully" />
+				<module-logger:console-logging
+					doc:name="Failed" doc:id="5558e1ee-fe01-4199-aad0-1da0b070eb4b"
+					config-ref="TGIF_Logger_Config"
+					message="Processing Failed due to error" stage="EXCEPTION"
+					traceId="#[correaltionId]" flowName="Calculate Tax and Totals Flow"
+					apiName='#[p("api.name")]' env='#[p("mule.env")]'
+					startTime="#[vars.startTime]" error="#[error]" />
 			</on-error-continue>
 
 		</error-handler>
 	</flow>
 	<flow name="calculate-total-flow"
 		doc:id="ad3f63d9-54cf-4671-9eb5-a2458ff6976a">
-		<logger level="INFO" doc:name="INFO: Start"
-			doc:id="565ef04c-a0f0-4224-93cb-64d49e51c7e7"
-			message="Caluclate Total Flow Started" />
+		<set-variable value="#[now()]" doc:name="startTime"
+			doc:id="c0119c60-5dc1-4aec-8c98-1f5c40eec95e"
+			variableName="startTime" />
+		<module-logger:console-logging
+			doc:name="Start"
+			doc:id="7abe4f72-b6f5-426f-a272-b90d1f887a41"
+			traceId="#[correlationId]" stage="START" apiName='#[p("api.name")]'
+			message="Started Processing" flowName="Calculate Totals Flow"
+			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
+			startTime="#[vars.startTime]" />
 		<flow-ref doc:name="get-access-token"
 			doc:id="0b9225bf-847f-48bd-a5ad-b8421449eb44" name="get-access-token" />
 		<choice doc:name="Check if access token valid"
 			doc:id="c57765de-0b38-43dc-85ab-198c1a0f1fdd">
 			<when expression="#[vars.reqAccessToken == vars.accessToken]">
-				<set-variable value="#[payload]"
-					doc:name="initialPayload"
-					doc:id="404f3944-d0df-4e7a-ad16-6ec4c68ed66c"
-					variableName="initialPayload" />
-				<set-variable value="#[attributes.queryParams.storeId]"
-					doc:name="storeId" doc:id="79bcb464-af82-4631-b65f-5d1039395692"
-					variableName="storeId" />
+				<ee:transform doc:name="Initial Payload"
+					doc:id="c01b5a3f-ce93-46de-9924-a6e3329f877d">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="initialPayload"><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+						<ee:set-variable variableName="storeId"><![CDATA[%dw 2.0
+output application/json
+---
+attributes.queryParams.storeId]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
 				<set-variable
 					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTotals - Initial Payload',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: vars.initialPayload&#10;}]"
 					doc:name="logData" doc:id="07a46914-2035-4b34-8c79-8efb244c8aed"
@@ -737,7 +765,9 @@ output application/json
 output application/json
 ---
 payload.calculatetotals.authenticationSystem]]></ee:set-variable>
-						<ee:set-variable resource="dwl\calculate-totals\tender-id.dwl" variableName="tenderId" />
+						<ee:set-variable
+							resource="dwl\calculate-totals\tender-id.dwl"
+							variableName="tenderId" />
 					</ee:variables>
 				</ee:transform>
 				<set-variable
@@ -753,9 +783,9 @@ payload.calculatetotals.authenticationSystem]]></ee:set-variable>
 				<choice doc:name="IP Address is not null"
 					doc:id="c8532eb6-5b48-4621-9e5b-894b70007f07">
 					<when expression="#[vars.storeIpProperties.serverIp != null]">
-						<flow-ref doc:name="call-respos-api-tax-calculation"
+						<flow-ref doc:name='call-pos-api-tax-calculation'
 							doc:id="4eba4ed6-8e48-4fa0-8528-155c20dd9207"
-							name="call-respos-api-tax-calculation" />
+							name="call-pos-api-tax-calculation" />
 					</when>
 					<otherwise>
 						<ee:transform doc:name="Create Failure Response"
@@ -800,9 +830,12 @@ output application/json
 						<flow-ref doc:name="insert-online-ordering-logs"
 							doc:id="5113608c-523a-4b6e-9253-92a67a2f714c"
 							name="insert-online-ordering-logs" />
-						<logger level="INFO" doc:name="INFO: Failure"
-							doc:id="642b452e-4d54-47a9-95e4-97632debd905"
-							message="Calculate Total Flow completed unsuccessfully" />
+						<module-logger:console-logging
+							doc:name="Failed" doc:id="6f062bec-9db8-456f-82e0-0988d0eac726"
+							config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+							stage="COMPLETED" apiName='#[p("api.name")]'
+							message="IP Addess is null" flowName="Calculate Totals Flow"
+							env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 					</otherwise>
 				</choice>
 
@@ -824,21 +857,25 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-				<logger level="INFO" doc:name="INFO: Failure"
-					doc:id="a2c19d5a-2e34-4060-86cf-4f8ecfe8d7cd"
-					message="Calculate Total Flow completed unsuccessfully" />
+				<module-logger:console-logging
+					doc:name="Failed" doc:id="dc8cdbd9-9e78-4c8b-8662-95d3dda1fda7"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="COMPLETED" apiName='#[p("api.name")]'
+					message="Invalid Access Token" flowName="Calculate Totals Flow"
+					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 			</otherwise>
 		</choice>
 		<error-handler>
 			<on-error-continue enableNotifications="true"
 				logException="true" doc:name="On Error Continue"
-				doc:id="cae3cefe-022f-4e36-bda5-d533db81e55b"
+				doc:id="d889a007-b6f6-482e-bb61-28c91549cb3f"
 				type="HTTP:CONNECTIVITY">
-				<logger level="INFO" doc:name="Logger"
-					doc:id="31ca3fd8-ee0c-4e00-bad8-f6838b6a689e"
-					message="Connectivity Error" />
+				<error-handler-plugin:on-error
+					doc:name="Process Error"
+					doc:id="1b960fa2-0a77-42cd-8715-31cbfc436fa2"
+					config-ref="Error_Handler_Plugin_Config" target="errorPayload" />
 				<java:invoke-static doc:name="Ping Gateway"
-					doc:id="3a11a98b-8b89-4fca-8dd0-9db75eeefea7"
+					doc:id="e0cf8623-df47-48fd-a158-18013b64d5c4"
 					class="com.api.tgif.mobilepos.util.CommonUtil"
 					method="pingGatewayServer(java.lang.String)">
 					<java:args><![CDATA[#[{
@@ -846,10 +883,10 @@ output application/json
 }]]]></java:args>
 				</java:invoke-static>
 				<choice doc:name="Choice"
-					doc:id="d3ad62ae-8d33-479f-80f6-4e0213cf03a9">
+					doc:id="59ba17ea-d220-47a8-abad-689897cb560a">
 					<when expression="#[payload]">
 						<ee:transform doc:name="Create Failure Response"
-							doc:id="d3fe1d0d-8f45-4781-8891-6194df5b277f">
+							doc:id="4e8bef6e-eb33-41bf-9e09-ae36bb207ca2">
 							<ee:message>
 								<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -858,7 +895,8 @@ output application/json
 	"calculatetotals": {
 		"result": {
 			"status": "failure",
-			"message": "Unable to reach store server"
+			"message": "Unable to reach store server",
+			error: vars.errorPayload
 		}
 	}
 }]]></ee:set-payload>
@@ -887,7 +925,7 @@ output application/json
 					</when>
 					<otherwise>
 						<ee:transform doc:name="Create Failure Response"
-							doc:id="07c9244b-cfd8-4ec3-8cbc-fb4750bca8c5">
+							doc:id="2a503a10-3214-4d71-93a7-8c8adb73931e">
 							<ee:message>
 								<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -896,7 +934,8 @@ output application/json
 	"calculatetotals": {
 		"result": {
 			"status": "failure",
-			"message": "Unable to reach store network"
+			"message": "Unable to reach store network",
+			error: vars.errorPayload
 		}
 	}
 }]]></ee:set-payload>
@@ -924,23 +963,28 @@ output application/json
 					</otherwise>
 				</choice>
 				<flow-ref doc:name="send-email-notification"
-					doc:id="1bba29c1-1bd1-4a2e-b0e5-3a337e13c0c4"
+					doc:id="7fc01145-8f37-44bd-8082-c25c53dcd418"
 					name="send-email-notification" />
 				<flow-ref doc:name="insert-online-ordering-logs"
-					doc:id="6ae77eee-150b-4f58-9045-ae722fa6b0a9"
+					doc:id="840a6558-e3fc-4a28-aef5-20591be0fa54"
 					name="insert-online-ordering-logs" />
-				<logger level="INFO" doc:name="INFO: Failure"
-					doc:id="47a76342-0fc4-42bd-abd2-fbf76add9e62"
-					message="Calculate Total Flow completed unsuccessfully" />
+				<module-logger:console-logging
+					doc:name="Failed" doc:id="f1dd5f82-a7fd-49fa-bcad-0d4a52f9c504"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="EXCEPTION" apiName='#[p("api.name")]'
+					message="Processing Failed due to connectivity error"
+					flowName="Calculate Totals Flow" env='#[p("mule.env")]' error="#[error]"
+					startTime="#[vars.startTime]" />
 			</on-error-continue>
 			<on-error-continue enableNotifications="true"
 				logException="true" doc:name="On Error Continue"
 				doc:id="c8261786-fa72-46ad-8332-8b2fbe51cc96">
-				<logger level="INFO" doc:name="Logger"
-					doc:id="ffd77fa8-4e08-4828-ba58-3ce54baece39"
-					message="Error Encountered=#[error.description]" />
+				<error-handler-plugin:on-error
+					doc:name="Process Error"
+					doc:id="c7510520-ad5e-47d2-ab29-dc1c1d59d3e9"
+					config-ref="Error_Handler_Plugin_Config" target="errorPayload" />
 				<set-variable
-					value='#["Following error occurred in Calculate Totals method for Store " ++ vars.storeId ++ "=" ++ write(error, "application/json")]'
+					value='#[output application/json --- "Following error occurred in Calculate Totals method for Store " ++ vars.storeId default "" ++ "=" ++ write(error, "application/json")]'
 					doc:name="emailMessage"
 					doc:id="0e9ff840-0e2a-433a-a3e6-8d7abe5c6d8c"
 					variableName="emailMessage" />
@@ -948,22 +992,34 @@ output application/json
 					doc:id="02a8cbe1-395f-4e4e-ace2-33d96c1ea298"
 					name="send-email-notification" />
 				<set-payload
-					value='#[output application/json&#10;---&#10;{&#10;	calculatetotals: {&#10;		result: {&#10;			status: "failure",&#10;			message: error&#10;		}&#10;	}&#10;}]'
+					value='#[output application/json&#10;---&#10;{&#10;	calculatetotals: {&#10;		result: {&#10;			status: "failure",&#10;			message: error.description,&#10;			error: vars.errorPayload&#10;		}&#10;	}&#10;}]'
 					doc:name="Create Failure Response"
 					doc:id="9a3c8a97-4eaa-4404-b960-6cedb008d3ae" />
-				<logger level="INFO" doc:name="Logger"
-					doc:id="bb6263aa-3a29-40b2-9ffc-871ff773af7c"
-					message="Caluclate Total Flow Completed with Errors" />
 				<set-variable
-					value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTotals',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '0',&#10;	message: error.description&#10;}]"
+					value="#[output application/json
+&#10;---
+&#10;{
+&#10;	methodName: 'CalculateTotals',
+&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,
+&#10;	checkNumber: 'Null',
+&#10;	checkSequence: 'Null',
+&#10;	employeeNumber: 'Null',
+&#10;	tableNumber: 'Null',
+&#10;	status: '0',
+&#10;	message: error.description
+&#10;}]"
 					doc:name="logData" doc:id="8d728ad8-fada-4a59-bebe-93e0eb14e258"
 					variableName="logData" />
 				<flow-ref doc:name="insert-online-ordering-logs"
 					doc:id="65fd898c-1069-4c38-8423-9a2382281a5c"
 					name="insert-online-ordering-logs" />
-				<logger level="INFO" doc:name="INFO: Failure"
-					doc:id="a5c0506f-d518-4d59-a1f5-c24f38635cc0"
-					message="Calculate Total Flow completed unsuccessfully" />
+				<module-logger:console-logging
+					doc:name="Failed" doc:id="93c665a1-1fdc-44e3-a4ce-d395dba17e80"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="EXCEPTION" apiName='#[p("api.name")]'
+					message="Processing Failed due to error" flowName="Calculate Totals Flow"
+					env='#[p("mule.env")]' error="#[error]"
+					startTime="#[vars.startTime]" />
 			</on-error-continue>
 		</error-handler>
 	</flow>

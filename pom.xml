@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.mycompany</groupId>
+	<groupId>com.tgif</groupId>
 	<artifactId>tgif-mobilepos-papi</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>mule-application</packaging>
@@ -51,6 +51,7 @@
 					</compilerArgs>
 				</configuration>
 			</plugin>
+
 		</plugins>
 	</build>
 
@@ -113,10 +114,19 @@
 			<artifactId>bcprov-jdk16</artifactId>
 			<version>1.45</version>
 		</dependency>
-
-
+		<dependency>
+			<groupId>9fe5690a-65cc-4094-918d-7fc30f2102db</groupId>
+			<artifactId>tgif-logger</artifactId>
+			<version>1.0.3</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>9fe5690a-65cc-4094-918d-7fc30f2102db</groupId>
+			<artifactId>common-error-handler</artifactId>
+			<version>1.0.0</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
 	</dependencies>
-
 	<repositories>
 		<repository>
 			<id>anypoint-exchange-v2</id>
@@ -142,5 +152,4 @@
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
-
 </project>

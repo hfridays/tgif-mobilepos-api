@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:java="http://www.mulesoft.org/schema/mule/java"
+<mule
+	xmlns:module-logger="http://www.mulesoft.org/schema/mule/module-logger"
+	xmlns:java="http://www.mulesoft.org/schema/mule/java"
 	xmlns:http="http://www.mulesoft.org/schema/mule/http"
 	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
 	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
@@ -15,8 +17,78 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
-http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
-
+http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd
+http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema/mule/module-logger/current/mule-module-logger.xsd">
+	<sub-flow name="check-delivery-partners-for-duplicate-orders"
+		doc:id="b05c5685-906e-4723-928c-2da321e788c7">
+		<db:select doc:name="Select CartId"
+			doc:id="42fcf4cb-5d25-4f1f-9ca0-819ffa79f74a" target="cartIdList"
+			config-ref="Database_Config_Mule_Interface">
+			<db:sql><![CDATA[SELECT distinct cart_id FROM [dbo].[validate_olo_duplicate_orders] with (Nolock) WHERE store_id = :storeId AND cart_id = :cartId
+AND day_of_business = :currentDate AND delivery_partner_name in ('OLO', 'PayInStore','Online Orders')]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	storeId: vars.storeId,
+	cartId: vars.createCheckVars.cartId,
+	currentDate: (now() >> "CST") as Date {
+		format: "MM/dd/yyyy"
+	}
+}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Check for duplicate olo orders"
+			doc:id="beb515b2-f719-4fc7-816e-2c01e6c2d056">
+			<when expression="#[!(isEmpty(vars.cartIdList))]">
+				<db:select doc:name="Select Check Payload"
+					doc:id="5dcfc175-6289-40b7-8ade-aaf33e12375f" target="checkPayload"
+					config-ref="Database_Config_Mule_Interface">
+					<db:sql><![CDATA[SELECT check_payload from [dbo].[olo_cart_id_details] with (Nolock) WHERE store_id =:storeId AND cart_id = :cartId]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
+	storeId: vars.storeId,
+	cartId: vars.createCheckVars.cartId
+}]]]></db:input-parameters>
+				</db:select>
+				<choice doc:name="CheckPayload"
+					doc:id="437b62e0-adc0-4b4c-8194-65313c8ea462">
+					<when expression="#[!(isEmpty(vars.checkPayload))]">
+						<set-payload
+							value="#[vars.checkPayload[0].check_payload]"
+							doc:name="Set Payload"
+							doc:id="aa87ba9f-9ebd-4dc0-ab4c-5a87d1d7488c" />
+						<module-logger:console-logging
+							doc:name="Success" doc:id="e2add98e-7cc3-4ab0-ac46-b60c9df9bbf2"
+							config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+							stage="COMPLETED" apiName='#[p("api.name")]'
+							message="Process Completed" flowName="Create Check Flow"
+							env='#[p("mule.env")]' startTime="#[vars.startTime]" />
+					</when>
+					<otherwise>
+						<flow-ref doc:name="create-process-sub-flow"
+							doc:id="be3a1828-6448-4f1d-85a0-b90e6580d945"
+							name="create-process-sub-flow" />
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise>
+				<set-variable
+					value="#[{
+&#10;	storeId: if(vars.storeId != null) vars.storeId else vars.vrStoreId,
+&#10;	cartId: vars.createCheckVars.cartId,
+&#10;	orderId: vars.createCheckVars.authCode,
+&#10;	dayofBusiness: (now() &gt;&gt; &quot;CST&quot;) as Date {
+&#10;		format: &quot;MM/dd/yyyy&quot;
+&#10;	},
+&#10;	payload: 'NULL'
+&#10;}]"
+					doc:name="logData" doc:id="586bb1a4-d37a-4bb5-946e-462d877ac7e9"
+					variableName="logData" />
+				<flow-ref doc:name="insert-duplicate-orders"
+					doc:id="3610c7cf-3538-4553-b65e-97872ba2a266"
+					name="insert-duplicate-orders" />
+				<flow-ref doc:name="create-process-sub-flow"
+					doc:id="33632add-1ace-4b55-9d57-d5ebb319afaa"
+					name="create-process-sub-flow" />
+			</otherwise>
+		</choice>
+	</sub-flow>
 	<sub-flow name="create-process-sub-flow"
 		doc:id="1e2ae279-7aa2-4b27-996c-bd2f6d1c3d5b">
 		<ee:transform doc:name="Post Transaction XML"
@@ -53,9 +125,9 @@ http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/jav
 		<choice doc:name="IP Address is not null"
 			doc:id="6f6d160c-3f20-4a3d-b3c3-8badbe149ab2">
 			<when expression="#[vars.storeIpProperties.serverIp != null]">
-				<flow-ref doc:name="call-respos-api-create-check"
+				<flow-ref doc:name="call-pos-api-create-check"
 					doc:id="b0f44bc1-ad05-4617-8e93-889e23622ba1"
-					name="call-respos-api-create-check" />
+					name="call-pos-api-create-check" />
 
 			</when>
 			<otherwise>
@@ -126,14 +198,20 @@ output application/json
 					doc:name="insert-delivery-order-details-failed-order"
 					doc:id="98e610b7-2a35-4c56-b763-edcbd9bcd274"
 					name="insert-delivery-order-details-failed-order" />
-				<logger level="INFO" doc:name="INFO: Failure"
-					doc:id="290ea036-67ed-41cc-a1d8-846ea0c92635"
-					message="Create Check Flow completed unsuccessfully" />
+				<module-logger:console-logging
+					doc:name="Failed" doc:id="3ec350d9-a0f5-478f-8744-ee5050a781d0"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="COMPLETED" apiName='#[p("api.name")]'
+					message="IP Addess is null" flowName="Create Check Flow"
+					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 			</otherwise>
 		</choice>
 	</sub-flow>
-	<sub-flow name="call-respos-api-create-check"
+	<sub-flow name="call-pos-api-create-check"
 		doc:id="35273ee0-bf9f-4cc6-8db6-8ec4ef20b8c3">
+		<logger level="DEBUG" doc:name="DEBUG: POS API Request"
+			doc:id="2f4975f5-4e00-4680-8552-b78c6b006448"
+			message="POS API Request=#[vars.postTransactionXML]"/>
 		<http:request method="POST" doc:name="Request POS Api"
 			doc:id="9fa4edef-5fb2-4177-9679-76587c8c8d44"
 			target="createCheckServiceResponse"
@@ -148,6 +226,9 @@ output application/json
 					values="200..599" />
 			</http:response-validator>
 		</http:request>
+		<logger level="DEBUG" doc:name="DEBUG: POS API Response"
+			doc:id="5bec9dcb-68ae-4147-b2eb-329d7f7c7a1b"
+			message="POS API Response=#[vars.createCheckServiceResponse]"/>
 		<set-variable
 			value="#[output application/json
 &#10;---
@@ -216,6 +297,10 @@ ns tem http://tempuri.org/
 					doc:name="tgifServiceResponse"
 					doc:id="377fff35-3e13-4eeb-997b-06a08455f4a6"
 					variableName="tgifServiceResponse" />
+				<logger level="DEBUG"
+					doc:name="DEBUG: TGIF Web Service Response"
+					doc:id="4fd1a79e-a65c-42ea-931a-4ec86e657dca"
+					message="TGIF Web Service Response=#[vars.tgifServiceResponse]" />
 				<set-variable
 					value="#[%dw 2.0
 &#10;output application/json
@@ -286,14 +371,14 @@ ns tem http://tempuri.org/
 							message="Grub Hub delivery or Doordash delivery or UberEats delivery or Postmates delivery" />
 					</otherwise>
 				</choice>
-				<logger level="INFO" doc:name="INFO: Success"
-					doc:id="a8b80766-3bd8-4641-bcf8-a1cd1449257c"
-					message="Create Check Flow completed successfully" />
+				<module-logger:console-logging
+					doc:name="Success" doc:id="eedb4d2b-61de-47e0-8df1-4dcea6e18115"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="COMPLETED" apiName='#[p("api.name")]'
+					message="Process Completed" flowName="Create Check Flow"
+					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 			</when>
 			<otherwise>
-				<logger level="INFO" doc:name="INFO: Web Service call failed"
-					doc:id="505d87b3-2ebb-4380-9880-466a328cc989"
-					message="ResPos API call failed" />
 				<set-variable
 					value="#[vars.createCheckServiceResponse.response]"
 					doc:name="errorCode" doc:id="3db98083-6e17-4a75-a250-bd60e4434406"
@@ -330,9 +415,13 @@ output application/json
 					doc:name="insert-delivery-order-details-failed-order"
 					doc:id="924a8993-0874-4054-a690-864ae9b6736c"
 					name="insert-delivery-order-details-failed-order" />
-				<logger level="INFO" doc:name="INFO: Failure"
-					doc:id="7a7ea360-1ec3-40cf-9a4d-2808b718ca6a"
-					message="Create Check Flow completed unsuccessfully" />
+				<module-logger:console-logging
+					doc:name="Failed" doc:id="aef356b9-e8d3-4a62-8117-2bf9b5836ce5"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="COMPLETED" apiName='#[p("api.name")]'
+					message="POS API call failed" flowName="Create Check Flow"
+					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
+
 			</otherwise>
 		</choice>
 	</sub-flow>
@@ -527,6 +616,47 @@ output application/json
 			</otherwise>
 		</choice>
 	</sub-flow>
+	<sub-flow name="get-vr-details"
+		doc:id="ee5ec963-faf0-414e-9018-2bfd181773bd">
+		<choice doc:name="Check BrandId"
+			doc:id="172602ed-db4b-4919-bb0d-1683ca77f168">
+			<when expression='#[vars.brandId != "NULL"]'>
+				<os:retrieve doc:name="Retrieve VR Details"
+					doc:id="f87b6049-93d4-46a6-8ac4-6a2bfec94c23" key="vrDetails"
+					objectStore="Object_store" target="vrDetails" />
+				<ee:transform doc:name="Transform Message"
+					doc:id="43b5806b-feb3-448b-9317-b15927ef596e">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="vrStoreId"><![CDATA[%dw 2.0
+output application/json
+---
+((vars.vrDetails filter ( ($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String) )).vr_store_id)[0] default "NULL"]]></ee:set-variable>
+						<ee:set-variable variableName="brandName"><![CDATA[%dw 2.0
+output application/java
+---
+((vars.vrDetails filter (($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String))).brand_name)[0] default ""]]></ee:set-variable>
+						<ee:set-variable variableName="orderType"><![CDATA[%dw 2.0
+output application/json
+---
+((vars.vrDetails filter ( ($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String) )).order_type_id)[0] default ""]]></ee:set-variable>
+						<ee:set-variable
+							variableName="employeeObjectNumber"><![CDATA[%dw 2.0
+output application/json
+---
+((vars.vrDetails filter ( ($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String) )).employee_object_number)[0] default ""]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="INFO: Default"
+					doc:id="78ec1b7d-2d4d-40da-bf3b-53b1fcc12311"
+					message="Its a Fridays Store" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+
 	<sub-flow name="insert-duplicate-orders"
 		doc:id="2e4a93df-ea30-4df5-bc02-c25701e92a61">
 		<set-variable

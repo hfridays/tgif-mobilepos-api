@@ -1,5 +1,7 @@
-mobilepos:
-  token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1bmlxdWVfbmFtZSI6IjYwMDQ3Iiwic3ViIjoiNjAwNDciLCJyb2xlIjpbIk1hbmFnZXIiLCJTdXBlcnZpc29yIl0sImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6MjE5NzIiLCJhdWQiOiJlNWU1OTI2NDMxZGY0ZGQ3OTdjN2VkNDJmNjFiNTFlNCIsImV4cCI6MTQ0MjAwODk3MywibmJmIjoxNDM5NDE2OTczfQ.13sXVrGlrczWSxcm9SxmGxMnoabC0xNETdsx_3ylNnE"
+api:
+  name: "tgif-mobilepos-papi"
+  version: "v1"
+  token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1bmlxdWVfbmFtZSI6IjYwMDQ3Iiwic3ViIjoiNjAwNDciLCJyb2xlIjpbIk1hbmFnZXIiLCJTdXBlcnZpc29yIl0sImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6MjE5NzIiLCJhdWQiOiJlNWU1OTI2NDMxZGY0ZGQ3OTdjN2VkNDJmNjFiNTFlNCIsImV4cCI6MTQ0MjAwODk3MywibmJmIjoxNDM5NDE2OTczfQ.13sXVrGlrczWSxcm9SxmGxMnoabC0xNETdsx_3ylNnE"  
 
 microsApi:
   connectionTimeout: "15000"
@@ -16,3 +18,14 @@ resposapi:
   reconnect:
     frequency: "2000"
     count: "3"
+key: "December 9, 2015"
+domain: "tgif-mobilepos-papi"
+tgif:
+  logger:
+    database:
+      host: "10.58.51.50"
+      port: "1433"
+      user: "svc_MuleSoft_Test"
+      password: "Testing1"
+      dbName: "mulesoft_interface"
+    

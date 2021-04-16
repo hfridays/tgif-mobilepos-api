@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+<mule
+	xmlns:module-logger="http://www.mulesoft.org/schema/mule/module-logger"
+	xmlns:error-handler-plugin="http://www.mulesoft.org/schema/mule/error-handler-plugin"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
 	xmlns:db="http://www.mulesoft.org/schema/mule/db"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
@@ -7,7 +10,9 @@
 	xmlns:os="http://www.mulesoft.org/schema/mule/os"
 	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd">
+	xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/error-handler-plugin http://www.mulesoft.org/schema/mule/error-handler-plugin/current/mule-error-handler-plugin.xsd
+http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema/mule/module-logger/current/mule-module-logger.xsd">
 	<http:listener-config
 		name="tgif-mobilepos-papi-httpListenerConfig">
 		<http:listener-connection host="0.0.0.0"
@@ -56,9 +61,22 @@
 	<configuration-properties
 		doc:name="Configuration properties"
 		doc:id="5db7c1ef-1f21-47a4-abfa-ab6720d50c2a"
-		file="config/${env}-config.yaml" />
+		file="config/${mule.env}-config.yaml" />
 	<http:request-config
 		name="HTTP_Request_configuration_wsc"
 		doc:name="HTTP Request configuration" requestStreamingMode="NEVER"
 		doc:id="ee64ec23-5950-48ff-bff6-764755e095c9" />
+	<error-handler-plugin:config
+		name="Error_Handler_Plugin_Config"
+		doc:name="Error Handler Plugin Config"
+		doc:id="485d8342-fdef-4f29-872b-045366c0aeca" />
+	<module-logger:config name="TGIF_Logger_Config"
+		doc:name="TGIF Logger Config"
+		doc:id="6f157497-ce4e-4841-8378-ce2c810601db"
+		host="${tgif.logger.database.host}"
+		port="${tgif.logger.database.port}"
+		user="${tgif.logger.database.user}"
+		password="${tgif.logger.database.password}"
+		databaseName="${tgif.logger.database.dbName}" />
+
 </mule>

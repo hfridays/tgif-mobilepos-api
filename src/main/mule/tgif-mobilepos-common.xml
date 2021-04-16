@@ -65,7 +65,7 @@ if((size>0)) (arr[0]) else (vars.errorCode ++ " This is a new error code. Kindly
 			doc:name="reqAccessToken"
 			doc:id="4d5d1ffb-b06c-4aa8-b520-cb9b5e9bcef5"
 			variableName="reqAccessToken" />
-		<set-variable value="${mobilepos.token}"
+		<set-variable value="${api.token}"
 			doc:name="accessToken" doc:id="cdeffd68-5412-4897-b94d-8b11e20b34b8"
 			variableName="accessToken" />
 	</sub-flow>

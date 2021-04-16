@@ -1,22 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
+<mule xmlns:module-logger="http://www.mulesoft.org/schema/mule/module-logger"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
 	xmlns:db="http://www.mulesoft.org/schema/mule/db"
 	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
-http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
-	<flow name="tgif-mobilepos-utilFlow"
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema/mule/module-logger/current/mule-module-logger.xsd">
+	<flow name="tgif-mobilepos-util-flow"
 		doc:id="800f681d-5d5b-427b-ae5f-034463701832" initialState="started">
 		<scheduler doc:name="Scheduler"
 			doc:id="990caf7e-3a10-45fc-8adb-b6ca2d8c148c">
 			<scheduling-strategy>
-				<fixed-frequency timeUnit="HOURS" frequency="12"/>
+				<fixed-frequency timeUnit="HOURS" frequency="12" />
 			</scheduling-strategy>
 		</scheduler>
-		<logger level="INFO" doc:name="INFO: Start" doc:id="78995b7e-7cf5-4e00-aaae-61fcfcf9aa5a" message="Started loading Properties into Object Store"/>
+		<set-variable value="#[now()]" doc:name="startTime"
+			doc:id="41223039-cd9b-464b-8fd8-dfbc68e42fdd"
+			variableName="startTime" />
+		<module-logger:console-logging
+			doc:name="Start" doc:id="9962abb4-7a1d-48d0-9a0d-a572aa048665"
+			traceId="#[correlationId]" stage="START" apiName='#[p("api.name")]'
+			message="Started Processing" flowName="Util flow"
+			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
+			startTime="#[vars.startTime]" />
 		<flow-ref doc:name="store-tenderMedia-properties-sub-flow"
 			doc:id="9f731b4b-329e-4b98-ad7c-6b9991641aba"
 			name="store-tenderMedia-properties-sub-flow" />
@@ -41,7 +50,12 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		<flow-ref doc:name="store-vrbrands-properties-sub-flow"
 			doc:id="949a3dd9-d538-49b0-998c-4d5a1f576210"
 			name="store-vrbrands-properties-sub-flow" />
-		<logger level="INFO" doc:name="INFO: Success" doc:id="66dd1587-4b5d-4cf2-8a3e-be0e4356c317" message="Finished loading Properties into Object Store"/>
+		<module-logger:console-logging
+			doc:name="Success" doc:id="701bdd3a-d54b-4aaf-8ad4-b468ffa5557e"
+			traceId="#[correlationId]" stage="START" apiName='#[p("api.name")]'
+			message="Process Completed" flowName="Util flow"
+			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
+			startTime="#[vars.startTime]" />
 	</flow>
 	<sub-flow name="store-tenderMedia-properties-sub-flow"
 		doc:id="47603abd-6937-44bb-938d-1769dc5c13b8">
@@ -55,8 +69,8 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		</db:select>
 		<os:store doc:name="Store"
 			doc:id="f491eed3-5ec8-4076-8d80-7a00650ce84f" key="tenderMedia"
-			objectStore="Object_store" >
-			<os:value ><![CDATA[#[output application/json --- payload]]]></os:value>
+			objectStore="Object_store">
+			<os:value><![CDATA[#[output application/json --- payload]]]></os:value>
 		</os:store>
 		<logger level="INFO" doc:name="INFO: Success"
 			doc:id="5e133f05-d5a4-49f0-a6de-6c93c9748027"
@@ -74,8 +88,8 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		</db:select>
 		<os:store doc:name="Store"
 			doc:id="785233fe-2e2c-4725-aa8f-5b8590c9ac9d" key="uberEatsOrderType"
-			objectStore="Object_store" >
-			<os:value ><![CDATA[#[output application/json --- payload]]]></os:value>
+			objectStore="Object_store">
+			<os:value><![CDATA[#[output application/json --- payload]]]></os:value>
 		</os:store>
 		<logger level="INFO" doc:name="INFO: Success"
 			doc:id="bc7a7f24-c25c-401c-9389-dfc36288f68c"
@@ -93,8 +107,8 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		</db:select>
 		<os:store doc:name="Store"
 			doc:id="db99f514-c316-4f4b-9149-b2cca83ccec1" key="doorDashOrderType"
-			objectStore="Object_store" >
-			<os:value ><![CDATA[#[output application/json --- payload]]]></os:value>
+			objectStore="Object_store">
+			<os:value><![CDATA[#[output application/json --- payload]]]></os:value>
 		</os:store>
 		<logger level="INFO" doc:name="INFO: Success"
 			doc:id="6d1d2e21-2c7c-4d37-ae2a-9bf1fba34bf8"
@@ -112,8 +126,8 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		</db:select>
 		<os:store doc:name="Store"
 			doc:id="4c770c85-0701-4bae-93dc-2e4cf3f10433" key="grubHubOrderType"
-			objectStore="Object_store" >
-			<os:value ><![CDATA[#[output application/json --- payload]]]></os:value>
+			objectStore="Object_store">
+			<os:value><![CDATA[#[output application/json --- payload]]]></os:value>
 		</os:store>
 		<logger level="INFO" doc:name="INFO: Success"
 			doc:id="e01e1534-d616-42b5-b8d9-67f93dc19795"
@@ -131,8 +145,8 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		</db:select>
 		<os:store doc:name="Store"
 			doc:id="1ff4b77e-959d-4218-b5a9-b1ec2b472220"
-			key="postmatesOrderType" objectStore="Object_store" >
-			<os:value ><![CDATA[#[output application/json --- payload]]]></os:value>
+			key="postmatesOrderType" objectStore="Object_store">
+			<os:value><![CDATA[#[output application/json --- payload]]]></os:value>
 		</os:store>
 		<logger level="INFO" doc:name="INFO: Success"
 			doc:id="fa37107d-d7c6-477e-ad66-f5987084b4f8"
@@ -150,8 +164,8 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		</db:select>
 		<os:store doc:name="Store"
 			doc:id="ac467b38-2711-4ddf-a357-a8fdac3b7a56" key="storeIpProperties"
-			objectStore="Object_store" >
-			<os:value ><![CDATA[#[output application/json --- payload]]]></os:value>
+			objectStore="Object_store">
+			<os:value><![CDATA[#[output application/json --- payload]]]></os:value>
 		</os:store>
 		<logger level="INFO" doc:name="INFO: Success"
 			doc:id="d73f3600-a239-4c48-ac8b-ed8aec077bd2"
@@ -169,8 +183,8 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		</db:select>
 		<os:store doc:name="Store"
 			doc:id="5aec5350-9c1f-495d-90f2-ff9f994e48f2" key="errorMessage"
-			objectStore="Object_store" >
-			<os:value ><![CDATA[#[output application/json --- payload]]]></os:value>
+			objectStore="Object_store">
+			<os:value><![CDATA[#[output application/json --- payload]]]></os:value>
 		</os:store>
 		<logger level="INFO" doc:name="INFO: Success"
 			doc:id="f3896aa6-c4c1-4ece-9eee-3fcf08d82497"
@@ -188,8 +202,8 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		</db:select>
 		<os:store doc:name="Store"
 			doc:id="c529460d-a4fb-42bc-95d3-b239ecb7711b" key="vrDetails"
-			objectStore="Object_store" >
-			<os:value ><![CDATA[#[output application/json --- payload]]]></os:value>
+			objectStore="Object_store">
+			<os:value><![CDATA[#[output application/json --- payload]]]></os:value>
 		</os:store>
 		<logger level="INFO" doc:name="INFO: Success"
 			doc:id="30ea0375-0139-43c1-a5c3-a4f9a72b45c6"

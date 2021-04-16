@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <mule
+	xmlns:module-logger="http://www.mulesoft.org/schema/mule/module-logger"
 	xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
 	xmlns:java="http://www.mulesoft.org/schema/mule/java"
 	xmlns:http="http://www.mulesoft.org/schema/mule/http"
@@ -18,8 +19,9 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd
-http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
-	<sub-flow name="call-respos-api-for-tax-and-total"
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema/mule/module-logger/current/mule-module-logger.xsd">
+	<sub-flow name="call-pos-api-for-tax-and-total"
 		doc:id="403c9e1f-eb9c-4a04-8913-7fcef6f1931b">
 		<ee:transform doc:name="Create Request XML"
 			doc:id="da312dfb-8f68-49ff-bafc-d2c1241d21fa">
@@ -38,6 +40,14 @@ http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mul
 		<flow-ref doc:name="insert-online-ordering-logs"
 			doc:id="6f7f9c87-fc62-428d-8594-51bd4f35cbc1"
 			name="insert-online-ordering-logs" />
+		<module-logger:database-logging
+			doc:name="POS API Request"
+			doc:id="2d557800-3f32-416c-9d47-a2a6660c0721"
+			config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+			stage="IN PROCESS" message="#[vars.taxAndTotalXml]"
+			flowStartDate="#[vars.startTime]"
+			flowName="Calculate Tax and Totals Flow" status="Before POS Call"
+			transactionType="HTTP Request" apiName='#[p("api.name")]' apiVersion='#[p("api.version")]'/>
 		<http:request method="POST" doc:name="Request POS Api"
 			doc:id="29d455c3-28cb-4859-8104-7046e281c76f"
 			config-ref="HTTP_Request_configuration"
@@ -55,6 +65,14 @@ vars.taxAndTotalXml]]]></http:body>
 					values="200..599" />
 			</http:response-validator>
 		</http:request>
+		<module-logger:database-logging
+			doc:name="POS API Response"
+			doc:id="95178d1d-bbeb-4402-a035-3565009354c6"
+			config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+			stage="IN PROCESS" message="#[vars.calculateTotalServiceResponse]"
+			flowStartDate="#[vars.startTime]"
+			flowName="Calculate Tax and Totals Flow" status="Before POS Call"
+			transactionType="HTTP Response" apiName='#[p("api.name")]' apiVersion='#[p("api.version")]'/>
 		<set-variable
 			value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal  - POS API Response',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: write(vars.calculateTotalServiceResponse, &quot;application/xml&quot;, {&#10;		writeDeclaration: false&#10;	})&#10;}]"
 			doc:name="logData" doc:id="a3c0c6c5-9d51-45a3-8fb2-4279c8d69d85"
@@ -100,10 +118,13 @@ if ( vars.calculateTotalServiceResponse.soapenv#Envelope.soapenv#Body.CalculateT
 				<flow-ref doc:name="insert-online-ordering-logs"
 					doc:id="b562b32a-d729-42ce-914c-02cf4de5162e"
 					name="insert-online-ordering-logs" />
-				<logger level="INFO" doc:name="INFO: Success"
-					doc:id="db8d44fa-6a31-4139-858c-39831482aad1"
-					message="Calculate Tax And Total Flow Completed Successfully" />
-
+				<module-logger:console-logging
+					doc:name="Success" doc:id="1e8fa4ef-4139-4534-ae55-27b9d3364450"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="COMPLETED" apiName='#[p("api.name")]'
+					message="Process Completed"
+					flowName="Calculate Tax and Totals Flow" env='#[p("mule.env")]'
+					startTime="#[vars.startTime]" />
 			</when>
 			<otherwise>
 				<ee:transform doc:name="Create Failure Response"
@@ -129,9 +150,13 @@ output application/json
 				<flow-ref doc:name="insert-online-ordering-logs"
 					doc:id="85c1ecef-e196-435c-8626-75fbb9321158"
 					name="insert-online-ordering-logs" />
-				<logger level="INFO" doc:name="INFO: Failure"
-					doc:id="ce6ee604-bdb5-4d7c-8cd8-f2be6c4a826b"
-					message="Calculate Tax And Total Flow Completed Unuccessfully" />
+				<module-logger:console-logging
+					doc:name="Failed" doc:id="e4ed0bb1-b749-463d-a0f5-c016840d4b50"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="COMPLETED" apiName='#[p("api.name")]'
+					message="POS API Call failed"
+					flowName="Calculate Tax and Totals Flow" env='#[p("mule.env")]'
+					startTime="#[vars.startTime]" />
 			</otherwise>
 		</choice>
 	</sub-flow>
