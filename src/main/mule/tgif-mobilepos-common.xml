@@ -103,7 +103,7 @@ if((size>0)) (arr[0]) else (vars.errorCode ++ " This is a new error code. Kindly
 				<db:input-parameters><![CDATA[#[{
 	store_id: vars.logData.storeId,
 	cart_id: vars.logData.cartId,
-	check_payload: vars.logData.payload,
+	check_payload: write(vars.logData.payload, "application/json"),
 	day_of_business: vars.logData.dayOfBusiness
 }]]]></db:input-parameters>
 

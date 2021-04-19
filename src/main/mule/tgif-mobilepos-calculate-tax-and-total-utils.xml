@@ -44,7 +44,7 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 			doc:name="POS API Request"
 			doc:id="2d557800-3f32-416c-9d47-a2a6660c0721"
 			config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-			stage="IN PROCESS" message="#[vars.taxAndTotalXml]"
+			stage="IN PROCESS" message='#[output application/json --- write(vars.taxAndTotalXml, "application/xml", { writeDeclaration: false })]'
 			flowStartDate="#[vars.startTime]"
 			flowName="Calculate Tax and Totals Flow" status="Before POS Call"
 			transactionType="HTTP Request" apiName='#[p("api.name")]' apiVersion='#[p("api.version")]'/>
@@ -69,9 +69,9 @@ vars.taxAndTotalXml]]]></http:body>
 			doc:name="POS API Response"
 			doc:id="95178d1d-bbeb-4402-a035-3565009354c6"
 			config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-			stage="IN PROCESS" message="#[vars.calculateTotalServiceResponse]"
+			stage="IN PROCESS" message='#[output application/json --- write(vars.calculateTotalServiceResponse, "application/xml", { writeDeclaration: false })]'
 			flowStartDate="#[vars.startTime]"
-			flowName="Calculate Tax and Totals Flow" status="Before POS Call"
+			flowName="Calculate Tax and Totals Flow" status="After POS Call"
 			transactionType="HTTP Response" apiName='#[p("api.name")]' apiVersion='#[p("api.version")]'/>
 		<set-variable
 			value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal  - POS API Response',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: write(vars.calculateTotalServiceResponse, &quot;application/xml&quot;, {&#10;		writeDeclaration: false&#10;	})&#10;}]"

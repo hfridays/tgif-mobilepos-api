@@ -566,6 +566,13 @@ output application/json
 payload.calculateTaxAndTotal.authenticationSystem]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
+				<set-variable
+					value="#[output application/json&#10;&#10;---&#10;&#10;{&#10;&#10;	methodName: 'CalculateTaxAndTotal - Tender ID',&#10;&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;&#10;	checkNumber: 'Null',&#10;&#10;	checkSequence: 'Null',&#10;&#10;	employeeNumber: 'Null',&#10;&#10;	tableNumber: 'Null',&#10;&#10;	status: '1',&#10;&#10;	message: vars.tenderId&#10;&#10;}]"
+					doc:name="logData" doc:id="6dd19ab6-faf6-4a25-97d3-4ee248d4f15a"
+					variableName="logData" />
+				<flow-ref doc:name="insert-online-ordering-logs"
+					doc:id="8a36d445-57ac-4149-b737-212a8a51934d"
+					name="insert-online-ordering-logs" />
 				<flow-ref doc:name="get-store-ip-properties"
 					doc:id="058d401e-aab4-483f-aa72-0c2140e0cb41"
 					name="get-store-ip-properties" />
@@ -670,7 +677,7 @@ output application/json
 					doc:name="Failed" doc:id="0648c0f7-562e-4810-a211-fc3ca4f66557"
 					config-ref="TGIF_Logger_Config"
 					message="Processing Failed due to connectivity error"
-					stage="EXCEPTION" traceId="#[correaltionId]"
+					stage="EXCEPTION" traceId="#[correlationId]"
 					flowName="Calculate Tax and Totals Flow" apiName='#[p("api.name")]'
 					env='#[p("mule.env")]' startTime="#[vars.startTime]"
 					error="#[error]" />
@@ -705,7 +712,7 @@ output application/json
 					doc:name="Failed" doc:id="5558e1ee-fe01-4199-aad0-1da0b070eb4b"
 					config-ref="TGIF_Logger_Config"
 					message="Processing Failed due to error" stage="EXCEPTION"
-					traceId="#[correaltionId]" flowName="Calculate Tax and Totals Flow"
+					traceId="#[correlationId]" flowName="Calculate Tax and Totals Flow"
 					apiName='#[p("api.name")]' env='#[p("mule.env")]'
 					startTime="#[vars.startTime]" error="#[error]" />
 			</on-error-continue>
@@ -714,7 +721,7 @@ output application/json
 	</flow>
 	<flow name="calculate-total-flow"
 		doc:id="ad3f63d9-54cf-4671-9eb5-a2458ff6976a">
-		<set-variable value="#[now()]" doc:name="startTime"
+		<set-variable value='#[now()]' doc:name="startTime"
 			doc:id="c0119c60-5dc1-4aec-8c98-1f5c40eec95e"
 			variableName="startTime" />
 		<module-logger:console-logging

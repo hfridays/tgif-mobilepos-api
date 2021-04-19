@@ -209,9 +209,15 @@ output application/json
 	</sub-flow>
 	<sub-flow name="call-pos-api-create-check"
 		doc:id="35273ee0-bf9f-4cc6-8db6-8ec4ef20b8c3">
-		<logger level="DEBUG" doc:name="DEBUG: POS API Request"
-			doc:id="2f4975f5-4e00-4680-8552-b78c6b006448"
-			message="POS API Request=#[vars.postTransactionXML]"/>
+		<module-logger:database-logging
+			doc:name="POS API Request"
+			doc:id="35b4b59d-1122-42c6-aed3-4255e8c0aaa0"
+			config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+			stage="IN PROCESS"
+			message='#[output application/json --- write(vars.postTransactionXML, "application/xml", { writeDeclaration: false })]'
+			flowStartDate="#[vars.startTime]" flowName="Create Check Flow"
+			status="Before POS Call" transactionType="HTTP Request"
+			apiName='#[p("api.name")]' apiVersion='#[p("api.version")]' />
 		<http:request method="POST" doc:name="Request POS Api"
 			doc:id="9fa4edef-5fb2-4177-9679-76587c8c8d44"
 			target="createCheckServiceResponse"
@@ -226,9 +232,18 @@ output application/json
 					values="200..599" />
 			</http:response-validator>
 		</http:request>
+		<module-logger:database-logging
+			doc:name="POS API Request"
+			doc:id="f2a06f82-ab22-4764-a814-bf59d24eadcd"
+			config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+			stage="IN PROCESS"
+			message='#[output application/json --- write(vars.createCheckServiceResponse, "application/xml", { writeDeclaration: false })]'
+			flowStartDate="#[vars.startTime]" flowName="Create Check Flow"
+			status="After POS Call" transactionType="HTTP Response"
+			apiName='#[p("api.name")]' apiVersion='#[p("api.version")]' />
 		<logger level="DEBUG" doc:name="DEBUG: POS API Response"
 			doc:id="5bec9dcb-68ae-4147-b2eb-329d7f7c7a1b"
-			message="POS API Response=#[vars.createCheckServiceResponse]"/>
+			message="POS API Response=#[vars.createCheckServiceResponse]" />
 		<set-variable
 			value="#[output application/json
 &#10;---
@@ -297,6 +312,15 @@ ns tem http://tempuri.org/
 					doc:name="tgifServiceResponse"
 					doc:id="377fff35-3e13-4eeb-997b-06a08455f4a6"
 					variableName="tgifServiceResponse" />
+				<module-logger:database-logging
+					doc:name="POS API Request"
+					doc:id="385ff73e-9d21-4d4d-835a-c561db5ec282"
+					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
+					stage="IN PROCESS"
+					message='#[output text/plain --- write(vars.tgifServiceResponse, "application/json")]'
+					flowStartDate="#[vars.startTime]" flowName="Create Check Flow"
+					status="After TGIF Web Service Call" transactionType="TGIF Web Service Response"
+					apiName='#[p("api.name")]' apiVersion='#[p("api.version")]' />
 				<logger level="DEBUG"
 					doc:name="DEBUG: TGIF Web Service Response"
 					doc:id="4fd1a79e-a65c-42ea-931a-4ec86e657dca"

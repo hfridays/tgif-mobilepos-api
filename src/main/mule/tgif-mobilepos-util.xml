@@ -10,7 +10,7 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema/mule/module-logger/current/mule-module-logger.xsd">
 	<flow name="tgif-mobilepos-util-flow"
-		doc:id="800f681d-5d5b-427b-ae5f-034463701832" initialState="started">
+		doc:id="800f681d-5d5b-427b-ae5f-034463701832">
 		<scheduler doc:name="Scheduler"
 			doc:id="990caf7e-3a10-45fc-8adb-b6ca2d8c148c">
 			<scheduling-strategy>
@@ -52,7 +52,7 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 			name="store-vrbrands-properties-sub-flow" />
 		<module-logger:console-logging
 			doc:name="Success" doc:id="701bdd3a-d54b-4aaf-8ad4-b468ffa5557e"
-			traceId="#[correlationId]" stage="START" apiName='#[p("api.name")]'
+			traceId="#[correlationId]" stage="COMPLETED" apiName='#[p("api.name")]'
 			message="Process Completed" flowName="Util flow"
 			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
 			startTime="#[vars.startTime]" />
