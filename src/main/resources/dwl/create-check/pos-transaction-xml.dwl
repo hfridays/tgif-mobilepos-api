@@ -16,7 +16,7 @@ ns ns1 http://schemas.micros.com/RESPOS
 						else payload.createcheck.customerInfo.customerFirstName ++ "_" ++ payload.createcheck.cartId
 					 as String default "",
 					ns1#pCheckInfoLines : {
-						ns1#string: if(payload.createcheck.deliveryPartner.name== null) "******* GRAB ORDER *******" else "******* DELIVERY ORDER  *******",
+					    ns1#string: if(payload.createcheck.deliveryPartner.name== null) "******* GRAB ORDER *******"  else "******* " ++ upper(payload.createcheck.fulfillmentType) ++ " ORDER  *******" default "******* DELIVERY ORDER  *******", 
 						ns1#string: if(payload.createcheck.pickupTime== null) "" else "*** PICKUP *** " ++ ((payload.createcheck.pickupTime as DateTime) as Time as String {format: "hh:mm a"}) default "",
 						ns1#string: "Name: " ++ (payload.createcheck.customerInfo.customerFirstName ++ " " ++ payload.createcheck.customerInfo.customerLastName ) as String default "",
 						ns1#string: "",
