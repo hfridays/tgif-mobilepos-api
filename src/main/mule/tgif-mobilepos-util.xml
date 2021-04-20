@@ -22,7 +22,7 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 			variableName="startTime" />
 		<module-logger:console-logging
 			doc:name="Start" doc:id="9962abb4-7a1d-48d0-9a0d-a572aa048665"
-			traceId="#[correlationId]" stage="START" apiName='#[p("api.name")]'
+			traceId="#[correlationId]" stage="START" apiName='#[p("secure::api.name")]'
 			message="Started Processing" flowName="Util flow"
 			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
 			startTime="#[vars.startTime]" />
@@ -52,7 +52,7 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 			name="store-vrbrands-properties-sub-flow" />
 		<module-logger:console-logging
 			doc:name="Success" doc:id="701bdd3a-d54b-4aaf-8ad4-b468ffa5557e"
-			traceId="#[correlationId]" stage="COMPLETED" apiName='#[p("api.name")]'
+			traceId="#[correlationId]" stage="COMPLETED" apiName='#[p("secure::api.name")]'
 			message="Process Completed" flowName="Util flow"
 			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
 			startTime="#[vars.startTime]" />

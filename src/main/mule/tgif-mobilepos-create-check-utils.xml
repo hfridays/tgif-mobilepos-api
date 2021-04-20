@@ -56,7 +56,7 @@ AND day_of_business = :currentDate AND delivery_partner_name in ('OLO', 'PayInSt
 						<module-logger:console-logging
 							doc:name="Success" doc:id="e2add98e-7cc3-4ab0-ac46-b60c9df9bbf2"
 							config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-							stage="COMPLETED" apiName='#[p("api.name")]'
+							stage="COMPLETED" apiName='#[p("secure::api.name")]'
 							message="Process Completed" flowName="Create Check Flow"
 							env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 					</when>
@@ -201,7 +201,7 @@ output application/json
 				<module-logger:console-logging
 					doc:name="Failed" doc:id="3ec350d9-a0f5-478f-8744-ee5050a781d0"
 					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-					stage="COMPLETED" apiName='#[p("api.name")]'
+					stage="COMPLETED" apiName='#[p("secure::api.name")]'
 					message="IP Addess is null" flowName="Create Check Flow"
 					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 			</otherwise>
@@ -217,14 +217,14 @@ output application/json
 			message='#[output application/json --- write(vars.postTransactionXML, "application/xml", { writeDeclaration: false })]'
 			flowStartDate="#[vars.startTime]" flowName="Create Check Flow"
 			status="Before POS Call" transactionType="HTTP Request"
-			apiName='#[p("api.name")]' apiVersion='#[p("api.version")]' />
+			apiName='#[p("secure::api.name")]' apiVersion='#[p("secure::api.version")]' />
 		<http:request method="POST" doc:name="Request POS Api"
 			doc:id="9fa4edef-5fb2-4177-9679-76587c8c8d44"
 			target="createCheckServiceResponse"
 			config-ref="HTTP_Request_configuration"
 			path="/ResPosApiWeb/ResPosApiWeb.asmx">
-			<reconnect frequency="${resposapi.reconnect.frequency}"
-				count="${resposapi.reconnect.count}" />
+			<reconnect frequency="${secure::resposapi.reconnect.frequency}"
+				count="${secure::resposapi.reconnect.count}" />
 			<http:body><![CDATA[#[%dw 2.0 output 
 			text/xml --- vars.postTransactionXML]]]></http:body>
 			<http:response-validator>
@@ -240,7 +240,7 @@ output application/json
 			message='#[output application/json --- write(vars.createCheckServiceResponse, "application/xml", { writeDeclaration: false })]'
 			flowStartDate="#[vars.startTime]" flowName="Create Check Flow"
 			status="After POS Call" transactionType="HTTP Response"
-			apiName='#[p("api.name")]' apiVersion='#[p("api.version")]' />
+			apiName='#[p("secure::api.name")]' apiVersion='#[p("secure::api.version")]' />
 		<logger level="DEBUG" doc:name="DEBUG: POS API Response"
 			doc:id="5bec9dcb-68ae-4147-b2eb-329d7f7c7a1b"
 			message="POS API Response=#[vars.createCheckServiceResponse]" />
@@ -320,7 +320,7 @@ ns tem http://tempuri.org/
 					message='#[output text/plain --- write(vars.tgifServiceResponse, "application/json")]'
 					flowStartDate="#[vars.startTime]" flowName="Create Check Flow"
 					status="After TGIF Web Service Call" transactionType="TGIF Web Service Response"
-					apiName='#[p("api.name")]' apiVersion='#[p("api.version")]' />
+					apiName='#[p("secure::api.name")]' apiVersion='#[p("secure::api.version")]' />
 				<logger level="DEBUG"
 					doc:name="DEBUG: TGIF Web Service Response"
 					doc:id="4fd1a79e-a65c-42ea-931a-4ec86e657dca"
@@ -398,7 +398,7 @@ ns tem http://tempuri.org/
 				<module-logger:console-logging
 					doc:name="Success" doc:id="eedb4d2b-61de-47e0-8df1-4dcea6e18115"
 					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-					stage="COMPLETED" apiName='#[p("api.name")]'
+					stage="COMPLETED" apiName='#[p("secure::api.name")]'
 					message="Process Completed" flowName="Create Check Flow"
 					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 			</when>
@@ -442,7 +442,7 @@ output application/json
 				<module-logger:console-logging
 					doc:name="Failed" doc:id="aef356b9-e8d3-4a62-8117-2bf9b5836ce5"
 					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-					stage="COMPLETED" apiName='#[p("api.name")]'
+					stage="COMPLETED" apiName='#[p("secure::api.name")]'
 					message="POS API call failed" flowName="Create Check Flow"
 					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 

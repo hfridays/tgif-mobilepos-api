@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.tgif</groupId>
@@ -35,7 +33,7 @@
 					<classifier>mule-application</classifier>
 					<sharedLibraries>
 						<sharedLibrary>
-							<groupId>com.mycompany</groupId>
+							<groupId>com.tgif</groupId>
 							<artifactId>sqljdbc4-4.0</artifactId>
 						</sharedLibrary>
 					</sharedLibraries>
@@ -105,7 +103,7 @@
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
-			<groupId>com.mycompany</groupId>
+			<groupId>com.tgif</groupId>
 			<artifactId>sqljdbc4-4.0</artifactId>
 			<version>0.1</version>
 		</dependency>
@@ -126,7 +124,13 @@
 			<version>1.0.0</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
-	</dependencies>
+		<dependency>
+            <groupId>com.mulesoft.modules</groupId>
+            <artifactId>mule-secure-configuration-property-module</artifactId>
+            <version>1.2.3</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+    </dependencies>
 	<repositories>
 		<repository>
 			<id>anypoint-exchange-v2</id>

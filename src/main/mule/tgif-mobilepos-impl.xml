@@ -30,7 +30,7 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 		<module-logger:console-logging
 			doc:name="Start"
 			doc:id="32f02a59-3bd4-4997-b6f0-7208ee93029b"
-			traceId="#[correlationId]" stage="START" apiName='#[p("api.name")]'
+			traceId="#[correlationId]" stage="START" apiName='#[p("secure::api.name")]'
 			message="Started Processing" flowName="MS Heartbeat Flow"
 			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
 			startTime="#[vars.startTime]" />
@@ -57,7 +57,7 @@ output application/json
 				<module-logger:console-logging
 					doc:name="Success" doc:id="78d33720-f1b5-4567-b323-44e7370627eb"
 					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-					stage="COMPLETED" apiName='#[p("api.name")]'
+					stage="COMPLETED" apiName='#[p("secure::api.name")]'
 					message="Process Completed" flowName="MS Heartbeat Flow"
 					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 			</when>
@@ -79,7 +79,7 @@ output application/json
 				<module-logger:console-logging
 					doc:name="Failed" doc:id="2124bcd0-4b3a-488b-bfe9-f927135ed4d4"
 					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-					stage="COMPLETED" apiName='#[p("api.name")]'
+					stage="COMPLETED" apiName='#[p("secure::api.name")]'
 					message="Invalid Access Token" flowName="MS Heartbeat Flow"
 					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 			</otherwise>
@@ -94,7 +94,7 @@ output application/json
 		<module-logger:console-logging
 			doc:name="Start"
 			doc:id="2487796d-bbab-4b2c-bea9-0ccad41e293d"
-			traceId="#[correlationId]" stage="START" apiName='#[p("api.name")]'
+			traceId="#[correlationId]" stage="START" apiName='#[p("secure::api.name")]'
 			message="Started Processing" flowName="Ping IP Address Flow"
 			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
 			startTime="#[vars.startTime]" />
@@ -149,9 +149,9 @@ output application/json
 						<module-logger:console-logging
 							doc:name="Success" doc:id="8b0ea29c-5840-4c34-bb81-7a4676b6806b"
 							config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-							stage="COMPLETED" apiName='#[p("api.name")]'
+							stage="COMPLETED" apiName='#[p("secure::api.name")]'
 							flowName="Ping IP Address Flow" message="Host is reachable"
-							startTime="#[vars.startTime]" />
+							startTime="#[vars.startTime]" env='#[p("mule.env")]'/>
 					</when>
 					<otherwise>
 						<ee:transform doc:name="Create Failure Response"
@@ -171,9 +171,9 @@ output application/json
 						<module-logger:console-logging
 							doc:name="Failed" doc:id="31af0760-6474-4f44-b109-a7a89f5e9505"
 							config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-							stage="COMPLETED" apiName='#[p("api.name")]'
+							stage="COMPLETED" apiName='#[p("secure::api.name")]'
 							flowName="Ping IP Address Flow" message="Host is not reachable"
-							startTime="#[vars.startTime]" />
+							startTime="#[vars.startTime]" env='#[p("mule.env")]'/>
 					</otherwise>
 				</choice>
 			</when>
@@ -195,7 +195,7 @@ output application/json
 				<module-logger:console-logging
 					doc:name="Failed" doc:id="d79c06e3-69dd-43bb-83a4-d4c6c452edfe"
 					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-					stage="COMPLETED" apiName='#[p("api.name")]'
+					stage="COMPLETED" apiName='#[p("secure::api.name")]'
 					message="Invalid Access Token" flowName="Ping IP Address Flow"
 					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 			</otherwise>
@@ -210,7 +210,7 @@ output application/json
 		<module-logger:console-logging
 			doc:name="Start"
 			doc:id="0d36658b-4e75-438c-91d8-fcf11b4e6b95"
-			traceId="#[correlationId]" stage="START" apiName='#[p("api.name")]'
+			traceId="#[correlationId]" stage="START" apiName='#[p("secure::api.name")]'
 			message="Started Processing" flowName="Create Check Flow"
 			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
 			startTime="#[vars.startTime]" />
@@ -261,7 +261,7 @@ vars.initialPayload.createcheck.brandId default "NULL"]]></ee:set-variable>
 output application/json
 import java!com::api::tgif::mobilepos::util::CommonUtil
 ---
-using(cardType = payload.createcheck.payment.paymentCardType)if(cardType != null and !(isEmpty(cardType)) ) CommonUtil::getPaymentCard(p("key"),cardType)
+using(cardType = payload.createcheck.payment.paymentCardType)if(cardType != null and !(isEmpty(cardType)) ) CommonUtil::getPaymentCard(p("secure::key"),cardType)
 else ""]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
@@ -346,7 +346,7 @@ output application/json
 				<module-logger:console-logging
 					doc:name="Failed" doc:id="8bf5a137-d7e6-4054-b2e7-26790d2f00d2"
 					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-					stage="COMPLETED" apiName='#[p("api.name")]'
+					stage="COMPLETED" apiName='#[p("secure::api.name")]'
 					message="Invalid Access Token" flowName="Calculate Totals Flow"
 					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 			</otherwise>
@@ -466,7 +466,7 @@ output application/json
 					doc:name="Console logging"
 					doc:id="4e063fa1-eb24-4b2f-999a-156b663cf902"
 					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-					stage="EXCEPTION" apiName='#[p("api.name")]'
+					stage="EXCEPTION" apiName='#[p("secure::api.name")]'
 					message="Processing Failed due to connectivity error"
 					flowName="Create Check Flow" env='#[p("mule.env")]'
 					startTime="#[vars.startTime]" error="#[error]" />
@@ -500,7 +500,7 @@ output application/json
 					doc:name="Console logging"
 					doc:id="9c471a9c-72d8-466f-83aa-37894caa4c86"
 					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-					stage="EXCEPTION" apiName='#[p("api.name")]'
+					stage="EXCEPTION" apiName='#[p("secure::api.name")]'
 					message="Processing Failed due to error"
 					flowName="Create Check Flow" env='#[p("mule.env")]'
 					startTime="#[vars.startTime]" error="#[error]" />
@@ -516,7 +516,7 @@ output application/json
 		<module-logger:console-logging
 			doc:name="Start"
 			doc:id="1e1d7a81-fdf8-4b4c-8a57-ce68fe6907a3"
-			traceId="#[correlationId]" stage="START" apiName='#[p("api.name")]'
+			traceId="#[correlationId]" stage="START" apiName='#[p("secure::api.name")]'
 			message="Started Processing"
 			flowName="Calculate Taxt and Totals Flow" env='#[p("mule.env")]'
 			config-ref="TGIF_Logger_Config" startTime="#[vars.startTime]" />
@@ -600,7 +600,7 @@ output application/json
 				<module-logger:console-logging
 					doc:name="Failed" doc:id="1a2f26db-b2bf-48ee-9304-5c231e09fd93"
 					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-					stage="COMPLETED" apiName='#[p("api.name")]'
+					stage="COMPLETED" apiName='#[p("secure::api.name")]'
 					message="Invalid Access Token"
 					flowName="Calculate Tax and Totals Flow" env='#[p("mule.env")]'
 					startTime="#[vars.startTime]" />
@@ -678,7 +678,7 @@ output application/json
 					config-ref="TGIF_Logger_Config"
 					message="Processing Failed due to connectivity error"
 					stage="EXCEPTION" traceId="#[correlationId]"
-					flowName="Calculate Tax and Totals Flow" apiName='#[p("api.name")]'
+					flowName="Calculate Tax and Totals Flow" apiName='#[p("secure::api.name")]'
 					env='#[p("mule.env")]' startTime="#[vars.startTime]"
 					error="#[error]" />
 			</on-error-continue>
@@ -713,7 +713,7 @@ output application/json
 					config-ref="TGIF_Logger_Config"
 					message="Processing Failed due to error" stage="EXCEPTION"
 					traceId="#[correlationId]" flowName="Calculate Tax and Totals Flow"
-					apiName='#[p("api.name")]' env='#[p("mule.env")]'
+					apiName='#[p("secure::api.name")]' env='#[p("mule.env")]'
 					startTime="#[vars.startTime]" error="#[error]" />
 			</on-error-continue>
 
@@ -727,7 +727,7 @@ output application/json
 		<module-logger:console-logging
 			doc:name="Start"
 			doc:id="7abe4f72-b6f5-426f-a272-b90d1f887a41"
-			traceId="#[correlationId]" stage="START" apiName='#[p("api.name")]'
+			traceId="#[correlationId]" stage="START" apiName='#[p("secure::api.name")]'
 			message="Started Processing" flowName="Calculate Totals Flow"
 			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
 			startTime="#[vars.startTime]" />
@@ -840,7 +840,7 @@ output application/json
 						<module-logger:console-logging
 							doc:name="Failed" doc:id="6f062bec-9db8-456f-82e0-0988d0eac726"
 							config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-							stage="COMPLETED" apiName='#[p("api.name")]'
+							stage="COMPLETED" apiName='#[p("secure::api.name")]'
 							message="IP Addess is null" flowName="Calculate Totals Flow"
 							env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 					</otherwise>
@@ -867,7 +867,7 @@ output application/json
 				<module-logger:console-logging
 					doc:name="Failed" doc:id="dc8cdbd9-9e78-4c8b-8662-95d3dda1fda7"
 					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-					stage="COMPLETED" apiName='#[p("api.name")]'
+					stage="COMPLETED" apiName='#[p("secure::api.name")]'
 					message="Invalid Access Token" flowName="Calculate Totals Flow"
 					env='#[p("mule.env")]' startTime="#[vars.startTime]" />
 			</otherwise>
@@ -978,7 +978,7 @@ output application/json
 				<module-logger:console-logging
 					doc:name="Failed" doc:id="f1dd5f82-a7fd-49fa-bcad-0d4a52f9c504"
 					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-					stage="EXCEPTION" apiName='#[p("api.name")]'
+					stage="EXCEPTION" apiName='#[p("secure::api.name")]'
 					message="Processing Failed due to connectivity error"
 					flowName="Calculate Totals Flow" env='#[p("mule.env")]' error="#[error]"
 					startTime="#[vars.startTime]" />
@@ -1023,7 +1023,7 @@ output application/json
 				<module-logger:console-logging
 					doc:name="Failed" doc:id="93c665a1-1fdc-44e3-a4ce-d395dba17e80"
 					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
-					stage="EXCEPTION" apiName='#[p("api.name")]'
+					stage="EXCEPTION" apiName='#[p("secure::api.name")]'
 					message="Processing Failed due to error" flowName="Calculate Totals Flow"
 					env='#[p("mule.env")]' error="#[error]"
 					startTime="#[vars.startTime]" />
