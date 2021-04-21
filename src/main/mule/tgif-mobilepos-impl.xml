@@ -358,7 +358,7 @@ output application/json
 				type="HTTP:CONNECTIVITY">
 				<error-handler-plugin:on-error
 					doc:name="Process Error"
-					doc:id="dbca2836-374a-45e5-81bd-e8b2dc67bd50" target="errorPayload" />
+					doc:id="dbca2836-374a-45e5-81bd-e8b2dc67bd50" target="errorPayload" config-ref="Error_Handler_Plugin_Config"/>
 				<java:invoke-static doc:name="Ping Gateway"
 					doc:id="f7ffe13d-a56f-42ed-b291-4767d5c1c87d"
 					class="com.api.tgif.mobilepos.util.CommonUtil"
@@ -476,7 +476,7 @@ output application/json
 				doc:id="cf5cb7d2-3a22-43ce-a326-2cacc67feef8">
 				<error-handler-plugin:on-error
 					doc:name="Process Error"
-					doc:id="09e20c79-ed27-47fa-90c7-a67784be0872" target="errorPayload" />
+					doc:id="09e20c79-ed27-47fa-90c7-a67784be0872" target="errorPayload" config-ref="Error_Handler_Plugin_Config"/>
 				<set-variable
 					value='#[output application/json --- "Following error occurred in Create Check method for Store " ++ vars.storeId default "" ++ "=" ++ write(error, "application/json")]'
 					doc:name="emailMessage"

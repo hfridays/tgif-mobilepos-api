@@ -138,7 +138,7 @@ output application/json
 					stage="IN PROCESS"
 					message='#[output application/json --- write(vars.calculateTotalXML, "application/xml", { writeDeclaration: false })]'
 					flowStartDate='#[vars.startTime]' flowName="Calculate Totals Flow"
-					status="Before POS Call" transactionType="HTTP Request"
+					status="Before POS API Call" transactionType="ORDERS-MOBILEPOS"
 					apiName='#[p("secure::api.name")]' apiVersion='#[p("secure::api.version")]' />
 				<http:request method="POST" doc:name="Request POS Api"
 					doc:id="7fcc1feb-44db-4899-ae6e-a12910df9a87"
@@ -246,8 +246,8 @@ ns0#Envelope: {
 				stage="IN PROCESS"
 				message='#[output application/json --- write(vars.resPosRequest, "application/xml", {writeDeclaration: false})]'
 				flowStartDate='#[vars.startTime]' flowName="Calculate Totals Flow"
-				status="Before POS Call for each menu item"
-				transactionType="HTTP Request" apiName='#[p("secure::api.name")]'
+				status="Before POS API Call for each menu item"
+				transactionType="ORDERS-MOBILEPOS" apiName='#[p("secure::api.name")]'
 				apiVersion='#[p("secure::api.version")]' />
 			<http:request method="POST" doc:name="Request POS Api"
 				doc:id="a2e270e2-147a-42ad-be1f-54243bc14060"
@@ -270,8 +270,8 @@ ns0#Envelope: {
 				stage="IN PROCESS"
 				message='#[output application/json --- write(vars.calculateTotalServiceResponse, "application/xml", { writeDeclaration: false })]'
 				flowStartDate='#[vars.startTime]' flowName="Calculate Totals Flow"
-				status="After POS Call for each menu item"
-				transactionType="HTTP Response" apiName='#[p("secure::api.name")]'
+				status="After POS API Call for each menu item"
+				transactionType="ORDERS-MOBILEPOS" apiName='#[p("secure::api.name")]'
 				apiVersion='#[p("secure::api.version")]' />
 			<set-variable
 				value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTotals - POS API Response for each Menu Item',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: if ( vars.calculateTotalServiceResponse != null ) write(vars.calculateTotalServiceResponse, &quot;application/xml&quot;, {&#10;		writeDeclaration: false&#10;	}) else &quot;&quot;&#10;}]"

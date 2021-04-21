@@ -216,7 +216,7 @@ output application/json
 			stage="IN PROCESS"
 			message='#[output application/json --- write(vars.postTransactionXML, "application/xml", { writeDeclaration: false })]'
 			flowStartDate="#[vars.startTime]" flowName="Create Check Flow"
-			status="Before POS Call" transactionType="HTTP Request"
+			status="Before POS API Call" transactionType="ORDERS-MOBILEPOS"
 			apiName='#[p("secure::api.name")]' apiVersion='#[p("secure::api.version")]' />
 		<http:request method="POST" doc:name="Request POS Api"
 			doc:id="9fa4edef-5fb2-4177-9679-76587c8c8d44"
@@ -239,7 +239,7 @@ output application/json
 			stage="IN PROCESS"
 			message='#[output application/json --- write(vars.createCheckServiceResponse, "application/xml", { writeDeclaration: false })]'
 			flowStartDate="#[vars.startTime]" flowName="Create Check Flow"
-			status="After POS Call" transactionType="HTTP Response"
+			status="After POS API Call" transactionType="ORDERS-MOBILEPOS"
 			apiName='#[p("secure::api.name")]' apiVersion='#[p("secure::api.version")]' />
 		<logger level="DEBUG" doc:name="DEBUG: POS API Response"
 			doc:id="5bec9dcb-68ae-4147-b2eb-329d7f7c7a1b"
@@ -313,13 +313,13 @@ ns tem http://tempuri.org/
 					doc:id="377fff35-3e13-4eeb-997b-06a08455f4a6"
 					variableName="tgifServiceResponse" />
 				<module-logger:database-logging
-					doc:name="POS API Request"
+					doc:name="POS API Response"
 					doc:id="385ff73e-9d21-4d4d-835a-c561db5ec282"
 					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
 					stage="IN PROCESS"
 					message='#[output text/plain --- write(vars.tgifServiceResponse, "application/json")]'
 					flowStartDate="#[vars.startTime]" flowName="Create Check Flow"
-					status="After TGIF Web Service Call" transactionType="TGIF Web Service Response"
+					status="After TGIF Web Service Call" transactionType="ORDERS-MOBILEPOS"
 					apiName='#[p("secure::api.name")]' apiVersion='#[p("secure::api.version")]' />
 				<logger level="DEBUG"
 					doc:name="DEBUG: TGIF Web Service Response"

@@ -46,8 +46,8 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 			config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
 			stage="IN PROCESS" message='#[output application/json --- write(vars.taxAndTotalXml, "application/xml", { writeDeclaration: false })]'
 			flowStartDate="#[vars.startTime]"
-			flowName="Calculate Tax and Totals Flow" status="Before POS Call"
-			transactionType="HTTP Request" apiName='#[p("secure::api.name")]' apiVersion='#[p("secure::api.version")]'/>
+			flowName="Calculate Tax and Totals Flow" status="Before POS API Call"
+			transactionType="ORDERS-MOBILEPOS" apiName='#[p("secure::api.name")]' apiVersion='#[p("secure::api.version")]'/>
 		<http:request method="POST" doc:name="Request POS Api"
 			doc:id="29d455c3-28cb-4859-8104-7046e281c76f"
 			config-ref="HTTP_Request_configuration"
@@ -71,8 +71,8 @@ vars.taxAndTotalXml]]]></http:body>
 			config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
 			stage="IN PROCESS" message='#[output application/json --- write(vars.calculateTotalServiceResponse, "application/xml", { writeDeclaration: false })]'
 			flowStartDate="#[vars.startTime]"
-			flowName="Calculate Tax and Totals Flow" status="After POS Call"
-			transactionType="HTTP Response" apiName='#[p("secure::api.name")]' apiVersion='#[p("secure::api.version")]'/>
+			flowName="Calculate Tax and Totals Flow" status="After POS API Call"
+			transactionType="ORDERS-MOBILEPOS" apiName='#[p("secure::api.name")]' apiVersion='#[p("secure::api.version")]'/>
 		<set-variable
 			value="#[output application/json&#10;---&#10;{&#10;	methodName: 'CalculateTaxAndTotal  - POS API Response',&#10;	storeId: if ( vars.storeId != null ) vars.storeId else vars.vrStoreId,&#10;	checkNumber: 'Null',&#10;	checkSequence: 'Null',&#10;	employeeNumber: 'Null',&#10;	tableNumber: 'Null',&#10;	status: '1',&#10;	message: write(vars.calculateTotalServiceResponse, &quot;application/xml&quot;, {&#10;		writeDeclaration: false&#10;	})&#10;}]"
 			doc:name="logData" doc:id="a3c0c6c5-9d51-45a3-8fb2-4279c8d69d85"
