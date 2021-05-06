@@ -28,12 +28,11 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 			doc:id="c4befc5f-78c2-4260-aae7-99d6574c36a8"
 			variableName="startTime" />
 		<module-logger:console-logging
-			doc:name="Start"
-			doc:id="32f02a59-3bd4-4997-b6f0-7208ee93029b"
-			traceId="#[correlationId]" stage="START" apiName='#[p("secure::api.name")]'
-			message="Started Processing" flowName="MS Heartbeat Flow"
-			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
-			startTime="#[vars.startTime]" />
+			doc:name="Start" doc:id="32f02a59-3bd4-4997-b6f0-7208ee93029b"
+			traceId="#[correlationId]" stage="START"
+			apiName='#[p("secure::api.name")]' message="Started Processing"
+			flowName="MS Heartbeat Flow" env='#[p("mule.env")]'
+			config-ref="TGIF_Logger_Config" startTime="#[vars.startTime]" />
 		<flow-ref doc:name="get-access-token"
 			doc:id="8275a8b9-d447-4637-8cd5-652c6460a3ce" name="get-access-token" />
 		<choice doc:name="Check if access token valid"
@@ -92,12 +91,11 @@ output application/json
 			doc:id="7ce347de-eed5-4415-b00e-e1924c5dfdb0"
 			variableName="startTime" />
 		<module-logger:console-logging
-			doc:name="Start"
-			doc:id="2487796d-bbab-4b2c-bea9-0ccad41e293d"
-			traceId="#[correlationId]" stage="START" apiName='#[p("secure::api.name")]'
-			message="Started Processing" flowName="Ping IP Address Flow"
-			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
-			startTime="#[vars.startTime]" />
+			doc:name="Start" doc:id="2487796d-bbab-4b2c-bea9-0ccad41e293d"
+			traceId="#[correlationId]" stage="START"
+			apiName='#[p("secure::api.name")]' message="Started Processing"
+			flowName="Ping IP Address Flow" env='#[p("mule.env")]'
+			config-ref="TGIF_Logger_Config" startTime="#[vars.startTime]" />
 		<flow-ref doc:name="get-access-token"
 			doc:id="da274a5e-6c3d-481e-9a1c-883ab3676136" name="get-access-token" />
 		<choice doc:name="Check if access token valid"
@@ -151,7 +149,7 @@ output application/json
 							config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
 							stage="COMPLETED" apiName='#[p("secure::api.name")]'
 							flowName="Ping IP Address Flow" message="Host is reachable"
-							startTime="#[vars.startTime]" env='#[p("mule.env")]'/>
+							startTime="#[vars.startTime]" env='#[p("mule.env")]' />
 					</when>
 					<otherwise>
 						<ee:transform doc:name="Create Failure Response"
@@ -173,7 +171,7 @@ output application/json
 							config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
 							stage="COMPLETED" apiName='#[p("secure::api.name")]'
 							flowName="Ping IP Address Flow" message="Host is not reachable"
-							startTime="#[vars.startTime]" env='#[p("mule.env")]'/>
+							startTime="#[vars.startTime]" env='#[p("mule.env")]' />
 					</otherwise>
 				</choice>
 			</when>
@@ -208,12 +206,11 @@ output application/json
 			doc:id="98eaed87-4104-4552-9be0-fad36626dab8"
 			variableName="startTime" />
 		<module-logger:console-logging
-			doc:name="Start"
-			doc:id="0d36658b-4e75-438c-91d8-fcf11b4e6b95"
-			traceId="#[correlationId]" stage="START" apiName='#[p("secure::api.name")]'
-			message="Started Processing" flowName="Create Check Flow"
-			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
-			startTime="#[vars.startTime]" />
+			doc:name="Start" doc:id="0d36658b-4e75-438c-91d8-fcf11b4e6b95"
+			traceId="#[correlationId]" stage="START"
+			apiName='#[p("secure::api.name")]' message="Started Processing"
+			flowName="Create Check Flow" env='#[p("mule.env")]'
+			config-ref="TGIF_Logger_Config" startTime="#[vars.startTime]" />
 		<flow-ref doc:name="get-access-token"
 			doc:id="27360d2e-5861-4b2a-bab7-d84d907e6922" name="get-access-token" />
 		<choice doc:name="Check if access token valid"
@@ -273,6 +270,22 @@ else ""]]></ee:set-variable>
 					name="get-delivery-partner-orders" />
 				<flow-ref doc:name="get-vr-details"
 					doc:id="2cf4aefb-4ff3-4d99-bc05-7eece5a55ecb" name="get-vr-details" />
+				<db:stored-procedure
+					doc:name="Get Tender Media Details"
+					doc:id="5b1987f1-b282-4e64-a150-e6b14d5b83cd"
+					config-ref="Database_Config_Mule_Interface" target="tenderDetails">
+					<db:sql><![CDATA[{call prc_get_tender_media_details(:cardType, :commissionType, :fulfillmentType, :brandId)}]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
+	cardType: vars.paymentCardType,
+	commissionType: vars.createCheckVars.commissionType,
+	fulfillmentType: vars.createCheckVars.fullfillmentType default "Delivery",
+	brandId: vars.brandId
+}]]]></db:input-parameters>
+					<db:output-parameters >
+						<db:output-parameter key="employee_number" type="NVARCHAR" />
+						<db:output-parameter key="revenue_center_id" type="INTEGER" />
+					</db:output-parameters>
+				</db:stored-procedure>
 				<ee:transform doc:name="tenderId"
 					doc:id="15e7acf7-25eb-40b7-a17d-4c3649a49682">
 					<ee:message>
@@ -552,6 +565,19 @@ attributes.queryParams.storeId]]></ee:set-variable>
 					doc:id="b00e2b82-e114-4e37-af90-50c802d32fcb"
 					schema="schema/caluclateTaxAndTotalRequest.json">
 				</json:validate-schema>
+				<db:stored-procedure doc:name="Get Tender Media Details" doc:id="50ba39b2-74d4-4ae4-ab9c-eceaae1c953a" config-ref="Database_Config_Mule_Interface" target="tenderDetails">
+					<db:sql ><![CDATA[{call prc_get_tender_media_details(:cardType, :commissionType, :fulfillmentType)}]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	cardType: vars.authSystem,
+	commisionType: null,
+	fulfillmentType: "Delivery",
+	brandId: vars.brandId
+}]]]></db:input-parameters>
+					<db:output-parameters >
+						<db:output-parameter key="employee_number" type="NVARCHAR" />
+						<db:output-parameter key="revenue_center_id" type="INTEGER" />
+					</db:output-parameters>
+				</db:stored-procedure>
 				<ee:transform doc:name="tenderId"
 					doc:id="732480ca-bac7-446e-9fb5-040578e7eb09">
 					<ee:message>
@@ -763,6 +789,19 @@ attributes.queryParams.storeId]]></ee:set-variable>
 					doc:id="1600af8f-e27e-476c-90d0-be64a7b0a6c1"
 					schema="schema/caluclateTotalRequest.json">
 				</json:validate-schema>
+				<db:stored-procedure doc:name="Get Tender Media Details" doc:id="50c0bd53-8b23-4e72-bf70-db9c00432e00" config-ref="Database_Config_Mule_Interface" target="tenderDetails">
+					<db:sql ><![CDATA[{call prc_get_tender_media_details(:cardType, :commissionType, :fulfillmentType)}]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	cardType: vars.authSystem,
+	commisionType: null,
+	fulfillmentType: "Delivery",
+	brandId: vars.brandId
+}]]]></db:input-parameters>
+					<db:output-parameters >
+						<db:output-parameter key="employee_number" type="NVARCHAR" />
+						<db:output-parameter key="revenue_center_id" type="INTEGER" />
+					</db:output-parameters>
+				</db:stored-procedure>
 				<ee:transform doc:name="tenderId"
 					doc:id="03cc88e5-cd50-499e-9715-016ecb346750">
 					<ee:message>

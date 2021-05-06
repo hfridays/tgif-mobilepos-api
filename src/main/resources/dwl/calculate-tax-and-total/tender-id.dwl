@@ -1,27 +1,15 @@
 %dw 2.0
 output application/json
 var fullfillmentType = "Delivery"
-fun getPaymentCardType(authSystem) = if ( authSystem == "amazon_rws" ) "RWS" else authSystem
-fun getEmployeeObjectNumber(cardType, fullfillmentType) =  if ( cardType == "GH" and fullfillmentType == "pickup" ) "96013"
-else if ( cardType == "GH" ) "96002"
-else if ( cardType == "GB" ) "96008"
-else if ( cardType == "RWS" ) "96003"
-else if ( cardType == "UBE" and fullfillmentType == "pickup" ) "96012"
-else if ( cardType == "UBE" ) "96004"
-else if ( cardType == "PM" ) "96009"
-else if ( cardType == "DD" and fullfillmentType == "pickup" ) "96011"
-else if ( cardType == "DD" ) "96005"
-else "98008"
-fun getTenderMediaObjectNumberforMicros(cardType)= if ( ["GB", "GH","RWS","UBE","PM","DD"] contains cardType ) "12"
-else "58"
+fun getPaymentCardType(authSystem) = authSystem
 fun getOrderTypeIDforMicros(cardType) =  if ( ["GH","RWS","UBE","PM","DD"] contains cardType ) "4"
 else "5"
-fun getRevenueCenterObjectNumforMicros(cardType) =  if ( ["GB", "GH","RWS","UBE","PM","DD"] contains cardType ) "6"
-else "5"
+fun getTenderMediaObjectNumberforMicros(cardType)= if ( ["GB", "GH","RWS","UBE","PM","DD"] contains cardType ) "12"
+else "58"
 ---
 {
-	calcTotalsEmployeeObjectNum: getEmployeeObjectNumber(getPaymentCardType(vars.authSystem), fullfillmentType),
-	calcTotalsTenderObjectNum: getTenderMediaObjectNumberforMicros(getPaymentCardType(vars.authSystem)),
+	calcTotalsEmployeeObjectNum: if(vars.tenderDetails.resultSet1[0].employee_number != null) vars.tenderDetails.resultSet1[0].employee_number else "98008",
+	calcTotalsTenderObjectNum:  getTenderMediaObjectNumberforMicros(getPaymentCardType(vars.authSystem)),
 	calcTotalsOrderTypeID: getOrderTypeIDforMicros(getPaymentCardType(vars.authSystem)),
-	calcTotalsRevenueCenterObjectNumber: getRevenueCenterObjectNumforMicros(getPaymentCardType(vars.authSystem))
+	calcTotalsRevenueCenterObjectNumber: if(vars.tenderDetails.resultSet1[0].revenue_center_id != null) vars.tenderDetails.resultSet1[0].revenue_center_id else "5"
 }

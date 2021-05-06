@@ -241,9 +241,6 @@ output application/json
 			flowStartDate="#[vars.startTime]" flowName="Create Check Flow"
 			status="After POS API Call" transactionType="ORDERS-MOBILEPOS"
 			apiName='#[p("secure::api.name")]' apiVersion='#[p("secure::api.version")]' />
-		<logger level="DEBUG" doc:name="DEBUG: POS API Response"
-			doc:id="5bec9dcb-68ae-4147-b2eb-329d7f7c7a1b"
-			message="POS API Response=#[vars.createCheckServiceResponse]" />
 		<set-variable
 			value="#[output application/json
 &#10;---
@@ -574,7 +571,7 @@ else ""]]></ee:set-variable>
 			key="#[vars.retrieveKey]" objectStore="Object_store"
 			target="orderType" />
 		<set-variable
-			value="#[output application/json --- ((vars.orderType filter ($.store_id as String == vars.storeId)).order_type_id)[0]]"
+			value="#[output application/json --- ((vars.orderType.resultSet1 filter ($.store_id as String == vars.storeId)).order_type_id)[0]]"
 			doc:name="orderType" doc:id="8742b20d-326b-4960-9851-0f4bcb2a1c28"
 			variableName="orderType" />
 		<logger level="INFO" doc:name="INFO: Exit"
@@ -590,7 +587,7 @@ else ""]]></ee:set-variable>
 			doc:id="507a6e87-0240-4344-8496-ec46c5a4297f" key="tenderMedia"
 			objectStore="Object_store" target="tenderMedia" />
 		<set-variable
-			value="#[output application/json --- ((vars.tenderMedia filter ($.store_id as String == vars.storeId)).tender_media_object_number)[0]]"
+			value="#[output application/json --- ((vars.tenderMedia.resultSet1 filter ($.store_id as String == vars.storeId)).tender_media_object_number)[0]]"
 			doc:name="tenderMedia" doc:id="62bfb746-3988-4842-9d04-40cb10720289"
 			variableName="tenderMedia" />
 		<logger level="INFO" doc:name="INFO: Exit"
@@ -669,7 +666,7 @@ output application/json
 							variableName="employeeObjectNumber"><![CDATA[%dw 2.0
 output application/json
 ---
-((vars.vrDetails filter ( ($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String) )).employee_object_number)[0] default ""]]></ee:set-variable>
+((vars.vrDetails.resultSet1 filter ( ($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String) )).employee_object_number)[0] default ""]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
 			</when>
