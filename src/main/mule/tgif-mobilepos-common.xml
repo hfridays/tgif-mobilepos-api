@@ -26,7 +26,7 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 				<ee:set-variable variableName="storeIpProperties"><![CDATA[%dw 2.0
 output application/json
 ---
-(vars.storeIpProperties filter ($.store_id as String == vars.storeId)) map (item, index) -> {
+(vars.storeIpProperties.resultSet1 filter ($.store_id as String == vars.storeId)) map (item, index) -> {
 	gatewayIp: item.gateway_ip,
 	printerIp: item.printer_ip,
 	serverIp: item.server_ip

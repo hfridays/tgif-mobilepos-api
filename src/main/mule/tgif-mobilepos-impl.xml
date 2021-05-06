@@ -274,12 +274,13 @@ else ""]]></ee:set-variable>
 					doc:name="Get Tender Media Details"
 					doc:id="5b1987f1-b282-4e64-a150-e6b14d5b83cd"
 					config-ref="Database_Config_Mule_Interface" target="tenderDetails">
-					<db:sql><![CDATA[{call prc_get_tender_media_details(:cardType, :commissionType, :fulfillmentType, :brandId)}]]></db:sql>
+					<db:sql><![CDATA[{call prc_get_tender_media_details(:commission_type, :card_type, :fulfillment_type, :brand_id)}]]></db:sql>
 					<db:input-parameters><![CDATA[#[{
-	cardType: vars.paymentCardType,
-	commissionType: vars.createCheckVars.commissionType,
-	fulfillmentType: vars.createCheckVars.fullfillmentType default "Delivery",
-	brandId: vars.brandId
+	commission_type: vars.createCheckVars.commissionType,
+	card_type: vars.paymentCardType,
+	fulfillment_type: vars.createCheckVars.fullfillmentType default "Delivery",
+	brand_id: if(vars.brandId != null and vars.brandId != "NULL") vars.brandId as Number else null
+
 }]]]></db:input-parameters>
 					<db:output-parameters >
 						<db:output-parameter key="employee_number" type="NVARCHAR" />
@@ -566,12 +567,13 @@ attributes.queryParams.storeId]]></ee:set-variable>
 					schema="schema/caluclateTaxAndTotalRequest.json">
 				</json:validate-schema>
 				<db:stored-procedure doc:name="Get Tender Media Details" doc:id="50ba39b2-74d4-4ae4-ab9c-eceaae1c953a" config-ref="Database_Config_Mule_Interface" target="tenderDetails">
-					<db:sql ><![CDATA[{call prc_get_tender_media_details(:cardType, :commissionType, :fulfillmentType)}]]></db:sql>
+					<db:sql ><![CDATA[{call prc_get_tender_media_details(:commission_type, :card_type, :fulfillment_type, :brand_id)}]]></db:sql>
 					<db:input-parameters ><![CDATA[#[{
-	cardType: vars.authSystem,
-	commisionType: null,
-	fulfillmentType: "Delivery",
-	brandId: vars.brandId
+	commission_type: null,
+	card_type: vars.authSystem,
+	fulfillment_type: "Delivery",
+	brand_id: if(vars.brandId != null and vars.brandId != "NULL") vars.brandId as Number else null
+
 }]]]></db:input-parameters>
 					<db:output-parameters >
 						<db:output-parameter key="employee_number" type="NVARCHAR" />
@@ -790,12 +792,12 @@ attributes.queryParams.storeId]]></ee:set-variable>
 					schema="schema/caluclateTotalRequest.json">
 				</json:validate-schema>
 				<db:stored-procedure doc:name="Get Tender Media Details" doc:id="50c0bd53-8b23-4e72-bf70-db9c00432e00" config-ref="Database_Config_Mule_Interface" target="tenderDetails">
-					<db:sql ><![CDATA[{call prc_get_tender_media_details(:cardType, :commissionType, :fulfillmentType)}]]></db:sql>
+					<db:sql ><![CDATA[{call prc_get_tender_media_details(:commission_type, :card_type, :fulfillment_type, :brand_id)}]]></db:sql>
 					<db:input-parameters ><![CDATA[#[{
-	cardType: vars.authSystem,
-	commisionType: null,
-	fulfillmentType: "Delivery",
-	brandId: vars.brandId
+	commission_type: null,
+	card_type: vars.authSystem,
+	fulfillment_type: "Delivery",
+	brand_id: if(vars.brandId != null and vars.brandId != "NULL") vars.brandId as Number else null
 }]]]></db:input-parameters>
 					<db:output-parameters >
 						<db:output-parameter key="employee_number" type="NVARCHAR" />
