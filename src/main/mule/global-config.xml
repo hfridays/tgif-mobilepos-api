@@ -46,8 +46,8 @@ http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/
 		<db:generic-connection
 			url="${secure::database.depot.url}"
 			driverClassName="${secure::database.driver}"
-			user="${secure::database.user}"
-			password="${secure::database.password}" />
+			user="${secure::database.depot.user}"
+			password="${secure::database.depot.password}" />
 	</db:config>
 	<db:config name="Database_Config_Mule_Interface"
 		doc:name="Database Config"
@@ -55,8 +55,8 @@ http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/
 		<db:generic-connection
 			url="${secure::database.muleInterface.url}"
 			driverClassName="${secure::database.driver}"
-			user="${secure::database.user}"
-			password="${secure::database.password}" />
+			user="${secure::database.muleInterface.user}"
+			password="${secure::database.muleInterface.password}" />
 	</db:config>
 	<os:object-store name="Object_store"
 		doc:name="Object store" doc:id="37e7f8a6-b58b-4952-b71e-e792750684ef" />

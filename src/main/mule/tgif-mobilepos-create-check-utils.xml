@@ -32,8 +32,8 @@ AND day_of_business = :currentDate AND delivery_partner_name in ('OLO', 'PayInSt
 			<db:input-parameters><![CDATA[#[{
 	storeId: vars.storeId,
 	cartId: vars.createCheckVars.cartId,
-	currentDate: (now() >> "CST") as Date {
-		format: "MM/dd/yyyy"
+	currentDate: (now() >> "CST") as LocalDateTime as String {
+		format: "yyyy-MM-dd HH:mm:ss.S"
 	}
 }]]]></db:input-parameters>
 		</db:select>
@@ -225,23 +225,28 @@ output application/json
 			status="Before POS API Call" transactionType="ORDERS-MOBILEPOS"
 			apiName='#[p("secure::api.name")]'
 			apiVersion='#[p("secure::api.version")]' />
-		<http:request method="POST" doc:name="Request POS Api"
-			doc:id="9fa4edef-5fb2-4177-9679-76587c8c8d44"
-			target="createCheckServiceResponse"
-			config-ref="HTTP_Request_configuration"
-			path="/ResPosApiWeb/ResPosApiWeb.asmx">
-			<reconnect
-				frequency="${secure::posapi.reconnect.frequency}"
-				count="${secure::posapi.reconnect.count}" />
-			<http:body><![CDATA[#[%dw 2.0
+		<until-successful
+			maxRetries="${secure::untilsuccessful.retries}" doc:name="Until Successful"
+			doc:id="74c17757-0ee2-424b-bc67-b5b4d43bec7a"
+			millisBetweenRetries="${secure::untilsuccessful.interval}">
+			<http:request method="POST" doc:name="Request POS Api"
+				doc:id="9fa4edef-5fb2-4177-9679-76587c8c8d44"
+				target="createCheckServiceResponse"
+				config-ref="HTTP_Request_configuration"
+				path="/ResPosApiWeb/ResPosApiWeb.asmx">
+				<reconnect
+					frequency="${secure::posapi.reconnect.frequency}"
+					count="${secure::posapi.reconnect.count}" />
+				<http:body><![CDATA[#[%dw 2.0
 output text/xml
 ---
 vars.postTransactionXML]]]></http:body>
-			<http:response-validator>
-				<http:success-status-code-validator
-					values="200..599" />
-			</http:response-validator>
-		</http:request>
+				<http:response-validator>
+					<http:success-status-code-validator
+						values="200..599" />
+				</http:response-validator>
+			</http:request>
+		</until-successful>
 		<module-logger:database-logging
 			doc:name="POS API Request"
 			doc:id="f2a06f82-ab22-4764-a814-bf59d24eadcd"
@@ -300,12 +305,16 @@ if ( vars.createCheckServiceResponse.soapenv#Envelope.soapenv#Body.PostTransacti
 				<flow-ref doc:name="send-order-to-mail"
 					doc:id="e8492c03-e28e-4955-91e4-ce1ba4689c53"
 					name="send-order-to-mail" />
-				<wsc:consume doc:name="TGIF Web Service call"
-					doc:id="f9a1aff4-9be1-4241-a5ee-e3d52b89a9ed"
-					config-ref="Web_Service_Consumer_Config" operation="GetMicrosDOB"
-					target="tgifServiceResponse">
-					<wsc:message>
-						<wsc:body><![CDATA[#[%dw 2.0
+				<until-successful
+					maxRetries="${secure::untilsuccessful.retries}" doc:name="Until Successful"
+					doc:id="3f62d1aa-a4cc-45ad-9fb6-dda61fd6ef82"
+					millisBetweenRetries="${secure::untilsuccessful.interval}">
+					<wsc:consume doc:name="TGIF Web Service call"
+						doc:id="f9a1aff4-9be1-4241-a5ee-e3d52b89a9ed"
+						config-ref="Web_Service_Consumer_Config" operation="GetMicrosDOB"
+						target="tgifServiceResponse">
+						<wsc:message>
+							<wsc:body><![CDATA[#[%dw 2.0
 output application/xml
 ns tem http://tempuri.org/
 ---
@@ -313,8 +322,9 @@ ns tem http://tempuri.org/
 	tem#GetMicrosDOB: {
 	}
 }]]]></wsc:body>
-					</wsc:message>
-				</wsc:consume>
+						</wsc:message>
+					</wsc:consume>
+				</until-successful>
 				<set-variable
 					value="#[output application/json --- vars.tgifServiceResponse]"
 					doc:name="tgifServiceResponse"
@@ -331,10 +341,6 @@ ns tem http://tempuri.org/
 					transactionType="ORDERS-MOBILEPOS"
 					apiName='#[p("secure::api.name")]'
 					apiVersion='#[p("secure::api.version")]' />
-				<logger level="DEBUG"
-					doc:name="DEBUG: TGIF Web Service Response"
-					doc:id="4fd1a79e-a65c-42ea-931a-4ec86e657dca"
-					message="TGIF Web Service Response=#[vars.tgifServiceResponse]" />
 				<set-variable
 					value="#[%dw 2.0
 &#10;output application/json
@@ -364,12 +370,7 @@ ns tem http://tempuri.org/
 					<when
 						expression='#[using(subject = vars.tenderId.messageSubject) subject != "Grub Hub Delivery" and subject != "Uber Eats Delivery" and subject != "Postmates Delivery" and subject != "Door Dash Delivery"]'>
 						<set-variable
-							value="#[{
-&#10;	storeId: vars.storeId,
-&#10;	cartId: vars.createCheckVars.cartId,
-&#10;	payload: vars.createCheck,
-&#10;	dayofBusiness: payload.dayOfBusiness
-&#10;}]"
+							value="#[{&#10;&#10;	storeId: vars.storeId,&#10;&#10;	cartId: vars.createCheckVars.cartId,&#10;&#10;	payload: vars.createCheck,&#10;&#10;	dayofBusiness: payload.createcheck.dayOfBusiness&#10;&#10;}]"
 							doc:name="Cart Log Data"
 							doc:id="ed51ac30-1a59-4f9b-b5b2-2ea898ce2922"
 							variableName="logData" />
@@ -579,14 +580,15 @@ else if(vars.paymentCardType == "PM") "Postmates"
 else ""]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<os:retrieve doc:name="Retrieve Delivery Partner Orders"
-			doc:id="d7291d14-abbc-45cf-afc0-c6c5d20cac07"
-			key="#[vars.retrieveKey]" objectStore="Object_store"
-			target="orderType" />
-		<set-variable
-			value="#[output application/json --- ((vars.orderType.resultSet1 filter ($.store_id as String == vars.storeId)).order_type_id)[0]]"
-			doc:name="orderType" doc:id="8742b20d-326b-4960-9851-0f4bcb2a1c28"
-			variableName="orderType" />
+		<choice doc:name="Choice" doc:id="596370e0-8477-416d-bb96-705b292b3a77" >
+			<when expression='#[vars.retrieveKey != ""]'>
+				<os:retrieve doc:name="Retrieve Delivery Partner Orders" doc:id="d7291d14-abbc-45cf-afc0-c6c5d20cac07" key="#[vars.retrieveKey]" objectStore="Object_store" target="orderType" />
+				<set-variable value="#[output application/json --- ((vars.orderType.resultSet1 filter ($.store_id as String == vars.storeId)).order_type_id)[0]]" doc:name="orderType" doc:id="8742b20d-326b-4960-9851-0f4bcb2a1c28" variableName="orderType" />
+			</when>
+			<otherwise >
+				<set-variable value='#[""]' doc:name="Set Variable" doc:id="9c7a4693-d8ed-46a1-b26c-037bc3553e44" variableName="orderType"/>
+			</otherwise>
+		</choice>
 		<logger level="INFO" doc:name="INFO: Exit"
 			doc:id="8a9de6d3-bff9-4876-9351-959f029e2759"
 			message="Exit Get Delivery Partner order from Object Store flow" />
@@ -654,7 +656,7 @@ output application/json
 		doc:id="ee5ec963-faf0-414e-9018-2bfd181773bd">
 		<choice doc:name="Check BrandId"
 			doc:id="172602ed-db4b-4919-bb0d-1683ca77f168">
-			<when expression='#[vars.brandId != "NULL"]'>
+			<when expression='#[vars.brandId != 1]'>
 				<os:retrieve doc:name="Retrieve VR Details"
 					doc:id="f87b6049-93d4-46a6-8ac4-6a2bfec94c23" key="vrDetails"
 					objectStore="Object_store" target="vrDetails" />
@@ -666,15 +668,15 @@ output application/json
 						<ee:set-variable variableName="vrStoreId"><![CDATA[%dw 2.0
 output application/json
 ---
-((vars.vrDetails filter ( ($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String) )).vr_store_id)[0] default "NULL"]]></ee:set-variable>
+((vars.vrDetails.resultSet1 filter ( ($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String) )).vr_store_id)[0] default "NULL"]]></ee:set-variable>
 						<ee:set-variable variableName="brandName"><![CDATA[%dw 2.0
 output application/java
 ---
-((vars.vrDetails filter (($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String))).brand_name)[0] default ""]]></ee:set-variable>
+((vars.vrDetails.resultSet1 filter (($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String))).brand_name)[0] default ""]]></ee:set-variable>
 						<ee:set-variable variableName="orderType"><![CDATA[%dw 2.0
 output application/json
 ---
-((vars.vrDetails filter ( ($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String) )).order_type_id)[0] default ""]]></ee:set-variable>
+((vars.vrDetails.resultSet1 filter ( ($.store_id as String == vars.storeId as String) and ($.delivery_partner_name as String== vars.deliveryPartner as String) and ($.brand_id as String == vars.brandId as String) )).order_type_id)[0] default ""]]></ee:set-variable>
 						<ee:set-variable
 							variableName="employeeObjectNumber"><![CDATA[%dw 2.0
 output application/json
@@ -701,7 +703,7 @@ output application/json
 		<db:stored-procedure
 			doc:name="Call prc_validate_olo_duplicate_orders_insert"
 			doc:id="940a2703-243a-401c-a486-1c18c3b9c9a6"
-			config-ref="Database_Config_Mule_Interface">
+			config-ref="Database_Config_Mule_Interface" target="dupOrdersResult">
 			<reconnect
 				frequency="${secure::database.reconnect.frequency}"
 				count="${secure::database.reconnect.count}" />
@@ -709,7 +711,7 @@ output application/json
 			<db:input-parameters><![CDATA[#[{
 	store_id: vars.logData.storeId,
 	cart_id: vars.logData.cartId,
-	orderId: vars.logData.orderId,
+	order_id: vars.logData.orderId,
 	day_of_business: vars.logData.dayOfBusiness,
 	delivery_partner_name: vars.deliveryPartner
 }]]]></db:input-parameters>

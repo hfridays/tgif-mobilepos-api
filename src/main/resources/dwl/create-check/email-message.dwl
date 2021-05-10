@@ -18,7 +18,7 @@ else if ( cardType == "GH" ) "GrubHub"
 else if ( cardType == "PayInStore" ) "PayInStore"
 else ""
 fun getLastFourDigits() = using ( cardNum = vars.createCheckVars.paymentCardNum ) if ( cardNum != null and !(isEmpty(cardNum)) ) java!com::api::tgif::mobilepos::util::CommonUtil::getPaymentCard(p("key"),cardNum) else ""
-fun getAuthCode() = using ( authCode = vars.createCheckVars.authCode ) if ( authCode != null and !(isEmpty(authCode)) and getPaymentCardTypeName() == "AmazonPay" ) trim(authCode splitBy("-")[3]) else if ( getPaymentCardTypeName == "AmazonPay" ) "" else authCode
+fun getAuthCode() = using ( authCode = vars.createCheckVars.authCode ) if ( authCode != null and !(isEmpty(authCode)) and getPaymentCardTypeName() == "AmazonPay" ) trim(authCode splitBy("-")[3]) else if ( getPaymentCardTypeName == "AmazonPay" ) "" else authCode default ""
 fun getOnlineOrderStore() = using ( cardTypeName = getPaymentCardTypeName() ) if ( cardTypeName == "Uber Eats" ) "--UBER EATS--"
 else if ( ["GrubHub", "Door Dash", "Amazon Restaurants", "Grab","Postmates", "Pay In Store"] contains cardTypeName ) "--" ++ cardTypeName ++ "--"
 else if ( cardTypeName == "PayInStore" ) "--Pay In Store--"
@@ -68,7 +68,7 @@ else ""
 fun getStripeCode() = vars.stripesCode
 ---
 if ( ppCheckPrintLines != null ) mailHeaderFooter() ++ "****************\n" ++ getOnlineOrderStore() ++ "\n" ++ getCheckCreatedTime() ++ "\n\n" ++ vars.fullfillmentOrder ++ "\n****************\nReady for Pickup: " ++ 
-getPickupTime() ++ "\n****************" ++ ((ppCheckPrintLines map if ( $$ == getChkIndex() ) getCheckDetails().checkNumberWithTimestamp else if ( $$ == getTimestampIndex() ) getAmtPaidDetails() else if ( $ == null ) "" else $) joinBy "\n") ++ 
+getPickupTime() ++ "\n****************" ++ ((ppCheckPrintLines default [] map if ( $$ == getChkIndex() ) getCheckDetails().checkNumberWithTimestamp else if ( $$ == getTimestampIndex() ) getAmtPaidDetails() else if ( $ == null ) "" else $) joinBy "\n") ++ 
 "\nCard Type: " ++  getPaymentCardTypeName() ++ "\nCard # " ++ getLastFourDigits() ++ "\nAuthorization Code: " ++ getAuthCode() ++ "\nTransaction Type: Purchase\n" ++ 
 "Cardmember acknowledges receipt of goods\nand/or services in the amount of the total\nshown hereon and agrees to perform the\n" ++
 "obligations set forth by cardmembers\nagreement with issuer\nX------------------------------------\n" ++ getPayStatus() ++ "\n" ++ vars.createCheckVars.customerName ++

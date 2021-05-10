@@ -13,5 +13,5 @@ output application/json
 	cartId: payload.createcheck.payment.referenceNumber,
 	fullfillmentType: payload.createcheck.fulfillmentType,
 	posFlag: "Micros",
-	comissionType: if(payload.createcheck.commisionType != null) payload.createcheck.commisionType else ""
+	commissionType: if(payload.createcheck.commissionType != null) payload.createcheck.commissionType else ""
 }

@@ -253,7 +253,7 @@ attributes.queryParams.StoreID]]></ee:set-variable>
 						<ee:set-variable variableName="brandId"><![CDATA[%dw 2.0
 output application/json
 ---
-vars.initialPayload.createcheck.brandId default "NULL"]]></ee:set-variable>
+if(vars.initialPayload.createcheck.brandId != "NULL") vars.initialPayload.createcheck.brandId else 1]]></ee:set-variable>
 						<ee:set-variable variableName="paymentCardType"><![CDATA[%dw 2.0
 output application/json
 import java!com::api::tgif::mobilepos::util::CommonUtil

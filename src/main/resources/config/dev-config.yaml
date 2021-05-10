@@ -6,18 +6,24 @@ api:
     port: "8082"
     
 keystore:
-  password: "Fridays"
+  password: "![gKufGgL7g9k=]"
 
+untilsuccessful:
+  retries: "2"
+  interval: "30000"
+  
 microsApi:
   connectionTimeout: "15000"
   readTimeout: "30000"
 database:
-  user: "svc_MuleSoft_User"
-  password: "![fCkpPgBZXRY/KJQt9WHpqQ==]"
   driver: "com.microsoft.sqlserver.jdbc.SQLServerDriver"  
   muleInterface:
+    user: "svc_MuleSoft_User"
+    password: "![fCkpPgBZXRY/KJQt9WHpqQ==]"
     url: "jdbc:sqlserver://10.58.52.50:1433;databaseName=mulesoft_interface;"  
   depot:
+    user: "svc_MuleSoft_User"
+    password: "![fCkpPgBZXRY/KJQt9WHpqQ==]"
     url: "jdbc:sqlserver://10.58.52.50:1433;databaseName=depot;"
   reconnect:
     frequency: "2000"

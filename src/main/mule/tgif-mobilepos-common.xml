@@ -52,7 +52,7 @@ output application/json
 			</ee:message>
 			<ee:variables>
 				<ee:set-variable variableName="errorDescription"><![CDATA[%dw 2.0
-var arr = ((vars.errorMessageDetails filter ($.message_number as String == vars.errorCode)).custom_message_text)
+var arr = ((vars.errorMessageDetails.resultSet1 filter ($.message_number as String == vars.errorCode)).custom_message_text)
 var size = if(arr == null) 0 else sizeOf (arr)
 output application/java
 ---

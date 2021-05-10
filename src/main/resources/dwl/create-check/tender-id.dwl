@@ -16,7 +16,7 @@ else if ( cardType == "DD" ) "Door Dash Delivery"
 else "Online Orders"
 ---
 {
-	employeeObjectNum: if ( vars.brandId == "NULL" ) vars.tenderDetails.resultSet1[0].employee_number else vars.employeeObjectNumber,
+	employeeObjectNum: if ( vars.brandId == 1 ) vars.tenderDetails.resultSet1[0].employee_number else vars.employeeObjectNumber,
 	orderTypeId: if ( (["UBE", "GH", "DD", "PM"] contains cardType) and !(isEmpty(vars.orderType)) ) vars.orderType else getOrderTypeIdforMicros(cardType),
 	tenderObjectNum: if ( (["UBE", "GH", "DD", "PM"] contains cardType) and !(isEmpty(vars.tenderMedia)) ) vars.tenderMedia else  getTenderMediaObjectNumberforMicros(cardType),
 	revenueCenterObjectNumber: if(vars.tenderDetails.resultSet1[0].revenue_center_id != null) vars.tenderDetails.resultSet1[0].revenue_center_id else "5",
