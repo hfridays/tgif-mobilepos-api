@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:error-handler-plugin="http://www.mulesoft.org/schema/mule/error-handler-plugin"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
-http://www.mulesoft.org/schema/mule/error-handler-plugin http://www.mulesoft.org/schema/mule/error-handler-plugin/current/mule-error-handler-plugin.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:error-handler-plugin="http://www.mulesoft.org/schema/mule/error-handler-plugin"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/error-handler-plugin http://www.mulesoft.org/schema/mule/error-handler-plugin/current/mule-error-handler-plugin.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<flow name="tgif-mobilepos-papi-main">
 		<http:listener
 			config-ref="tgif-mobilepos-papi-httpListenerConfig" path="/api/*">
@@ -22,8 +22,12 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		</http:listener>
 		<apikit:router config-ref="tgif-mobilepos-papi-config" />
 		<error-handler>
-			<on-error-propagate enableNotifications="true" logException="true">
-				<error-handler-plugin:on-error doc:name="Process Error" doc:id="b3735b0e-9987-412f-886f-3072a5dfc252" config-ref="Error_Handler_Plugin_Config" />
+			<on-error-propagate enableNotifications="true"
+				logException="true">
+				<error-handler-plugin:on-error
+					doc:name="Process Error"
+					doc:id="b3735b0e-9987-412f-886f-3072a5dfc252"
+					config-ref="Error_Handler_Plugin_Config" />
 			</on-error-propagate>
 		</error-handler>
 	</flow>
@@ -42,50 +46,38 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		</http:listener>
 		<apikit:console config-ref="tgif-mobilepos-papi-config" />
 		<error-handler>
-			<on-error-propagate type="APIKIT:NOT_FOUND">
-				<ee:transform
-					xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-					xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-					<ee:message>
-						<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{message: "Resource not found"}]]></ee:set-payload>
-					</ee:message>
-					<ee:variables>
-						<ee:set-variable variableName="httpStatus">404
-						</ee:set-variable>
-					</ee:variables>
-				</ee:transform>
+			<on-error-propagate enableNotifications="true" logException="true">
+				<error-handler-plugin:on-error doc:name="Process Error" doc:id="0f48ea5a-cb07-4910-a86b-ab959ea6c8fd" />
 			</on-error-propagate>
 		</error-handler>
 	</flow>
 	<flow
-		name="put:\calculateTaxAndTotal:application\json:tgif-mobilepos-papi-config">
+		name="put:\CalculateTaxAndTotal:application\json:tgif-mobilepos-papi-config">
 		<flow-ref doc:name="calculate-tax-and-total-flow"
-			doc:id="e6622906-46f2-4026-8061-1bcaeff1ab2f"
+			doc:id="db7075b0-a488-41f3-8ee1-1f0d79f17e24"
 			name="calculate-tax-and-total-flow" />
 	</flow>
-	<flow name="get:\msHeartBeat:tgif-mobilepos-papi-config">
+	<flow name="get:\MSHeartBeat:tgif-mobilepos-papi-config">
 		<flow-ref doc:name="ms-heartbeat-flow"
-			doc:id="7d549350-3090-4963-b40b-d2abf0bd3aee"
+			doc:id="41746657-4c4b-44d8-b215-b86829cc7c42"
 			name="ms-heartbeat-flow" />
 	</flow>
 	<flow
-		name="post:\calculateTotals:application\json:tgif-mobilepos-papi-config">
+		name="post:\CalculateTotals:application\json:tgif-mobilepos-papi-config">
 		<flow-ref doc:name="calculate-total-flow"
-			doc:id="09157509-fa14-43c0-922c-2177253a984f"
+			doc:id="05281804-6ef2-4f24-9a08-d6ff0cb7b68c"
 			name="calculate-total-flow" />
 	</flow>
 	<flow
-		name="post:\createCheck:application\json:tgif-mobilepos-papi-config">
+		name="post:\CreateCheck:application\json:tgif-mobilepos-papi-config">
 		<flow-ref doc:name="create-check-flow"
-			doc:id="1e53a43a-81c7-4417-87de-24a3e4856bb1"
+			doc:id="0cb8b680-3413-4f3e-8aa3-48be996fd857"
 			name="create-check-flow" />
 	</flow>
-	<flow name="get:\pingIPAddress:tgif-mobilepos-papi-config">
+	<flow name="get:\PingIPAddress:tgif-mobilepos-papi-config">
 		<flow-ref doc:name="ping-ip-addess-flow"
-			doc:id="c20cd2a5-08d6-4508-b357-877ee33316ac"
+			doc:id="0e494ef8-99e0-468e-9674-0e38268f1454"
 			name="ping-ip-addess-flow" />
 	</flow>
+
 </mule>

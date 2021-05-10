@@ -63,6 +63,7 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 			doc:id="3c8ceb0c-af6e-44c3-b5b4-55fef8c4cd9d"
 			message="Load Tender Media properties flow started" />
 		<db:stored-procedure doc:name="Stored procedure" doc:id="6594d857-cc19-4073-91aa-5005ecfce594" config-ref="Database_Config_Mule_Interface">
+			<reconnect frequency="${secure::database.reconnect.frequency}" count="${secure::database.reconnect.count}"/>
 			<db:sql ><![CDATA[{call dbo.prc_get_tender_media_obj_num()}]]></db:sql>
 		</db:stored-procedure>
 		<os:store doc:name="Store"
@@ -80,6 +81,7 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 			doc:id="8182bb1f-7ac9-4466-a0fd-8340e11e6c0d"
 			message="Load UberEats order type flow started" />
 		<db:stored-procedure doc:name="Stored procedure" doc:id="d115b594-ed85-4705-8099-03a50fed926e" config-ref="Database_Config_Mule_Interface">
+			<reconnect frequency="${secure::database.reconnect.frequency}" count="${secure::database.reconnect.count}"/>
 			<db:sql ><![CDATA[{call dbo.prc_get_delivery_order_type('UberEats')}]]></db:sql>
 		</db:stored-procedure>
 		<os:store doc:name="Store"
@@ -97,6 +99,7 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 			doc:id="f0cf3d04-cd4d-4d86-911e-d159990119cf"
 			message="Load Doordash order type flow started" />
 		<db:stored-procedure doc:name="Stored procedure" doc:id="5b7f778b-bdfd-489f-931b-d64ccded5bef" config-ref="Database_Config_Mule_Interface">
+			<reconnect frequency="${secure::database.reconnect.frequency}" count="${secure::database.reconnect.count}"/>
 			<db:sql ><![CDATA[{call dbo.prc_get_delivery_order_type('DoorDash')}]]></db:sql>
 		</db:stored-procedure>
 		<os:store doc:name="Store"
@@ -114,6 +117,7 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 			doc:id="93045736-edbb-4ce4-bd4c-914f968d5f08"
 			message="Load Grubhub order type flow started" />
 		<db:stored-procedure doc:name="Stored procedure" doc:id="e9373fc7-a7d3-43cb-a1e9-0f33a54370e5" config-ref="Database_Config_Mule_Interface">
+			<reconnect frequency="${secure::database.reconnect.frequency}" count="${secure::database.reconnect.count}"/>
 			<db:sql ><![CDATA[{call dbo.prc_get_delivery_order_type('GrubHub')}]]></db:sql>
 		</db:stored-procedure>
 		<os:store doc:name="Store"
@@ -131,6 +135,7 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 			doc:id="5bae9c58-006d-4374-8390-979173f4bf91"
 			message="Load Postmates order type flow started" />
 		<db:stored-procedure doc:name="Stored procedure" doc:id="06b55b41-d1df-41b9-8746-4b237552b5e5" config-ref="Database_Config_Mule_Interface">
+			<reconnect frequency="${secure::database.reconnect.frequency}" count="${secure::database.reconnect.count}"/>
 			<db:sql ><![CDATA[{call dbo.prc_get_delivery_order_type('Postmates')}]]></db:sql>
 		</db:stored-procedure>
 		<os:store doc:name="Store"
@@ -148,6 +153,7 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 			doc:id="039874fc-baf2-4e69-8b60-68bd29923bc0"
 			message="Load Store IP properties flow started" />
 		<db:stored-procedure doc:name="Stored procedure" doc:id="84cfe633-0e24-4191-bee1-430103071e3f" config-ref="Database_Config_Mule_Interface">
+			<reconnect frequency="${secure::database.reconnect.frequency}" count="${secure::database.reconnect.count}"/>
 			<db:sql ><![CDATA[{call dbo.prc_get_store_properties()}]]></db:sql>
 		</db:stored-procedure>
 		<os:store doc:name="Store"
@@ -165,6 +171,7 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 			doc:id="44eadd2d-fbf9-45e2-a0de-b15f2387e09a"
 			message="Load Error Code properties flow started" />
 		<db:stored-procedure doc:name="Stored procedure" doc:id="4b59ebed-a194-4778-a602-e9a41f88c5f9" config-ref="Database_Config_Mule_Interface">
+			<reconnect frequency="${secure::database.reconnect.frequency}" count="${secure::database.reconnect.count}"/>
 			<db:sql ><![CDATA[{call dbo.prc_get_micros_api_return_codes()}]]></db:sql>
 		</db:stored-procedure>
 		<os:store doc:name="Store"
@@ -182,6 +189,7 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 			doc:id="686a42ff-bd56-4ab2-b729-bcf158572483"
 			message="Load Vr Brands properties flow started" />
 		<db:stored-procedure doc:name="Stored procedure" doc:id="d160663c-e87c-4b6b-a373-f60329a0ba95" config-ref="Database_Config_Mule_Interface">
+			<reconnect frequency="${secure::database.reconnect.frequency}" count="${secure::database.reconnect.count}"/>
 			<db:sql ><![CDATA[{call prc_get_vr_store_ids()}]]></db:sql>
 		</db:stored-procedure>
 		<os:store doc:name="Store"

@@ -2,6 +2,11 @@ api:
   name: "tgif-mobilepos-papi"
   version: "v1"
   token: "![e4mc3+h1W0F8b4nmyNsT3Y3D0rFmQvSLp5fctqUTsQYQaYP0/iX+FGaeHkttVUxaHHUCQJO9IywXKtggwrjs2sb2++po9EN4epIOrcopziPu3WVl48zUx6zMJu+ZoanCKbD9qcoPmCUwEFYyIIZJvHrE1XOh9Doe9CiOb0usfCxIqECAD29QKFmi0hm3ZWwT4Mx/AkgM91LaJ5vHOWkM+z+sN+0wp5tjxrsRw2ENFmiSPz6rgB+naY/+XyWfPTDfXhvE55lnB7Xrtj1tbjm5O48r6dsx6IX8GXqPKYI0lSa1m0tFFCVrIxXt68lVa3S3ci8AArk6/153uxtwSkM09dx1KsmPE8mCIFHtHtUld3dI338LVjfiQM9eq80tO1z9SVwVBtAYp7R74OlthtQH7kXcxH7sV0hM6seJRms/C/g=]"  
+  https:
+    port: "8082"
+    
+keystore:
+  password: "Fridays"
 
 microsApi:
   connectionTimeout: "15000"
@@ -14,7 +19,10 @@ database:
     url: "jdbc:sqlserver://10.58.52.50:1433;databaseName=mulesoft_interface;"  
   depot:
     url: "jdbc:sqlserver://10.58.52.50:1433;databaseName=depot;"
-resposapi:
+  reconnect:
+    frequency: "2000"
+    count: "2"
+posapi:
   reconnect:
     frequency: "2000"
     count: "3"

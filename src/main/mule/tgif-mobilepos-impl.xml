@@ -110,8 +110,8 @@ output application/json
 output application/json
 ---
 {
-	ipAddress: attributes.queryParams.ipAddress,
-	port: attributes.queryParams.port
+	ipAddress: attributes.queryParams.IPAddress,
+	port: attributes.queryParams.Port
 }]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
@@ -228,7 +228,7 @@ payload]]></ee:set-variable>
 						<ee:set-variable variableName="storeId"><![CDATA[%dw 2.0
 output application/json
 ---
-attributes.queryParams.storeId]]></ee:set-variable>
+attributes.queryParams.StoreID]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
 				<set-variable
@@ -274,6 +274,9 @@ else ""]]></ee:set-variable>
 					doc:name="Get Tender Media Details"
 					doc:id="5b1987f1-b282-4e64-a150-e6b14d5b83cd"
 					config-ref="Database_Config_Mule_Interface" target="tenderDetails">
+					<reconnect
+						frequency="${secure::database.reconnect.frequency}"
+						count="${secure::database.reconnect.count}" />
 					<db:sql><![CDATA[{call prc_get_tender_media_details(:commission_type, :card_type, :fulfillment_type, :brand_id)}]]></db:sql>
 					<db:input-parameters><![CDATA[#[{
 	commission_type: vars.createCheckVars.commissionType,
@@ -282,9 +285,11 @@ else ""]]></ee:set-variable>
 	brand_id: if(vars.brandId != null and vars.brandId != "NULL") vars.brandId as Number else null
 
 }]]]></db:input-parameters>
-					<db:output-parameters >
-						<db:output-parameter key="employee_number" type="NVARCHAR" />
-						<db:output-parameter key="revenue_center_id" type="INTEGER" />
+					<db:output-parameters>
+						<db:output-parameter key="employee_number"
+							type="NVARCHAR" />
+						<db:output-parameter key="revenue_center_id"
+							type="INTEGER" />
 					</db:output-parameters>
 				</db:stored-procedure>
 				<ee:transform doc:name="tenderId"
@@ -372,7 +377,8 @@ output application/json
 				type="HTTP:CONNECTIVITY">
 				<error-handler-plugin:on-error
 					doc:name="Process Error"
-					doc:id="dbca2836-374a-45e5-81bd-e8b2dc67bd50" target="errorPayload" config-ref="Error_Handler_Plugin_Config"/>
+					doc:id="dbca2836-374a-45e5-81bd-e8b2dc67bd50" target="errorPayload"
+					config-ref="Error_Handler_Plugin_Config" />
 				<java:invoke-static doc:name="Ping Gateway"
 					doc:id="f7ffe13d-a56f-42ed-b291-4767d5c1c87d"
 					class="com.api.tgif.mobilepos.util.CommonUtil"
@@ -490,7 +496,8 @@ output application/json
 				doc:id="cf5cb7d2-3a22-43ce-a326-2cacc67feef8">
 				<error-handler-plugin:on-error
 					doc:name="Process Error"
-					doc:id="09e20c79-ed27-47fa-90c7-a67784be0872" target="errorPayload" config-ref="Error_Handler_Plugin_Config"/>
+					doc:id="09e20c79-ed27-47fa-90c7-a67784be0872" target="errorPayload"
+					config-ref="Error_Handler_Plugin_Config" />
 				<set-variable
 					value='#[output application/json --- "Following error occurred in Create Check method for Store " ++ vars.storeId default "" ++ "=" ++ write(error, "application/json")]'
 					doc:name="emailMessage"
@@ -528,10 +535,9 @@ output application/json
 			doc:id="34d4b4a4-5222-4d67-b14e-511a9e0c7369"
 			variableName="startTime" />
 		<module-logger:console-logging
-			doc:name="Start"
-			doc:id="1e1d7a81-fdf8-4b4c-8a57-ce68fe6907a3"
-			traceId="#[correlationId]" stage="START" apiName='#[p("secure::api.name")]'
-			message="Started Processing"
+			doc:name="Start" doc:id="1e1d7a81-fdf8-4b4c-8a57-ce68fe6907a3"
+			traceId="#[correlationId]" stage="START"
+			apiName='#[p("secure::api.name")]' message="Started Processing"
 			flowName="Calculate Taxt and Totals Flow" env='#[p("mule.env")]'
 			config-ref="TGIF_Logger_Config" startTime="#[vars.startTime]" />
 		<flow-ref doc:name="get-access-token"
@@ -551,7 +557,7 @@ payload]]></ee:set-variable>
 						<ee:set-variable variableName="storeId"><![CDATA[%dw 2.0
 output application/json
 ---
-attributes.queryParams.storeId]]></ee:set-variable>
+attributes.queryParams.StoreID]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
 				<set-variable
@@ -566,18 +572,26 @@ attributes.queryParams.storeId]]></ee:set-variable>
 					doc:id="b00e2b82-e114-4e37-af90-50c802d32fcb"
 					schema="schema/caluclateTaxAndTotalRequest.json">
 				</json:validate-schema>
-				<db:stored-procedure doc:name="Get Tender Media Details" doc:id="50ba39b2-74d4-4ae4-ab9c-eceaae1c953a" config-ref="Database_Config_Mule_Interface" target="tenderDetails">
-					<db:sql ><![CDATA[{call prc_get_tender_media_details(:commission_type, :card_type, :fulfillment_type, :brand_id)}]]></db:sql>
-					<db:input-parameters ><![CDATA[#[{
+				<db:stored-procedure
+					doc:name="Get Tender Media Details"
+					doc:id="50ba39b2-74d4-4ae4-ab9c-eceaae1c953a"
+					config-ref="Database_Config_Mule_Interface" target="tenderDetails">
+					<reconnect
+						frequency="${secure::database.reconnect.frequency}"
+						count="${secure::database.reconnect.count}" />
+					<db:sql><![CDATA[{call prc_get_tender_media_details(:commission_type, :card_type, :fulfillment_type, :brand_id)}]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
 	commission_type: null,
 	card_type: vars.authSystem,
 	fulfillment_type: "Delivery",
 	brand_id: if(vars.brandId != null and vars.brandId != "NULL") vars.brandId as Number else null
 
 }]]]></db:input-parameters>
-					<db:output-parameters >
-						<db:output-parameter key="employee_number" type="NVARCHAR" />
-						<db:output-parameter key="revenue_center_id" type="INTEGER" />
+					<db:output-parameters>
+						<db:output-parameter key="employee_number"
+							type="NVARCHAR" />
+						<db:output-parameter key="revenue_center_id"
+							type="INTEGER" />
 					</db:output-parameters>
 				</db:stored-procedure>
 				<ee:transform doc:name="tenderId"
@@ -706,9 +720,9 @@ output application/json
 					config-ref="TGIF_Logger_Config"
 					message="Processing Failed due to connectivity error"
 					stage="EXCEPTION" traceId="#[correlationId]"
-					flowName="Calculate Tax and Totals Flow" apiName='#[p("secure::api.name")]'
-					env='#[p("mule.env")]' startTime="#[vars.startTime]"
-					error="#[error]" />
+					flowName="Calculate Tax and Totals Flow"
+					apiName='#[p("secure::api.name")]' env='#[p("mule.env")]'
+					startTime="#[vars.startTime]" error="#[error]" />
 			</on-error-continue>
 			<on-error-continue enableNotifications="true"
 				logException="true" doc:name="On Error Continue"
@@ -753,12 +767,11 @@ output application/json
 			doc:id="c0119c60-5dc1-4aec-8c98-1f5c40eec95e"
 			variableName="startTime" />
 		<module-logger:console-logging
-			doc:name="Start"
-			doc:id="7abe4f72-b6f5-426f-a272-b90d1f887a41"
-			traceId="#[correlationId]" stage="START" apiName='#[p("secure::api.name")]'
-			message="Started Processing" flowName="Calculate Totals Flow"
-			env='#[p("mule.env")]' config-ref="TGIF_Logger_Config"
-			startTime="#[vars.startTime]" />
+			doc:name="Start" doc:id="7abe4f72-b6f5-426f-a272-b90d1f887a41"
+			traceId="#[correlationId]" stage="START"
+			apiName='#[p("secure::api.name")]' message="Started Processing"
+			flowName="Calculate Totals Flow" env='#[p("mule.env")]'
+			config-ref="TGIF_Logger_Config" startTime="#[vars.startTime]" />
 		<flow-ref doc:name="get-access-token"
 			doc:id="0b9225bf-847f-48bd-a5ad-b8421449eb44" name="get-access-token" />
 		<choice doc:name="Check if access token valid"
@@ -776,7 +789,7 @@ payload]]></ee:set-variable>
 						<ee:set-variable variableName="storeId"><![CDATA[%dw 2.0
 output application/json
 ---
-attributes.queryParams.storeId]]></ee:set-variable>
+attributes.queryParams.StoreID]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
 				<set-variable
@@ -791,17 +804,25 @@ attributes.queryParams.storeId]]></ee:set-variable>
 					doc:id="1600af8f-e27e-476c-90d0-be64a7b0a6c1"
 					schema="schema/caluclateTotalRequest.json">
 				</json:validate-schema>
-				<db:stored-procedure doc:name="Get Tender Media Details" doc:id="50c0bd53-8b23-4e72-bf70-db9c00432e00" config-ref="Database_Config_Mule_Interface" target="tenderDetails">
-					<db:sql ><![CDATA[{call prc_get_tender_media_details(:commission_type, :card_type, :fulfillment_type, :brand_id)}]]></db:sql>
-					<db:input-parameters ><![CDATA[#[{
+				<db:stored-procedure
+					doc:name="Get Tender Media Details"
+					doc:id="50c0bd53-8b23-4e72-bf70-db9c00432e00"
+					config-ref="Database_Config_Mule_Interface" target="tenderDetails">
+					<reconnect
+						frequency="${secure::database.reconnect.frequency}"
+						count="${secure::database.reconnect.count}" />
+					<db:sql><![CDATA[{call prc_get_tender_media_details(:commission_type, :card_type, :fulfillment_type, :brand_id)}]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
 	commission_type: null,
 	card_type: vars.authSystem,
 	fulfillment_type: "Delivery",
 	brand_id: if(vars.brandId != null and vars.brandId != "NULL") vars.brandId as Number else null
 }]]]></db:input-parameters>
-					<db:output-parameters >
-						<db:output-parameter key="employee_number" type="NVARCHAR" />
-						<db:output-parameter key="revenue_center_id" type="INTEGER" />
+					<db:output-parameters>
+						<db:output-parameter key="employee_number"
+							type="NVARCHAR" />
+						<db:output-parameter key="revenue_center_id"
+							type="INTEGER" />
 					</db:output-parameters>
 				</db:stored-procedure>
 				<ee:transform doc:name="tenderId"
@@ -1021,8 +1042,8 @@ output application/json
 					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
 					stage="EXCEPTION" apiName='#[p("secure::api.name")]'
 					message="Processing Failed due to connectivity error"
-					flowName="Calculate Totals Flow" env='#[p("mule.env")]' error="#[error]"
-					startTime="#[vars.startTime]" />
+					flowName="Calculate Totals Flow" env='#[p("mule.env")]'
+					error="#[error]" startTime="#[vars.startTime]" />
 			</on-error-continue>
 			<on-error-continue enableNotifications="true"
 				logException="true" doc:name="On Error Continue"
@@ -1065,9 +1086,9 @@ output application/json
 					doc:name="Failed" doc:id="93c665a1-1fdc-44e3-a4ce-d395dba17e80"
 					config-ref="TGIF_Logger_Config" traceId="#[correlationId]"
 					stage="EXCEPTION" apiName='#[p("secure::api.name")]'
-					message="Processing Failed due to error" flowName="Calculate Totals Flow"
-					env='#[p("mule.env")]' error="#[error]"
-					startTime="#[vars.startTime]" />
+					message="Processing Failed due to error"
+					flowName="Calculate Totals Flow" env='#[p("mule.env")]'
+					error="#[error]" startTime="#[vars.startTime]" />
 			</on-error-continue>
 		</error-handler>
 	</flow>

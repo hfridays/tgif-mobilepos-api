@@ -1,12 +1,12 @@
 #%RAML 1.0
 title: tgif-mobilepos-papi
 description: Mobile Payment API
-/calculateTotals:
+/CalculateTotals:
   displayName: CalculateTotals
   post:
     description: Calculate Check Totals
     queryParameters:
-      storeId:
+      StoreID:
         type: integer    
     body:
       application/json:
@@ -18,15 +18,15 @@ description: Mobile Payment API
           application/json:
             type:  !include types/responses/calculateTotalsResponse.raml
             example: !include examples/responses/calculateTotalsResponse.json
-/pingIPAddress:
+/PingIPAddress:
   displayName: Ping IPAddress
   get:
     description: Ping IPAddress
     queryParameters:
-      ipAddress:
+      IPAddress:
           description: IpAddress to Ping          
           type: string
-      port:
+      Port:
           description: port number          
           required: false
           type: integer
@@ -37,7 +37,7 @@ description: Mobile Payment API
             type:  !include types/responses/pingIpaddressResponse.raml
             example: !include examples/responses/pingIpaddressResponse.json
 
-/msHeartBeat:
+/MSHeartBeat:
   displayName: Check the mule soft heartbeat
   get:                             
     responses:
@@ -47,12 +47,12 @@ description: Mobile Payment API
             type:  !include types/responses/msHeartBeatResponse.raml
             example: !include examples/responses/msHeartBeatResponse.json
 
-/createCheck:
+/CreateCheck:
   displayName: CreateCheck
   post:
     description: Create a Check
     queryParameters:
-      storeId:
+      StoreID:
         type: integer        
     body:
       application/json:
@@ -65,12 +65,12 @@ description: Mobile Payment API
             type:  !include types/responses/createCheckResponse.raml
             example: !include examples/responses/createCheckResponse.json
 
-/calculateTaxAndTotal:
+/CalculateTaxAndTotal:
   displayName: CalculateTaxAndTotals without item validation
   put:
     description: Calculate Check Totals and Tax without item validation
     queryParameters:
-      storeId:
+      StoreID:
         type: integer    
     body:
       application/json:

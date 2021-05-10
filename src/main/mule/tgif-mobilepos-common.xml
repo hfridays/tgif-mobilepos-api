@@ -43,22 +43,26 @@ output application/json
 		<logger level="INFO" doc:name="INFO: Enter"
 			doc:id="688520f8-fa4d-4f94-a8bb-14425d699d9f"
 			message="Enter GetError Code Details from Object Store" />
-		<os:retrieve doc:name="Retrieve Error Message Details" doc:id="2c701452-39a8-4cd9-b981-d5ffe6ad2b80" key="errorMessage" target="errorMessageDetails" objectStore="Object_store"/>
-		<ee:transform doc:name="errorDescription" doc:id="1d50a3ca-20f2-4189-8d9b-389b3b9a1812">
-							<ee:message>
-							</ee:message>
-							<ee:variables>
-								<ee:set-variable variableName="errorDescription"><![CDATA[%dw 2.0
+		<os:retrieve doc:name="Retrieve Error Message Details"
+			doc:id="2c701452-39a8-4cd9-b981-d5ffe6ad2b80" key="errorMessage"
+			target="errorMessageDetails" objectStore="Object_store" />
+		<ee:transform doc:name="errorDescription"
+			doc:id="1d50a3ca-20f2-4189-8d9b-389b3b9a1812">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="errorDescription"><![CDATA[%dw 2.0
 var arr = ((vars.errorMessageDetails filter ($.message_number as String == vars.errorCode)).custom_message_text)
 var size = if(arr == null) 0 else sizeOf (arr)
 output application/java
 ---
 if((size>0)) (arr[0]) else (vars.errorCode ++ " This is a new error code. Kindly check with POS Team")]]></ee:set-variable>
-							</ee:variables>
-						</ee:transform>
-		<logger level="INFO" doc:name="INFO: Exit" doc:id="c96a128e-97da-44fe-92a7-354e2b6bb69a" message="Exit GetError Code Details from Object Store"/>
-	
-</sub-flow>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="INFO: Exit"
+			doc:id="c96a128e-97da-44fe-92a7-354e2b6bb69a"
+			message="Exit GetError Code Details from Object Store" />
+	</sub-flow>
 	<sub-flow name="get-access-token"
 		doc:id="9e17bb63-29b0-48ac-9696-21258c0576f0">
 		<set-variable value="#[attributes.headers.ApiKey]"
@@ -77,6 +81,9 @@ if((size>0)) (arr[0]) else (vars.errorCode ++ " This is a new error code. Kindly
 				doc:name="Insert Online Ordering Logs"
 				doc:id="314a9d0d-b420-474d-8b13-3407bb99226f"
 				config-ref="Database_Config_Mule_Interface">
+				<reconnect
+					frequency="${secure::database.reconnect.frequency}"
+					count="${secure::database.reconnect.count}" />
 				<db:sql><![CDATA[{ call dbo.prc_onlineordering_logs_insert(:method_name,:store_id,:check_number,:check_sequence,:employee_number,:table_number,:status,:message)}]]></db:sql>
 				<db:input-parameters><![CDATA[#[{
 	method_name: vars.logData.methodName,
@@ -99,6 +106,9 @@ if((size>0)) (arr[0]) else (vars.errorCode ++ " This is a new error code. Kindly
 				doc:name="Insert Online Cart Id Details"
 				doc:id="3fd0837a-87a8-4cc9-aa5a-c6370a66e55b"
 				config-ref="Database_Config_Mule_Interface">
+				<reconnect
+					frequency="${secure::database.reconnect.frequency}"
+					count="${secure::database.reconnect.count}" />
 				<db:sql><![CDATA[{ call dbo.prc_olo_cart_id_details_insert(:store_id,:cart_id,:check_payload,:day_of_business)}]]></db:sql>
 				<db:input-parameters><![CDATA[#[{
 	store_id: vars.logData.storeId,
@@ -110,15 +120,18 @@ if((size>0)) (arr[0]) else (vars.errorCode ++ " This is a new error code. Kindly
 			</db:stored-procedure>
 		</async>
 	</sub-flow>
-		<sub-flow name="send-email-notification"
+	<sub-flow name="send-email-notification"
 		doc:id="db3166c9-a40b-4688-bd8c-40bfa7c0c8e3">
 		<logger level="INFO" doc:name="INFO: Logger"
-					doc:id="a42c39b4-e8e7-47af-ac8b-d7eb924dd902"
-					message="#[vars.emailMessage]" />
-					<db:stored-procedure
+			doc:id="a42c39b4-e8e7-47af-ac8b-d7eb924dd902"
+			message="#[vars.emailMessage]" />
+		<db:stored-procedure
 			doc:name="Send Email Notification"
 			doc:id="7036e2da-a22f-4152-a406-01bf54fc9155"
 			config-ref="Database_Config_Depot" target="emailStatus">
+			<reconnect
+				frequency="${secure::database.reconnect.frequency}"
+				count="${secure::database.reconnect.count}" />
 			<db:sql><![CDATA[{call prc_RemoteMail_RouteMessage(:type, :subject,:body)}]]></db:sql>
 			<db:input-parameters><![CDATA[#[{
 	'type': "MobilePaymentNotification",
@@ -127,6 +140,6 @@ if((size>0)) (arr[0]) else (vars.errorCode ++ " This is a new error code. Kindly
 }]]]></db:input-parameters>
 		</db:stored-procedure>
 	</sub-flow>
-	
+
 
 </mule>

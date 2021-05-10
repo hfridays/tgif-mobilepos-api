@@ -24,6 +24,9 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 		<db:select doc:name="Select CartId"
 			doc:id="42fcf4cb-5d25-4f1f-9ca0-819ffa79f74a" target="cartIdList"
 			config-ref="Database_Config_Mule_Interface">
+			<reconnect
+				frequency="${secure::database.reconnect.frequency}"
+				count="${secure::database.reconnect.count}" />
 			<db:sql><![CDATA[SELECT distinct cart_id FROM [dbo].[validate_olo_duplicate_orders] with (Nolock) WHERE store_id = :storeId AND cart_id = :cartId
 AND day_of_business = :currentDate AND delivery_partner_name in ('OLO', 'PayInStore','Online Orders')]]></db:sql>
 			<db:input-parameters><![CDATA[#[{
@@ -40,6 +43,9 @@ AND day_of_business = :currentDate AND delivery_partner_name in ('OLO', 'PayInSt
 				<db:select doc:name="Select Check Payload"
 					doc:id="5dcfc175-6289-40b7-8ade-aaf33e12375f" target="checkPayload"
 					config-ref="Database_Config_Mule_Interface">
+					<reconnect
+						frequency="${secure::database.reconnect.frequency}"
+						count="${secure::database.reconnect.count}" />
 					<db:sql><![CDATA[SELECT check_payload from [dbo].[olo_cart_id_details] with (Nolock) WHERE store_id =:storeId AND cart_id = :cartId]]></db:sql>
 					<db:input-parameters><![CDATA[#[{
 	storeId: vars.storeId,
@@ -217,16 +223,20 @@ output application/json
 			message='#[output application/json --- write(vars.postTransactionXML, "application/xml", { writeDeclaration: false })]'
 			flowStartDate="#[vars.startTime]" flowName="Create Check Flow"
 			status="Before POS API Call" transactionType="ORDERS-MOBILEPOS"
-			apiName='#[p("secure::api.name")]' apiVersion='#[p("secure::api.version")]' />
+			apiName='#[p("secure::api.name")]'
+			apiVersion='#[p("secure::api.version")]' />
 		<http:request method="POST" doc:name="Request POS Api"
 			doc:id="9fa4edef-5fb2-4177-9679-76587c8c8d44"
 			target="createCheckServiceResponse"
 			config-ref="HTTP_Request_configuration"
 			path="/ResPosApiWeb/ResPosApiWeb.asmx">
-			<reconnect frequency="${secure::resposapi.reconnect.frequency}"
-				count="${secure::resposapi.reconnect.count}" />
-			<http:body><![CDATA[#[%dw 2.0 output 
-			text/xml --- vars.postTransactionXML]]]></http:body>
+			<reconnect
+				frequency="${secure::posapi.reconnect.frequency}"
+				count="${secure::posapi.reconnect.count}" />
+			<http:body><![CDATA[#[%dw 2.0
+output text/xml
+---
+vars.postTransactionXML]]]></http:body>
 			<http:response-validator>
 				<http:success-status-code-validator
 					values="200..599" />
@@ -240,7 +250,8 @@ output application/json
 			message='#[output application/json --- write(vars.createCheckServiceResponse, "application/xml", { writeDeclaration: false })]'
 			flowStartDate="#[vars.startTime]" flowName="Create Check Flow"
 			status="After POS API Call" transactionType="ORDERS-MOBILEPOS"
-			apiName='#[p("secure::api.name")]' apiVersion='#[p("secure::api.version")]' />
+			apiName='#[p("secure::api.name")]'
+			apiVersion='#[p("secure::api.version")]' />
 		<set-variable
 			value="#[output application/json
 &#10;---
@@ -316,8 +327,10 @@ ns tem http://tempuri.org/
 					stage="IN PROCESS"
 					message='#[output text/plain --- write(vars.tgifServiceResponse, "application/json")]'
 					flowStartDate="#[vars.startTime]" flowName="Create Check Flow"
-					status="After TGIF Web Service Call" transactionType="ORDERS-MOBILEPOS"
-					apiName='#[p("secure::api.name")]' apiVersion='#[p("secure::api.version")]' />
+					status="After TGIF Web Service Call"
+					transactionType="ORDERS-MOBILEPOS"
+					apiName='#[p("secure::api.name")]'
+					apiVersion='#[p("secure::api.version")]' />
 				<logger level="DEBUG"
 					doc:name="DEBUG: TGIF Web Service Response"
 					doc:id="4fd1a79e-a65c-42ea-931a-4ec86e657dca"
@@ -689,6 +702,9 @@ output application/json
 			doc:name="Call prc_validate_olo_duplicate_orders_insert"
 			doc:id="940a2703-243a-401c-a486-1c18c3b9c9a6"
 			config-ref="Database_Config_Mule_Interface">
+			<reconnect
+				frequency="${secure::database.reconnect.frequency}"
+				count="${secure::database.reconnect.count}" />
 			<db:sql><![CDATA[{ call dbo.prc_validate_olo_duplicate_orders_insert(:store_id,:cart_id,:order_id,:day_of_business,:delivery_partner_name)}]]></db:sql>
 			<db:input-parameters><![CDATA[#[{
 	store_id: vars.logData.storeId,
@@ -707,6 +723,9 @@ output application/json
 				doc:name="Insert Delivery Order Details"
 				doc:id="aea8f562-a88a-44a8-a791-d4a65831249f"
 				config-ref="Database_Config_Mule_Interface">
+				<reconnect
+					frequency="${secure::database.reconnect.frequency}"
+					count="${secure::database.reconnect.count}" />
 				<db:sql><![CDATA[{ call dbo.prc_delivery_order_details_insert(:delivery_partner_name,:store_id,:order_id,:check_number,:day_of_business,:delivery_method,:status,:sub_total,:tax_total,:agent_id)}]]></db:sql>
 				<db:input-parameters><![CDATA[#[{
 	delivery_partner_name: vars.deliveryOrderDetails.deliveryPartnerName,
@@ -732,6 +751,9 @@ output application/json
 			doc:name="Send Email Notification"
 			doc:id="74a24c25-844d-4cea-98e2-bbf6fdb34905"
 			config-ref="Database_Config_Depot" target="sentEmail">
+			<reconnect
+				frequency="${secure::database.reconnect.frequency}"
+				count="${secure::database.reconnect.count}" />
 			<db:sql><![CDATA[{call prc_RemoteMail_CreateMessage(:id, :store, :type, :subject,:body, :param1, :param2)}]]></db:sql>
 			<db:input-parameters><![CDATA[#[{
 	id: 1,

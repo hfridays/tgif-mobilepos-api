@@ -145,8 +145,8 @@ output application/json
 					config-ref="HTTP_Request_configuration"
 					path="/ResPosApiWeb/ResPosApiWeb.asmx" sendCorrelationId="AUTO"
 					responseTimeout="${secure::microsApi.connectionTimeout}" target="calculateTotalServiceResponse">
-					<reconnect frequency="${secure::resposapi.reconnect.frequency}"
-						count="${secure::resposapi.reconnect.count}" />
+					<reconnect frequency="${secure::posapi.reconnect.frequency}"
+						count="${secure::posapi.reconnect.count}" />
 					<http:body><![CDATA[#[%dw 2.0
 output text/xml
 ---
@@ -255,8 +255,8 @@ ns0#Envelope: {
 				path="/ResPosApiWeb/ResPosApiWeb.asmx"
 				target="calculateTotalServiceResponse" sendCorrelationId="AUTO"
 				responseTimeout="${secure::microsApi.connectionTimeout}">
-				<reconnect frequency="${secure::resposapi.reconnect.frequency}"
-					count="${secure::resposapi.reconnect.count}" />
+				<reconnect frequency="${secure::posapi.reconnect.frequency}"
+					count="${secure::posapi.reconnect.count}" />
 				<http:body><![CDATA[#[%dw 2.0 output text/xml --- vars.resPosRequest]]]></http:body>
 				<http:response-validator>
 					<http:success-status-code-validator

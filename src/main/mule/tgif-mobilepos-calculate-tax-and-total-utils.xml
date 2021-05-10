@@ -54,8 +54,8 @@ http://www.mulesoft.org/schema/mule/module-logger http://www.mulesoft.org/schema
 			path="/ResPosApiWeb/ResPosApiWeb.asmx"
 			target="calculateTotalServiceResponse" sendCorrelationId="AUTO"
 			responseTimeout="${secure::microsApi.connectionTimeout}">
-			<reconnect frequency="${secure::resposapi.reconnect.frequency}"
-				count="${secure::resposapi.reconnect.count}" />
+			<reconnect frequency="${secure::posapi.reconnect.frequency}"
+				count="${secure::posapi.reconnect.count}" />
 			<http:body><![CDATA[#[%dw 2.0
 output text/xml
 ---
